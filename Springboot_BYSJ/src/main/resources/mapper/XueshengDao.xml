@@ -14,6 +14,7 @@
         <result property="shouji" column="shouji"/>
         <result property="youxiang" column="youxiang"/>
         <result property="zhaopian" column="zhaopian"/>
+        <result property="role" column="role"/>
     </resultMap>
 
     <select id="selectListVO"

@@ -11,6 +11,7 @@ import com.utils.MPUtil;
 import com.utils.PageUtils;
 import com.utils.R;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,7 +46,10 @@ public class JiaoshiController {
     @RequestMapping(value = "/login")
     public R login(String username, String password, String captcha, HttpServletRequest request) {
         JiaoshiEntity user = jiaoshiService.selectOne(new EntityWrapper<JiaoshiEntity>().eq("gonghao", username));
-        if (user == null || !user.getMima().equals(password)) {
+        
+        // 使用 BCrypt 验证密码
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        if (user == null || !encoder.matches(password, user.getMima())) {
             return R.error("账号或密码不正确");
         }
 

@@ -96,6 +96,11 @@ public class XueshengEntity<T> implements Serializable {
 
     private String zhaopian;
 
+    /**
+     * 角色
+     */
+    private String role = "学生";
+
 
     @JsonFormat(locale = "zh", timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat
@@ -241,6 +246,20 @@ public class XueshengEntity<T> implements Serializable {
      */
     public String getZhaopian() {
         return zhaopian;
+    }
+
+    /**
+     * 设置：角色
+     */
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    /**
+     * 获取：角色
+     */
+    public String getRole() {
+        return role;
     }
 
 }

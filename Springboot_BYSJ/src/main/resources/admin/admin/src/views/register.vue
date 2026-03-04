@@ -1,465 +1,710 @@
 <template>
-  <div>
-    <div class="container">
-      <div class="login-form" style="backgroundColor:rgba(247, 240, 240, 0.7);borderRadius:10px">
-        <h1 class="h1" style="color:#000;fontSize:28px;">大学生竞赛管理系统注册</h1>
-		<el-form ref="rgsForm" class="rgs-form" :model="rgsForm" label-width="120px">
-			<!-- <div v-if="tableName=='xuesheng'" class="input-group">
-			   <div class="label">学号</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.xuehao" class="input" type="text" placeholder="学号">
-			   </div>
-			 </div> -->
-			<el-form-item label="学号" class="input" v-if="tableName=='xuesheng'">
-			  <el-input v-model="ruleForm.xuehao" autocomplete="off" placeholder="学号"  />
-			</el-form-item>
-			<!-- <div v-if="tableName=='xuesheng'" class="input-group">
-			   <div class="label">密码</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.mima" class="input" type="text" placeholder="密码">
-			   </div>
-			 </div> -->
-			<el-form-item label="密码" class="input" v-if="tableName=='xuesheng'">
-			  <el-input v-model="ruleForm.mima" autocomplete="off" placeholder="密码" type="password"#elsetype="text" />
-			</el-form-item>
-			<!-- <div v-if="tableName=='xuesheng'" class="input-group">
-			   <div class="label">学生姓名</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.xueshengxingming" class="input" type="text" placeholder="学生姓名">
-			   </div>
-			 </div> -->
-			<el-form-item label="学生姓名" class="input" v-if="tableName=='xuesheng'">
-			  <el-input v-model="ruleForm.xueshengxingming" autocomplete="off" placeholder="学生姓名"  />
-			</el-form-item>
-			<!-- <div v-if="tableName=='xuesheng'" class="input-group">
-			   <div class="label">学院名称</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.xueyuanmingcheng" class="input" type="text" placeholder="学院名称">
-			   </div>
-			 </div> -->
-			<el-form-item label="学院名称" class="input" v-if="tableName=='xuesheng'">
-			  <el-input v-model="ruleForm.xueyuanmingcheng" autocomplete="off" placeholder="学院名称"  />
-			</el-form-item>
-			<!-- <div v-if="tableName=='xuesheng'" class="input-group">
-			   <div class="label">手机</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.shouji" class="input" type="text" placeholder="手机">
-			   </div>
-			 </div> -->
-			<el-form-item label="手机号码" class="input" v-if="tableName=='xuesheng'">
-			  <el-input v-model="ruleForm.shouji" autocomplete="off" placeholder="手机号码"  />
-			</el-form-item>
-			<!-- <div v-if="tableName=='xuesheng'" class="input-group">
-			   <div class="label">邮箱</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.youxiang" class="input" type="text" placeholder="邮箱">
-			   </div>
-			 </div> -->
-			<el-form-item label="邮箱" class="input" v-if="tableName=='xuesheng'">
-			  <el-input v-model="ruleForm.youxiang" autocomplete="off" placeholder="邮箱"  />
-			</el-form-item>
-			<!-- <div v-if="tableName=='jiaoshi'" class="input-group">
-			   <div class="label">工号</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.gonghao" class="input" type="text" placeholder="工号">
-			   </div>
-			 </div> -->
-			<el-form-item label="工号" class="input" v-if="tableName=='jiaoshi'">
-			  <el-input v-model="ruleForm.gonghao" autocomplete="off" placeholder="工号"  />
-			</el-form-item>
-			<!-- <div v-if="tableName=='jiaoshi'" class="input-group">
-			   <div class="label">密码</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.mima" class="input" type="text" placeholder="密码">
-			   </div>
-			 </div> -->
-			<el-form-item label="密码" class="input" v-if="tableName=='jiaoshi'">
-			  <el-input v-model="ruleForm.mima" autocomplete="off" placeholder="密码" type="password"#elsetype="text" />
-			</el-form-item>
-			<!-- <div v-if="tableName=='jiaoshi'" class="input-group">
-			   <div class="label">教师姓名</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.jiaoshixingming" class="input" type="text" placeholder="教师姓名">
-			   </div>
-			 </div> -->
-			<el-form-item label="教师姓名" class="input" v-if="tableName=='jiaoshi'">
-			  <el-input v-model="ruleForm.jiaoshixingming" autocomplete="off" placeholder="教师姓名"  />
-			</el-form-item>
-			<!-- <div v-if="tableName=='jiaoshi'" class="input-group">
-			   <div class="label">学院名称</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.xueyuanmingcheng" class="input" type="text" placeholder="学院名称">
-			   </div>
-			 </div> -->
-			<el-form-item label="学院名称" class="input" v-if="tableName=='jiaoshi'">
-			  <el-input v-model="ruleForm.xueyuanmingcheng" autocomplete="off" placeholder="学院名称"  />
-			</el-form-item>
-			<!-- <div v-if="tableName=='jiaoshi'" class="input-group">
-			   <div class="label">职称</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.zhicheng" class="input" type="text" placeholder="职称">
-			   </div>
-			 </div> -->
-			<el-form-item label="职称" class="input" v-if="tableName=='jiaoshi'">
-			  <el-input v-model="ruleForm.zhicheng" autocomplete="off" placeholder="职称"  />
-			</el-form-item>
-			<!-- <div v-if="tableName=='jiaoshi'" class="input-group">
-			   <div class="label">手机</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.shouji" class="input" type="text" placeholder="手机">
-			   </div>
-			 </div> -->
-			<el-form-item label="手机号码" class="input" v-if="tableName=='jiaoshi'">
-			  <el-input v-model="ruleForm.shouji" autocomplete="off" placeholder="手机号码"  />
-			</el-form-item>
-			<!-- <div v-if="tableName=='jiaoshi'" class="input-group">
-			   <div class="label">邮箱</div>
-			   <div class="input-container">
-			     <input v-model="ruleForm.youxiang" class="input" type="text" placeholder="邮箱">
-			   </div>
-			 </div> -->
-			<el-form-item label="邮箱" class="input" v-if="tableName=='jiaoshi'">
-			  <el-input v-model="ruleForm.youxiang" autocomplete="off" placeholder="邮箱"  />
-			</el-form-item>
-			<div style="display: flex;flex-wrap: wrap;width: 100%;justify-content: center;">
-				<el-button class="btn" type="primary" @click="login()">注册</el-button>
-				<el-button class="btn close" type="primary" @click="close()">取消</el-button>
-			</div>
-		</el-form>
+  <div class="register-container">
+    <!-- 背景装饰 -->
+    <div class="background">
+      <div class="shape"></div>
+      <div class="shape"></div>
+      <div class="shape"></div>
+    </div>
+
+    <!-- 注册表单卡片 -->
+    <div class="register-card">
+      <div class="card-header">
+        <h1 class="title">
+          <i class="el-icon-user-solid"></i>
+          用户注册
+        </h1>
+        <p class="subtitle">欢迎加入大学生竞赛管理系统</p>
       </div>
-      <!-- <div class="nk-navigation">
-        <a href="#">
-          <div @click="login()">注册</div>
-        </a>
-      </div> -->
+
+      <el-form 
+        ref="registerForm" 
+        :model="form" 
+        :rules="rules" 
+        label-width="100px"
+        class="register-form"
+        size="medium"
+      >
+        <!-- 角色选择 -->
+        <el-form-item label="角色类型" prop="role">
+          <el-radio-group v-model="form.role" class="role-selector" @change="onRoleChange">
+            <el-radio-button label="学生">
+              <i class="el-icon-s-custom"></i> 学生
+            </el-radio-button>
+            <el-radio-button label="教师">
+              <i class="el-icon-reading"></i> 教师
+            </el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-divider></el-divider>
+
+        <!-- 基本信息 -->
+        <el-form-item label="账号" prop="account">
+          <el-input 
+            v-model="form.account" 
+            :placeholder="accountPlaceholder"
+            prefix-icon="el-icon-edit"
+            clearable
+            @blur="checkAccountAvailability"
+          >
+            <el-button 
+              slot="append" 
+              @click="checkAccountAvailability" 
+              :loading="checkingAccount"
+              :disabled="!form.account"
+            >
+              {{ checkingAccount ? '检查中' : (accountAvailable === null ? '检查' : (accountAvailable ? '✓可用' : '×已存在')) }}
+            </el-button>
+          </el-input>
+        </el-form-item>
+
+        <el-form-item label="密码" prop="password">
+          <el-input 
+            v-model="form.password" 
+            type="password"
+            placeholder="6-20 位字母、数字或特殊字符"
+            prefix-icon="el-icon-lock"
+            show-password
+            clearable
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="确认密码" prop="confirmPassword">
+          <el-input 
+            v-model="form.confirmPassword" 
+            type="password"
+            placeholder="请再次输入密码"
+            prefix-icon="el-icon-lock"
+            show-password
+            clearable
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="姓名" prop="name">
+          <el-input 
+            v-model="form.name" 
+            :placeholder="form.role === '学生' ? '请输入真实姓名' : '请输入真实姓名'"
+            prefix-icon="el-icon-user"
+            clearable
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="性别" prop="gender">
+          <el-radio-group v-model="form.gender">
+            <el-radio label="男"><i class="el-icon-male"></i> 男</el-radio>
+            <el-radio label="女"><i class="el-icon-female"></i> 女</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <!-- 扩展信息 -->
+        <el-collapse-transition>
+          <div v-show="showAdvancedFields">
+            <el-form-item label="学院" prop="college">
+              <el-input 
+                v-model="form.college" 
+                placeholder="请输入所在学院"
+                prefix-icon="el-icon-school"
+                clearable
+              ></el-input>
+            </el-form-item>
+
+            <el-form-item :label="form.role === '学生' ? '班级' : '职称'" prop="grade">
+              <el-input 
+                v-model="form.grade" 
+                :placeholder="form.role === '学生' ? '请输入班级（如：2101 班）' : '请输入职称（如：讲师）'"
+                prefix-icon="el-icon-office-building"
+                clearable
+              ></el-input>
+            </el-form-item>
+
+            <el-form-item label="手机号码" prop="phone">
+              <el-input 
+                v-model="form.phone" 
+                placeholder="请输入手机号码"
+                prefix-icon="el-icon-mobile-phone"
+                maxlength="11"
+                clearable
+              ></el-input>
+            </el-form-item>
+
+            <el-form-item label="邮箱" prop="email">
+              <el-input 
+                v-model="form.email" 
+                placeholder="请输入邮箱地址"
+                prefix-icon="el-icon-message"
+                clearable
+              ></el-input>
+            </el-form-item>
+          </div>
+        </el-collapse-transition>
+
+        <el-form-item>
+          <el-link 
+            type="primary" 
+            @click="showAdvancedFields = !showAdvancedFields"
+            :underline="false"
+            class="toggle-advanced"
+          >
+            <i :class="showAdvancedFields ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
+            {{ showAdvancedFields ? '收起' : '展开更多选项' }}
+          </el-link>
+        </el-form-item>
+
+        <!-- 提交按钮 -->
+        <el-form-item>
+          <el-button 
+            type="primary" 
+            @click="submitForm" 
+            :loading="submitting"
+            class="submit-btn"
+            size="large"
+            round
+          >
+            <i class="el-icon-check"></i> 立即注册
+          </el-button>
+        </el-form-item>
+
+        <!-- 底部链接 -->
+        <div class="form-footer">
+          <span>已有账号？</span>
+          <el-link type="primary" @click="goToLogin" :underline="false">
+            <i class="el-icon-back"></i> 返回登录
+          </el-link>
+        </div>
+      </el-form>
+    </div>
+
+    <!-- 右侧说明面板 -->
+    <div class="info-panel">
+      <div class="info-content">
+        <h2>欢迎注册</h2>
+        <div class="info-list">
+          <div class="info-item">
+            <i class="el-icon-circle-check"></i>
+            <div>
+              <h4>学生用户</h4>
+              <p>可以查看竞赛信息、在线报名、查看成绩等</p>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="el-icon-circle-check"></i>
+            <div>
+              <h4>教师用户</h4>
+              <p>可以创建竞赛、管理报名、评审作品等</p>
+            </div>
+          </div>
+        </div>
+        <div class="tips">
+          <i class="el-icon-info"></i>
+          <p>温馨提示：账号注册后需妥善保管，密码建议使用大小写字母 + 数字组合</p>
+        </div>
+      </div>
     </div>
   </div>
 </template>
+
 <script>
 export default {
+  name: 'Register',
   data() {
+    // 自定义验证规则
+    const validateAccount = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请输入账号'));
+      } else if (!/^[a-zA-Z0-9_]{4,20}$/.test(value)) {
+        callback(new Error('账号格式不正确 (4-20 位字母数字下划线)'));
+      } else if (this.accountAvailable === false) {
+        callback(new Error('该账号已被使用'));
+      } else {
+        callback();
+      }
+    };
+
+    const validatePassword = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请输入密码'));
+      } else if (!/^[a-zA-Z0-9_@#$%^&+=!]{6,20}$/.test(value)) {
+        callback(new Error('密码格式不正确 (6-20 位)'));
+      } else {
+        callback();
+      }
+    };
+
+    const validateConfirmPassword = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请确认密码'));
+      } else if (value !== this.form.password) {
+        callback(new Error('两次输入的密码不一致'));
+      } else {
+        callback();
+      }
+    };
+
     return {
-      ruleForm: {
+      form: {
+        role: '学生',
+        account: '',
+        password: '',
+        confirmPassword: '',
+        name: '',
+        gender: '男',
+        college: '',
+        grade: '',
+        phone: '',
+        email: ''
       },
-      tableName:"",
-      rules: {}
+      rules: {
+        role: [
+          { required: true, message: '请选择角色', trigger: 'change' }
+        ],
+        account: [
+          { required: true, validator: validateAccount, trigger: 'blur' }
+        ],
+        password: [
+          { required: true, validator: validatePassword, trigger: 'blur' }
+        ],
+        confirmPassword: [
+          { required: true, validator: validateConfirmPassword, trigger: 'blur' }
+        ],
+        name: [
+          { required: true, message: '请输入姓名', trigger: 'blur' },
+          { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+        ],
+        phone: [
+          { 
+            pattern: /^1[3-9]\d{9}$/, 
+            message: '请输入正确的手机号码', 
+            trigger: 'blur' 
+          }
+        ],
+        email: [
+          { 
+            type: 'email', 
+            message: '请输入正确的邮箱地址', 
+            trigger: 'blur' 
+          }
+        ]
+      },
+      checkingAccount: false,
+      accountAvailable: null, // null: 未检查，true: 可用，false: 已存在
+      submitting: false,
+      showAdvancedFields: false
     };
   },
-  mounted(){
-    let table = this.$storage.get("loginTable");
-    this.tableName = table;
+  computed: {
+    accountPlaceholder() {
+      return this.form.role === '学生' ? '请输入学号（4-20 位）' : '请输入工号（4-20 位）';
+    }
   },
   methods: {
-    // 获取uuid
-    getUUID () {
-      return new Date().getTime();
+    // 角色切换时重置账号可用性状态
+    onRoleChange() {
+      this.accountAvailable = null;
+      this.$refs.registerForm.clearValidate('account');
     },
-    close(){
-	this.$router.push({ path: "/login" });
+
+    // 检查账号可用性
+    async checkAccountAvailability() {
+      if (!this.form.account || this.checkingAccount) return;
+      
+      this.checkingAccount = true;
+      try {
+        const res = await this.$http.get('/registration/check-account', {
+          params: {
+            role: this.form.role,
+            account: this.form.account
+          }
+        });
+        
+        if (res.data.code === 0) {
+          this.accountAvailable = res.data.available;
+          if (this.accountAvailable) {
+            this.$message.success('账号可用');
+          } else {
+            this.$message.error('账号已被使用');
+          }
+        } else {
+          this.$message.error('检查失败，请稍后重试');
+        }
+      } catch (error) {
+        console.error('检查账号失败:', error);
+        this.$message.error('网络错误，请稍后重试');
+      } finally {
+        this.checkingAccount = false;
+      }
     },
-    // 注册
-    login() {
-      if((!this.ruleForm.xuehao) && `xuesheng` == this.tableName){
-        this.$message.error(`学号不能为空`);
-        return
-      }
-      if((!this.ruleForm.mima) && `xuesheng` == this.tableName){
-        this.$message.error(`密码不能为空`);
-        return
-      }
-      if((!this.ruleForm.xueshengxingming) && `xuesheng` == this.tableName){
-        this.$message.error(`学生姓名不能为空`);
-        return
-      }
-      if(`xuesheng` == this.tableName && this.ruleForm.shouji&&(!this.$validate.isMobile(this.ruleForm.shouji))){
-        this.$message.error(`手机应输入手机格式`);
-        return
-      }
-      if(`xuesheng` == this.tableName && this.ruleForm.youxiang&&(!this.$validate.isEmail(this.ruleForm.youxiang))){
-        this.$message.error(`邮箱应输入邮件格式`);
-        return
-      }
-      if((!this.ruleForm.gonghao) && `jiaoshi` == this.tableName){
-        this.$message.error(`工号不能为空`);
-        return
-      }
-      if((!this.ruleForm.mima) && `jiaoshi` == this.tableName){
-        this.$message.error(`密码不能为空`);
-        return
-      }
-      if((!this.ruleForm.jiaoshixingming) && `jiaoshi` == this.tableName){
-        this.$message.error(`教师姓名不能为空`);
-        return
-      }
-      if(`jiaoshi` == this.tableName && this.ruleForm.shouji&&(!this.$validate.isMobile(this.ruleForm.shouji))){
-        this.$message.error(`手机应输入手机格式`);
-        return
-      }
-      if(`jiaoshi` == this.tableName && this.ruleForm.youxiang&&(!this.$validate.isEmail(this.ruleForm.youxiang))){
-        this.$message.error(`邮箱应输入邮件格式`);
-        return
-      }
-      this.$http({
-        url: `${this.tableName}/register`,
-        method: "post",
-        data:this.ruleForm
-      }).then(({ data }) => {
-        if (data && data.code === 0) {
-          this.$message({
-            message: "注册成功",
-            type: "success",
-            duration: 1500,
+
+    // 提交表单
+    submitForm() {
+      this.$refs.registerForm.validate(async (valid) => {
+        if (!valid) {
+          this.$message.warning('请填写完整并正确填写注册信息');
+          return;
+        }
+        
+        if (this.accountAvailable === false) {
+          this.$message.warning('请先使用可用的账号');
+          return;
+        }
+        
+        if (this.accountAvailable === null) {
+          // 自动检查账号
+          await this.checkAccountAvailability();
+          if (!this.accountAvailable) {
+            return;
+          }
+        }
+        
+        this.submitting = true;
+        try {
+          const registerData = {
+            ...this.form,
+            confirmPassword: undefined // 不发送确认密码字段
+          };
+          
+          await this.$http.post('/registration/register', registerData);
+          
+          this.$alert('注册成功！即将跳转到登录页面', '提示', {
+            confirmButtonText: '确定',
+            type: 'success',
             onClose: () => {
-              this.$router.replace({ path: "/login" });
+              this.$router.push('/login');
             }
           });
-        } else {
-          this.$message.error(data.msg);
+        } catch (error) {
+          console.error('注册失败:', error);
+          const msg = error.response?.data?.msg || error.message || '注册失败，请稍后重试';
+          this.$message.error(msg);
+        } finally {
+          this.submitting = false;
         }
       });
+    },
+
+    // 返回登录页
+    goToLogin() {
+      this.$router.push('/login');
     }
+  },
+  
+  // 页面滚动到顶部
+  mounted() {
+    window.scrollTo(0, 0);
   }
 };
 </script>
+
 <style lang="scss" scoped>
-	.el-radio__input.is-checked .el-radio__inner {
-		border-color: #00c292;
-		background: #00c292;
-	}
+// 变量定义
+$primary-color: #409EFF;
+$success-color: #67C23A;
+$warning-color: #E6A23C;
+$danger-color: #F56C6C;
+$info-color: #909399;
+$bg-gradient-start: #667eea;
+$bg-gradient-end: #764ba2;
 
-	.el-radio__input.is-checked .el-radio__inner {
-		border-color: #00c292;
-		background: #00c292;
-	}
+.register-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, $bg-gradient-start 0%, $bg-gradient-end 100%);
+  position: relative;
+  overflow: hidden;
 
-	.el-radio__input.is-checked .el-radio__inner {
-		border-color: #00c292;
-		background: #00c292;
-	}
+  // 背景装饰
+  .background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
 
-	.el-radio__input.is-checked+.el-radio__label {
-		color: #00c292;
-	}
+    .shape {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      animation: float 20s infinite;
 
-	.el-radio__input.is-checked+.el-radio__label {
-		color: #00c292;
-	}
+      &:nth-child(1) {
+        width: 300px;
+        height: 300px;
+        left: -100px;
+        top: -100px;
+        animation-delay: 0s;
+      }
 
-	.el-radio__input.is-checked+.el-radio__label {
-		color: #00c292;
-	}
+      &:nth-child(2) {
+        width: 200px;
+        height: 200px;
+        right: -50px;
+        bottom: -50px;
+        animation-delay: 5s;
+      }
 
-	.h1 {
-		margin-top: 10px;
-	}
+      &:nth-child(3) {
+        width: 150px;
+        height: 150px;
+        right: 30%;
+        top: 20%;
+        animation-delay: 10s;
+      }
+    }
+  }
 
-	body {
-		padding: 0;
-		margin: 0;
-	}
+  // 注册卡片
+  .register-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    padding: 40px;
+    width: 100%;
+    max-width: 560px;
+    z-index: 1;
+    animation: slideIn 0.6s ease-out;
 
-	// .container {
- //    min-height: 100vh;
- //    text-align: center;
- //    // background-color: #00c292;
- //    padding-top: 20vh;
- //    background-image: url(../assets/img/bg.jpg);
- //    background-size: 100% 100%;
- //    opacity: 0.9;
- //  }
+    .card-header {
+      text-align: center;
+      margin-bottom: 30px;
 
-	// .login-form:before {
-	// 	vertical-align: middle;
-	// 	display: inline-block;
-	// }
+      .title {
+        color: #333;
+        font-size: 32px;
+        font-weight: 600;
+        margin: 0 0 10px 0;
+        
+        i {
+          color: $primary-color;
+          margin-right: 10px;
+        }
+      }
 
-	// .login-form {
-	// 	max-width: 500px;
-	// 	padding: 20px 0;
-	// 	width: 80%;
-	// 	position: relative;
-	// 	margin: 0 auto;
+      .subtitle {
+        color: $info-color;
+        font-size: 14px;
+        margin: 0;
+      }
+    }
 
-	// 	.label {
-	// 		min-width: 60px;
-	// 	}
+    .register-form {
+      .role-selector {
+        width: 100%;
+        
+        /deep/ .el-radio-button__inner {
+          width: 120px;
+          text-align: center;
+          font-size: 14px;
+          padding: 12px 20px;
+        }
+      }
 
-	// 	.input-group {
-	// 		max-width: 500px;
-	// 		padding: 20px 0;
-	// 		width: 80%;
-	// 		position: relative;
-	// 		margin: 0 auto;
-	// 		display: flex;
-	// 		align-items: center;
+      .toggle-advanced {
+        width: 100%;
+        text-align: center;
+        display: block;
+        margin-top: -10px;
+      }
 
-	// 		.input-container {
-	// 			display: inline-block;
-	// 			width: 100%;
-	// 			text-align: left;
-	// 			margin-left: 10px;
-	// 		}
+      .submit-btn {
+        width: 100%;
+        height: 46px;
+        font-size: 16px;
+        font-weight: 500;
+        letter-spacing: 2px;
+        background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 10%) 100%);
+        border: none;
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(64, 158, 255, 0.4);
+        }
+      }
 
-	// 		.icon {
-	// 			width: 30px;
-	// 			height: 30px;
-	// 		}
+      .form-footer {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #EBEEF5;
+        
+        span {
+          color: $info-color;
+          font-size: 14px;
+          margin-right: 10px;
+        }
+      }
+    }
+  }
 
-	// 		.input {
-	// 			position: relative;
-	// 			z-index: 2;
-	// 			float: left;
-	// 			width: 100%;
-	// 			margin-bottom: 0;
-	// 			box-shadow: none;
-	// 			border-top: 0px solid #ccc;
-	// 			border-left: 0px solid #ccc;
-	// 			border-right: 0px solid #ccc;
-	// 			border-bottom: 1px solid #ccc;
-	// 			padding: 0px;
-	// 			resize: none;
-	// 			border-radius: 0px;
-	// 			display: block;
-	// 			width: 100%;
-	// 			height: 34px;
-	// 			padding: 6px 12px;
-	// 			font-size: 14px;
-	// 			line-height: 1.42857143;
-	// 			color: #555;
-	// 			background-color: #fff;
-	// 		}
+  // 信息面板
+  .info-panel {
+    display: none;
+    margin-left: 40px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 320px;
+    color: #fff;
+    animation: fadeIn 0.8s ease-out;
 
-	// 	}
-	// }
+    .info-content {
+      h2 {
+        font-size: 24px;
+        margin: 0 0 30px 0;
+        text-align: center;
+      }
 
-	.nk-navigation {
-		margin-top: 15px;
+      .info-list {
+        .info-item {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 25px;
+          
+          i {
+            font-size: 24px;
+            color: $success-color;
+            margin-right: 15px;
+            flex-shrink: 0;
+          }
 
-		a {
-			display: inline-block;
-			color: #fff;
-			background: rgba(255, 255, 255, .2);
-			width: 100px;
-			height: 50px;
-			border-radius: 30px;
-			text-align: center;
-			display: flex;
-			align-items: center;
-			margin: 0 auto;
-			justify-content: center;
-			padding: 0 20px;
-		}
+          h4 {
+            font-size: 16px;
+            margin: 0 0 8px 0;
+          }
 
-		.icon {
-			margin-left: 10px;
-			width: 30px;
-			height: 30px;
-		}
-	}
+          p {
+            font-size: 13px;
+            margin: 0;
+            opacity: 0.9;
+            line-height: 1.6;
+          }
+        }
+      }
 
-	.register-container {
-		margin-top: 10px;
+      .tips {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 30px;
+        display: flex;
+        align-items: flex-start;
 
-		a {
-			display: inline-block;
-			color: #fff;
-			max-width: 500px;
-			height: 50px;
-			border-radius: 30px;
-			text-align: center;
-			display: flex;
-			align-items: center;
-			margin: 0 auto;
-			justify-content: center;
-			padding: 0 20px;
+        i {
+          font-size: 18px;
+          margin-right: 10px;
+          flex-shrink: 0;
+        }
 
-			div {
-				margin-left: 10px;
-			}
-		}
-	}
-	
-	.container {
-		background-image: url("http://codegen.caihongy.cn/20201126/ff6024f5009f4e9497b897831b3b157d.jpg");
-		height: 100vh;
-		background-position: center center;
-		background-size: cover;
-		background-repeat: no-repeat;
-	
-		.login-form {
-			right: 50%;
-			top: 50%;
-			height: auto;
-			transform: translate3d(50%, -50%, 0);
-			border-radius: 10px;
-			background-color: rgba(255,255,255,.5);
-			width: 420px;
-			padding: 30px 30px 40px 30px;
-			font-size: 14px;
-			font-weight: 500;
-			
-			.h1 {
-				margin: 0;
-				text-align: center;
-				line-height: 54px;
-			    font-size: 24px;
-			    color: #000;
-			}
-				
-			.rgs-form {
-				display: flex;
-				flex-direction: column;
-				justify-content: center;
-				align-items: center;
-				
-				.input {
-					width: 100%;
-					
-					& /deep/ .el-form-item__label {
-						line-height: 40px;
-						color: #606266;
-						font-size: 14px;
-					}
-					
-					& /deep/ .el-input__inner {
-						height: 40px;
-						color: rgba(12, 12, 13, 1);
-						font-size: 14px;
-						border-width: 1px;
-						border-style: solid;
-						border-color: rgba(18, 18, 18, 1);
-						border-radius: 4px;
-						background-color: #fff;
-					}
-				}
-				
-				.btn {
-					margin: 0 10px;
-					width: 88px;
-					height: 44px;
-					color: #fff;
-					font-size: 14px;
-					border-width: 1px;
-					border-style: solid;
-					border-color: #409EFF;
-					border-radius: 4px;
-					background-color: #409EFF;
-				}
+        p {
+          font-size: 12px;
+          margin: 0;
+          line-height: 1.6;
+          opacity: 0.9;
+        }
+      }
+    }
+  }
+}
 
-				.close {
-					margin: 0 10px;
-					width: 88px;
-					height: 44px;
-					color: #409EFF;
-					font-size: 14px;
-					border-width: 1px;
-					border-style: solid;
-					border-color: #409EFF;
-					border-radius: 4px;
-					background-color: #FFF;
-				}
+// 响应式设计
+@media (min-width: 968px) {
+  .register-container {
+    justify-content: flex-start;
+    padding: 40px;
 
-			}
-		}
-	}
+    .register-card {
+      animation: slideInLeft 0.6s ease-out;
+    }
+
+    .info-panel {
+      display: block;
+      animation: slideInRight 0.6s ease-out;
+    }
+  }
+}
+
+// 动画
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(20px, -20px);
+  }
+  50% {
+    transform: translate(-20px, 20px);
+  }
+  75% {
+    transform: translate(20px, 20px);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Element UI 组件深度样式覆盖
+/deep/ .el-form-item__label {
+  font-weight: 500;
+  color: #606266;
+}
+
+/deep/ .el-input__inner {
+  border-radius: 6px;
+  transition: all 0.3s;
+  
+  &:focus {
+    border-color: $primary-color;
+  }
+}
+
+/deep/ .el-radio__label {
+  font-size: 14px;
+}
+
+/deep/ .el-divider {
+  margin: 10px 0;
+}
 </style>

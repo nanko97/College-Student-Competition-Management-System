@@ -1,7 +1,12 @@
-# Tomcat
+# Tomcat 性能优化配置
 server:
   tomcat:
     uri-encoding: UTF-8
+    max-threads: 200  # 最大工作线程数
+    min-spare-threads: 10  # 最小空闲线程数
+    connection-timeout: 20000  # 连接超时时间 (ms)
+    compression: on  # 启用 GZIP 压缩
+    compressable-mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
   port: 8080
   servlet:
     context-path: /springbootrd362
@@ -9,14 +14,33 @@ server:
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/springbootrd362?useUnicode=true&characterEncoding=utf-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
-      username: root
-      password: 123123
+    url: jdbc:mysql://127.0.0.1:3306/springbootrd362?useUnicode=true&characterEncoding=utf-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+    username: root
+    password: 123123
+    # HikariCP 高性能连接池配置
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      pool-name: SpringBootBYSJHikariPool
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+      auto-commit: true
 
-  #        driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
-  #        url: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=springbootrd362
-  #        username: sa
-  #        password: 123456
+  # Redis 缓存配置
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 0
+    timeout: 5000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
 
   servlet:
     multipart:
@@ -25,37 +49,31 @@ spring:
   resources:
     static-locations: classpath:static/,file:static/
 
-#mybatis
+# MyBatis-Plus 性能优化配置
 mybatis-plus:
   mapper-locations: classpath*:mapper/*.xml
-  #实体扫描，多个package用逗号或者分号分隔
   typeAliasesPackage: com.entity
   global-config:
-    #主键类型  0:"数据库ID自增", 1:"用户输入ID",2:"全局唯一ID (数字类型唯一ID)", 3:"全局唯一ID UUID";
     id-type: 1
-    #字段策略 0:"忽略判断",1:"非 NULL 判断"),2:"非空判断"
     field-strategy: 2
-    #驼峰下划线转换
     db-column-underline: true
-    #刷新mapper 调试神器
-    refresh-mapper: true
-    #逻辑删除配置
     logic-delete-value: -1
     logic-not-delete-value: 0
-    #自定义SQL注入器
-    sql-injector: com.baomidou.mybatisplus.mapper.LogicSqlInjector
   configuration:
     map-underscore-to-camel-case: true
-    cache-enabled: false
+    cache-enabled: true  # 启用一级缓存
     call-setters-on-nulls: true
-    #springboot 项目mybatis plus 设置 jdbcTypeForNull (oracle数据库需配置JdbcType.NULL, 默认是Other)
     jdbc-type-for-null: 'null'
+    default-fetch-size: 100
+    default-statement-timeout: 25
+
 # 文件上传配置
 file:
   upload:
-    max-size: 10485760  # 10MB（字节），1MB=1024*1024=1048576
-    allow-types: jpg,png,jpeg,gif,pdf,doc,docx  # 允许上传的文件类型
-    path: ./upload/  # 上传根路径（Windows/Linux通用）
+    max-size: 10485760
+    allow-types: jpg,png,jpeg,gif,pdf,doc,docx
+    path: ./upload/
+
 # 登录配置
 login:
-  max-fail-count: 5  # 最大登录失败次数
+  max-fail-count: 5

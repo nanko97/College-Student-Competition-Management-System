@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.annotation.IgnoreAuth;
 import com.entity.TokenEntity;
 import com.service.TokenService;
+import com.service.UserPermissionService;
 import com.utils.R;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 
 /**
- * 权限(Token)验证
+ * 权限 (Token) 验证 - 增强权限校验
  */
 @Component
 public class AuthorizationInterceptor implements HandlerInterceptor {
@@ -27,6 +28,9 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
     @Autowired
     private TokenService tokenService;
+    
+    @Autowired(required = false)
+    private UserPermissionService userPermissionService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -37,7 +41,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
         response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with,request-source,Token, Origin,imgType, Content-Type, cache-control,postman-token,Cookie, Accept,authorization");
         response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
-        // 跨域时会首先发送一个OPTIONS请求，这里我们给OPTIONS请求直接返回正常状态
+        // 跨域时会首先发送一个 OPTIONS 请求，这里我们给 OPTIONS 请求直接返回正常状态
         if (request.getMethod().equals(RequestMethod.OPTIONS.name())) {
             response.setStatus(HttpStatus.OK.value());
             return false;
@@ -50,7 +54,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        //从header中获取token
+        //从 header 中获取 token
         String token = request.getHeader(LOGIN_TOKEN_KEY);
 
         /**
@@ -70,6 +74,28 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
             request.getSession().setAttribute("role", tokenEntity.getRole());
             request.getSession().setAttribute("tableName", tokenEntity.getTablename());
             request.getSession().setAttribute("username", tokenEntity.getUsername());
+            
+            // 新增：权限校验
+            if (userPermissionService != null) {
+                String role = tokenEntity.getRole();
+                String requestURI = request.getRequestURI();
+                
+                if (!userPermissionService.hasPermission(role, requestURI)) {
+                    response.setCharacterEncoding("UTF-8");
+                    response.setContentType("application/json; charset=utf-8");
+                    PrintWriter writer = null;
+                    try {
+                        writer = response.getWriter();
+                        writer.print(JSONObject.toJSONString(R.error(403, "权限不足")));
+                    } finally {
+                        if (writer != null) {
+                            writer.close();
+                        }
+                    }
+                    return false;
+                }
+            }
+            
             return true;
         }
 
@@ -84,7 +110,6 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
                 writer.close();
             }
         }
-//				throw new EIException("请先登录", 401);
         return false;
     }
 }

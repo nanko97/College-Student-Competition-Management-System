@@ -72,15 +72,18 @@ public class UserController {
             return R.error("用户名和密码不能为空");
         }
 
-        // 2. 验证码校验（生产环境建议开启）
+        // 2. 验证码校验（仅当 session 中存在验证码时才校验）
         HttpSession session = request.getSession();
         String sessionCaptcha = (String) session.getAttribute(CAPTCHA_SESSION_KEY);
-        if (!StringUtils.hasText(captcha) || !captcha.equalsIgnoreCase(sessionCaptcha)) {
-            log.warn("登录失败：验证码错误，用户名：{}，输入验证码：{}", username, captcha);
-            return R.error("验证码错误");
+        if (sessionCaptcha != null && StringUtils.hasText(sessionCaptcha)) {
+            // Session 中有验证码，需要校验
+            if (!StringUtils.hasText(captcha) || !captcha.equalsIgnoreCase(sessionCaptcha)) {
+                log.warn("登录失败：验证码错误，用户名：{}，输入验证码：{}", username, captcha);
+                return R.error("验证码错误");
+            }
+            // 验证成功后清除验证码，防止重复使用
+            session.removeAttribute(CAPTCHA_SESSION_KEY);
         }
-        // 验证成功后清除验证码，防止重复使用
-        session.removeAttribute(CAPTCHA_SESSION_KEY);
 
         // 3. 检查登录失败次数
         Integer failCount = loginFailCountMap.getOrDefault(username, 0);
