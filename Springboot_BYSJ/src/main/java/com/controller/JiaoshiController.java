@@ -7,9 +7,11 @@ import com.entity.JiaoshiEntity;
 import com.entity.view.JiaoshiView;
 import com.service.JiaoshiService;
 import com.service.TokenService;
+import com.utils.IdWorker;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
 import com.utils.R;
+import com.utils.ValidatorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -103,7 +105,9 @@ public class JiaoshiController {
         if (user == null) {
             return R.error("账号不存在");
         }
-        user.setMima("123456");
+        // BCrypt 加密密码
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        user.setMima(encoder.encode("123456"));
         jiaoshiService.updateById(user);
         return R.ok("密码已重置为：123456");
     }
@@ -177,13 +181,14 @@ public class JiaoshiController {
      */
     @RequestMapping("/save")
     public R save(@RequestBody JiaoshiEntity jiaoshi, HttpServletRequest request) {
-        jiaoshi.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
-        //ValidatorUtils.validateEntity(jiaoshi);
+        // 使用雪花算法生成唯一 ID
+        jiaoshi.setId(IdWorker.getId());
+        // 启用数据验证
+        ValidatorUtils.validateEntity(jiaoshi);
         JiaoshiEntity user = jiaoshiService.selectOne(new EntityWrapper<JiaoshiEntity>().eq("gonghao", jiaoshi.getGonghao()));
         if (user != null) {
             return R.error("用户已存在");
         }
-        jiaoshi.setId(new Date().getTime());
         jiaoshiService.insert(jiaoshi);
         return R.ok();
     }
@@ -193,13 +198,14 @@ public class JiaoshiController {
      */
     @RequestMapping("/add")
     public R add(@RequestBody JiaoshiEntity jiaoshi, HttpServletRequest request) {
-        jiaoshi.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
-        //ValidatorUtils.validateEntity(jiaoshi);
+        // 使用雪花算法生成唯一 ID
+        jiaoshi.setId(IdWorker.getId());
+        // 启用数据验证
+        ValidatorUtils.validateEntity(jiaoshi);
         JiaoshiEntity user = jiaoshiService.selectOne(new EntityWrapper<JiaoshiEntity>().eq("gonghao", jiaoshi.getGonghao()));
         if (user != null) {
             return R.error("用户已存在");
         }
-        jiaoshi.setId(new Date().getTime());
         jiaoshiService.insert(jiaoshi);
         return R.ok();
     }

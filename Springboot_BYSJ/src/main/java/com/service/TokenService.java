@@ -22,6 +22,11 @@ public interface TokenService extends IService<TokenEntity> {
 
     TokenEntity getTokenEntity(String token);
 
-    // ========== 新增方法：Token失效（适配UserController的logout功能） ==========
     void invalidateToken(String token);
+    
+    /**
+     * 清理过期的 Token 记录
+     * @return 清理的记录数
+     */
+    int cleanExpiredTokens();
 }

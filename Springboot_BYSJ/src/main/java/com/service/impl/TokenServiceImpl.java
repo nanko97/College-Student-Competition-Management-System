@@ -10,7 +10,7 @@ import com.service.TokenService;
 import com.utils.CommonUtil;
 import com.utils.PageUtils;
 import com.utils.Query;
-import lombok.extern.slf4j.Slf4j; // 新增日志注解
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
@@ -22,7 +22,7 @@ import java.util.Map;
  * token
  */
 @Service("tokenService")
-@Slf4j // 新增：日志注解，便于排查token失效相关问题
+@Slf4j
 public class TokenServiceImpl extends ServiceImpl<TokenDao, TokenEntity> implements TokenService {
 
     @Override
@@ -74,27 +74,43 @@ public class TokenServiceImpl extends ServiceImpl<TokenDao, TokenEntity> impleme
         return tokenEntity;
     }
 
-    // ========== 新增：Token失效方法（适配UserController的logout功能） ==========
     @Override
     public void invalidateToken(String token) {
-        // 1. 参数校验：避免空指针
         if (token == null || token.trim().isEmpty()) {
-            log.warn("Token失效失败：传入的token为空");
+            log.warn("Token 失效失败：传入的 token 为空");
             return;
         }
 
-        // 2. 查询token记录
         TokenEntity tokenEntity = this.getTokenEntity(token);
         if (tokenEntity == null) {
-            log.warn("Token失效失败：token[{}]不存在或已过期", token.substring(0, 10) + "****");
+            log.warn("Token 失效失败：token[{}] 不存在或已过期", token.substring(0, 10) + "****");
             return;
         }
 
-        // 3. 核心逻辑：将token过期时间改为当前时间（立即失效，保留记录，兼容原有校验逻辑）
-        tokenEntity.setExpiratedtime(new Date()); // 过期时间设为现在，getTokenEntity会判定为无效
+        tokenEntity.setExpiratedtime(new Date());
         this.updateById(tokenEntity);
 
-        log.info("Token失效成功：token[{}]，关联用户ID：{}，角色：{}",
+        log.info("Token 失效成功：token[{}]，关联用户 ID：{}，角色：{}",
                 token.substring(0, 10) + "****", tokenEntity.getUserid(), tokenEntity.getRole());
+    }
+
+    @Override
+    public int cleanExpiredTokens() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        
+        List<TokenEntity> expiredTokens = this.selectList(
+            new EntityWrapper<TokenEntity>().lt("expiratedtime", cal.getTime())
+        );
+        
+        if (!expiredTokens.isEmpty()) {
+            for (TokenEntity token : expiredTokens) {
+                this.deleteById(token.getId());
+            }
+            log.info("清理过期 Token：共清理 {} 条记录", expiredTokens.size());
+            return expiredTokens.size();
+        }
+        
+        return 0;
     }
 }

@@ -7,9 +7,11 @@ import com.entity.XueshengEntity;
 import com.entity.view.XueshengView;
 import com.service.TokenService;
 import com.service.XueshengService;
+import com.utils.IdWorker;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
 import com.utils.R;
+import com.utils.ValidatorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -103,7 +105,9 @@ public class XueshengController {
         if (user == null) {
             return R.error("账号不存在");
         }
-        user.setMima("123456");
+        // BCrypt 加密密码
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        user.setMima(encoder.encode("123456"));
         xueshengService.updateById(user);
         return R.ok("密码已重置为：123456");
     }
@@ -177,13 +181,14 @@ public class XueshengController {
      */
     @RequestMapping("/save")
     public R save(@RequestBody XueshengEntity xuesheng, HttpServletRequest request) {
-        xuesheng.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
-        //ValidatorUtils.validateEntity(xuesheng);
+        // 使用雪花算法生成唯一 ID
+        xuesheng.setId(IdWorker.getId());
+        // 启用数据验证
+        ValidatorUtils.validateEntity(xuesheng);
         XueshengEntity user = xueshengService.selectOne(new EntityWrapper<XueshengEntity>().eq("xuehao", xuesheng.getXuehao()));
         if (user != null) {
             return R.error("用户已存在");
         }
-        xuesheng.setId(new Date().getTime());
         xueshengService.insert(xuesheng);
         return R.ok();
     }
@@ -193,13 +198,14 @@ public class XueshengController {
      */
     @RequestMapping("/add")
     public R add(@RequestBody XueshengEntity xuesheng, HttpServletRequest request) {
-        xuesheng.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
-        //ValidatorUtils.validateEntity(xuesheng);
+        // 使用雪花算法生成唯一 ID
+        xuesheng.setId(IdWorker.getId());
+        // 启用数据验证
+        ValidatorUtils.validateEntity(xuesheng);
         XueshengEntity user = xueshengService.selectOne(new EntityWrapper<XueshengEntity>().eq("xuehao", xuesheng.getXuehao()));
         if (user != null) {
             return R.error("用户已存在");
         }
-        xuesheng.setId(new Date().getTime());
         xueshengService.insert(xuesheng);
         return R.ok();
     }
