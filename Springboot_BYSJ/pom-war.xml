@@ -15,7 +15,6 @@
     <name>springboot-schema</name>
     <description>springboot学习框架(war包对应的pom，打war包，执行【mvn clean package -f pom-war.xml】)</description>
     <packaging>war</packaging>
-
     <properties>
         <java.version>1.8</java.version>
         <fastjson.version>1.2.8</fastjson.version>
@@ -36,11 +35,32 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
-
+        <!-- 新增war包部署适配：排除Spring Boot内置Tomcat -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Spring Security加密依赖 -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+        <!-- Lombok（日志注解） -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <dependency>

@@ -3,7 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/BYSJ.iml" filepath="$PROJECT_DIR$/.idea/BYSJ.iml" />
-      <module fileurl="file://$PROJECT_DIR$/springbootrd362/springbootrd362.iml" filepath="$PROJECT_DIR$/springbootrd362/springbootrd362.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Springboot_BYSJ/springbootrd362.iml" filepath="$PROJECT_DIR$/Springboot_BYSJ/springbootrd362.iml" />
+      <module fileurl="file://$PROJECT_DIR$/springbootrd362/springbootrd_BYSJ.iml" filepath="$PROJECT_DIR$/springbootrd362/springbootrd_BYSJ.iml" />
     </modules>
   </component>
 </project>

@@ -9,9 +9,9 @@ server:
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/springbootrd362?useUnicode=true&characterEncoding=utf-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8
-    username: root
-    password: 123123
+    url: jdbc:mysql://127.0.0.1:3306/springbootrd362?useUnicode=true&characterEncoding=utf-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+      username: root
+      password: 123123
 
   #        driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
   #        url: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=springbootrd362
@@ -49,4 +49,13 @@ mybatis-plus:
     cache-enabled: false
     call-setters-on-nulls: true
     #springboot 项目mybatis plus 设置 jdbcTypeForNull (oracle数据库需配置JdbcType.NULL, 默认是Other)
-    jdbc-type-for-null: 'null' 
+    jdbc-type-for-null: 'null'
+# 文件上传配置
+file:
+  upload:
+    max-size: 10485760  # 10MB（字节），1MB=1024*1024=1048576
+    allow-types: jpg,png,jpeg,gif,pdf,doc,docx  # 允许上传的文件类型
+    path: ./upload/  # 上传根路径（Windows/Linux通用）
+# 登录配置
+login:
+  max-fail-count: 5  # 最大登录失败次数

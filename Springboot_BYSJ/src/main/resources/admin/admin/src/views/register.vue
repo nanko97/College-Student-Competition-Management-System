@@ -417,8 +417,8 @@ export default {
 					
 					& /deep/ .el-form-item__label {
 						line-height: 40px;
-						color: 14px;
-						font-size: #606266;
+						color: #606266;
+						font-size: 14px;
 					}
 					
 					& /deep/ .el-input__inner {
