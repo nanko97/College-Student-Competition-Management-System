@@ -701,14 +701,14 @@ $text-color: #2c3e50;
     }
 
     .register-form {
-      /deep/ .el-form-item {
+     ::v-deep .el-form-item {
         margin-bottom: 24px;
       }
 
       .role-selector {
         width: 100%;
         
-        /deep/ .el-radio-button__inner {
+       ::v-deep .el-radio-button__inner {
           width: 130px;
           text-align: center;
           font-size: 14px;
@@ -731,7 +731,7 @@ $text-color: #2c3e50;
           }
         }
         
-        /deep/ .el-radio-button__orig-radio:checked + .el-radio-button__inner {
+       ::v-deep .el-radio-button__orig-radio:checked + .el-radio-button__inner {
           background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
           border-color: $primary-color;
           box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
@@ -744,7 +744,7 @@ $text-color: #2c3e50;
         }
       }
 
-      /deep/ .el-input-group__prepend {
+     ::v-deep .el-input-group__prepend {
         background-color: transparent;
         border: none;
         padding: 0 12px;
@@ -756,7 +756,7 @@ $text-color: #2c3e50;
         }
       }
 
-      /deep/ .el-input {
+     ::v-deep .el-input {
         .el-input__inner {
           height: 46px;
           border-radius: 12px;
@@ -774,7 +774,7 @@ $text-color: #2c3e50;
         }
       }
 
-      /deep/ .el-button--primary {
+     ::v-deep .el-button--primary {
         background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
         border: none;
         border-radius: 8px;
@@ -786,22 +786,22 @@ $text-color: #2c3e50;
         }
       }
 
-      /deep/ .el-divider {
+     ::v-deep .el-divider {
         margin: 20px 0;
         background: linear-gradient(to right, transparent, #e8ecef, transparent);
         
-        /deep/ .el-divider__text {
+       ::v-deep .el-divider__text {
           color: $info-color;
           font-weight: 500;
           font-size: 13px;
         }
       }
 
-      /deep/ .el-collapse {
+     ::v-deep .el-collapse {
         border: none;
         margin-top: 15px;
         
-        /deep/ .el-collapse-item__header {
+       ::v-deep .el-collapse-item__header {
           background: linear-gradient(135deg, rgba($primary-color, 0.05) 0%, rgba($primary-dark, 0.05) 100%);
           border: none;
           padding: 14px 20px;
@@ -815,12 +815,12 @@ $text-color: #2c3e50;
             background: linear-gradient(135deg, rgba($primary-color, 0.1) 0%, rgba($primary-dark, 0.1) 100%);
           }
           
-          /deep/ .el-collapse-item__arrow {
+         ::v-deep .el-collapse-item__arrow {
             transition: all 0.3s;
           }
         }
         
-        /deep/ .el-collapse-item__wrap {
+       ::v-deep .el-collapse-item__wrap {
           border: none;
           background: rgba($primary-color, 0.02);
           border-radius: 0 0 8px 8px;
@@ -828,12 +828,12 @@ $text-color: #2c3e50;
         }
       }
 
-      /deep/ .el-radio-group {
-        /deep/ .el-radio {
+     ::v-deep .el-radio-group {
+       ::v-deep .el-radio {
           margin-right: 20px;
           font-weight: 500;
           
-          /deep/ .el-radio__input.is-checked + .el-radio__label {
+         ::v-deep .el-radio__input.is-checked + .el-radio__label {
             color: $primary-color;
           }
         }
@@ -851,7 +851,7 @@ $text-color: #2c3e50;
           margin-right: 10px;
         }
         
-        /deep/ .el-link {
+       ::v-deep .el-link {
           font-weight: 600;
           transition: all 0.3s;
           
@@ -1020,13 +1020,13 @@ $text-color: #2c3e50;
 }
 
 // Element UI 深度样式覆盖
-/deep/ .el-form-item__label {
+::v-deep .el-form-item__label {
   font-weight: 500;
   color: $text-color;
   font-size: 14px;
 }
 
-/deep/ .el-input__inner {
+::v-deep .el-input__inner {
   border-radius: 12px;
   height: 46px;
   transition: all 0.3s;
@@ -1037,13 +1037,13 @@ $text-color: #2c3e50;
   }
 }
 
-/deep/ .el-checkbox__inner {
+::v-deep .el-checkbox__inner {
   border-radius: 4px;
   border: 2px solid #dcdfe6;
   transition: all 0.3s;
 }
 
-/deep/ .el-button--primary {
+::v-deep .el-button--primary {
   &:hover {
     background: linear-gradient(135deg, lighten($primary-color, 8%) 0%, lighten($primary-dark, 8%) 100%);
   }
@@ -1096,7 +1096,7 @@ $text-color: #2c3e50;
       .role-selector {
         width: 100%;
         
-        /deep/ .el-radio-button__inner {
+       ::v-deep .el-radio-button__inner {
           width: 120px;
           text-align: center;
           font-size: 14px;
@@ -1411,12 +1411,12 @@ $text-color: #2c3e50;
 }
 
 // Element UI 组件深度样式覆盖
-/deep/ .el-form-item__label {
+::v-deep .el-form-item__label {
   font-weight: 500;
   color: #606266;
 }
 
-/deep/ .el-input__inner {
+::v-deep .el-input__inner {
   border-radius: 6px;
   transition: all 0.3s;
   
@@ -1425,11 +1425,11 @@ $text-color: #2c3e50;
   }
 }
 
-/deep/ .el-radio__label {
+::v-deep .el-radio__label {
   font-size: 14px;
 }
 
-/deep/ .el-divider {
+::v-deep .el-divider {
   margin: 10px 0;
 }
 </style>

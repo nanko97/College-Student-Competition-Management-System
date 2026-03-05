@@ -16,7 +16,7 @@
     <p class="welcome-subtitle">欢迎使用本系统</p>
     
     <div class="features-grid">
-      <div class="feature-item" v-for="(item, index) in features" :key="index" :style="{animationDelay: index * 0.1 + 's'}">
+      <div class="feature-item" v-for="(item, index) in features" :key="index" :style="{animationDelay: index * 0.1 + 's'}" @click="navigateToFeature(item)">
         <div class="feature-icon">
           <i :class="item.icon"></i>
         </div>
@@ -78,6 +78,21 @@ export default {
     },
     goToDashboard() {
       this.$router.push('/index/');
+    },
+    navigateToFeature(feature) {
+      // 根据功能名称映射到对应的路由
+      const routeMap = {
+        '竞赛管理': 'jingsaixinxi',
+        '在线报名': 'jingsaibaoming',
+        '作品评审': 'zuopindafen',  // 使用作品打分路由
+        '成绩查看': 'jingsaixinxi'  // 暂时使用竞赛信息路由
+      }
+      const routeName = routeMap[feature.text]
+      if (routeName) {
+        this.$router.push({ name: routeName })
+      } else {
+        this.$message.warning('功能开发中，敬请期待...')
+      }
     }
   }
 };
@@ -185,6 +200,7 @@ $accent-color: #4facfe;
         border: 1px solid rgba($primary-color, 0.1);
         cursor: pointer;
         animation: fadeInUp 0.6s ease-out backwards;
+        user-select: none;
 
         &:hover {
           transform: translateY(-8px) scale(1.05);
@@ -199,6 +215,11 @@ $accent-color: #4facfe;
               color: $primary-color;
             }
           }
+        }
+
+        &:active {
+          transform: scale(0.95);
+          box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
         }
 
         .feature-icon {

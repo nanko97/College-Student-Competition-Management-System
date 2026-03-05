@@ -516,9 +516,12 @@ $text-secondary: #a0aec0;
       display: flex;
       gap: 15px;
       margin-bottom: 30px;
+      justify-content: center;
+      align-items: stretch;
       
       .role-card {
         flex: 1;
+        max-width: 120px;
         background: linear-gradient(135deg, rgba($primary-color, 0.05) 0%, rgba($secondary-color, 0.05) 100%);
         border: 2px solid rgba($primary-color, 0.2);
         border-radius: 16px;
@@ -528,6 +531,9 @@ $text-secondary: #a0aec0;
         transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         position: relative;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
         
         &:hover {
           transform: translateY(-5px);
@@ -616,7 +622,7 @@ $text-secondary: #a0aec0;
         transition: all 0.3s;
       }
       
-      /deep/ .el-input__inner {
+     ::v-deep .el-input__inner {
         height: 50px;
         padding-left: 50px;
         border-radius: 12px;
@@ -641,7 +647,7 @@ $text-secondary: #a0aec0;
       margin-bottom: 25px;
       
       .remember-me {
-        /deep/ .el-checkbox__label {
+       ::v-deep .el-checkbox__label {
           font-size: 14px;
           color: #606266;
           font-weight: 500;
@@ -728,7 +734,7 @@ $text-secondary: #a0aec0;
         margin-right: 10px;
       }
       
-      /deep/ .el-link {
+     ::v-deep .el-link {
         font-weight: 600;
         transition: all 0.3s;
         
@@ -1030,11 +1036,11 @@ $text-secondary: #a0aec0;
 }
 
 // Element UI 深度样式覆盖
-/deep/ .el-form-item {
+::v-deep .el-form-item {
   margin-bottom: 26px;
 }
 
-/deep/ .el-checkbox__inner {
+::v-deep .el-checkbox__inner {
   border-radius: 4px;
   border: 2px solid rgba($primary-color, 0.3);
   transition: all 0.3s;

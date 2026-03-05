@@ -4,6 +4,7 @@ import App from '@/App.vue'
 import ElementUI from 'element-ui'
 import '@/assets/css/element-variables.scss'
 import '@/assets/css/style.scss'
+import '@/assets/css/common.scss'
 // 加载路由
 // import router from '@/router/router-static.js';
 import router from '@/router/router-static.js';

@@ -1,27 +1,922 @@
-2026-03-05 14:25:01.361 [main] INFO  com.SpringbootSchemaApplication - Starting SpringbootSchemaApplication on XiaoXin with PID 8160 (C:\Users\Nanko\Desktop\BYSJ\BYSJ\Springboot_BYSJ\target\classes started by Nanko in C:\Users\Nanko\Desktop\BYSJ\BYSJ)
-2026-03-05 14:25:01.363 [main] INFO  com.SpringbootSchemaApplication - No active profile set, falling back to default profiles: default
-2026-03-05 14:25:03.432 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode!
-2026-03-05 14:25:03.434 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-03-05 14:25:04.227 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 777ms. Found 0 Redis repository interfaces.
-2026-03-05 14:25:04.478 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
-2026-03-05 14:25:04.713 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
-2026-03-05 14:25:04.719 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
-2026-03-05 14:25:04.719 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2026-03-05 14:25:04.719 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.29]
-2026-03-05 14:25:04.821 [main] INFO  o.a.c.c.C.[.[.[/springbootrd362] - Initializing Spring embedded WebApplicationContext
-2026-03-05 14:25:04.821 [main] INFO  o.s.web.context.ContextLoader - Root WebApplicationContext: initialization completed in 3393 ms
-2026-03-05 14:25:05.036 [main] INFO  com.zaxxer.hikari.HikariDataSource - SpringBootBYSJHikariPool - Starting...
-2026-03-05 14:25:05.584 [main] INFO  com.zaxxer.hikari.HikariDataSource - SpringBootBYSJHikariPool - Start completed.
-2026-03-05 14:25:05.963 [main] INFO  o.s.b.f.a.AutowiredAnnotationBeanPostProcessor - Autowired annotation is not supported on static fields: private static org.springframework.data.redis.core.RedisTemplate com.utils.CacheUtil.redisTemplate
-2026-03-05 14:25:06.477 [main] INFO  o.s.s.c.ThreadPoolTaskScheduler - Initializing ExecutorService 'taskScheduler'
-2026-03-05 14:25:06.509 [scheduling-1] INFO  com.config.TokenCleanTask - 开始执行 Token 过期清理任务...
-2026-03-05 14:25:06.510 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
-2026-03-05 14:25:06.543 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path '/springbootrd362'
-2026-03-05 14:25:06.546 [main] INFO  com.SpringbootSchemaApplication - Started SpringbootSchemaApplication in 5.618 seconds (JVM running for 6.792)
-2026-03-05 14:25:06.592 [scheduling-1] INFO  com.config.TokenCleanTask - Token 过期清理完成，共清理 0 条过期记录
-2026-03-05 14:25:53.054 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[.[.[/springbootrd362] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-03-05 14:25:53.054 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2026-03-05 14:25:53.064 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 10 ms
-2026-03-05 14:26:16.657 [SpringContextShutdownHook] INFO  o.s.s.c.ThreadPoolTaskScheduler - Shutting down ExecutorService 'taskScheduler'
-2026-03-05 14:26:16.684 [SpringContextShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - SpringBootBYSJHikariPool - Shutdown initiated...
-2026-03-05 14:26:16.689 [SpringContextShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - SpringBootBYSJHikariPool - Shutdown completed.
+2026-03-06 00:02:46.013 [main] INFO  com.SpringbootSchemaApplication - Starting SpringbootSchemaApplication v0.0.1-SNAPSHOT on XiaoXin with PID 14224 (C:\Users\Nanko\Desktop\BYSJ\BYSJ\Springboot_BYSJ\target\springbootrd362.jar started by Nanko in c:\Users\Nanko\Desktop\BYSJ\BYSJ)
+2026-03-06 00:02:46.018 [main] DEBUG com.SpringbootSchemaApplication - Running with Spring Boot v2.2.2.RELEASE, Spring v5.2.2.RELEASE
+2026-03-06 00:02:46.019 [main] INFO  com.SpringbootSchemaApplication - The following profiles are active: dev
+2026-03-06 00:02:47.168 [main] DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.slf4j.Slf4jImpl' adapter.
+2026-03-06 00:02:47.271 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode!
+2026-03-06 00:02:47.274 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-03-06 00:02:47.752 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 463ms. Found 0 Redis repository interfaces.
+2026-03-06 00:02:48.169 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/JingsaibaomingDao.class]
+2026-03-06 00:02:48.169 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/JingsaixinxiDao.class]
+2026-03-06 00:02:48.169 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/ConfigDao.class]
+2026-03-06 00:02:48.170 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/ZuopindafenDao.class]
+2026-03-06 00:02:48.170 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/TokenDao.class]
+2026-03-06 00:02:48.170 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/UserDao.class]
+2026-03-06 00:02:48.170 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/XueshengDao.class]
+2026-03-06 00:02:48.170 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/JiaoshiDao.class]
+2026-03-06 00:02:48.171 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/BanjileixingDao.class]
+2026-03-06 00:02:48.171 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/CommonDao.class]
+2026-03-06 00:02:48.171 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'jingsaibaomingDao' and 'com.dao.JingsaibaomingDao' mapperInterface
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'jingsaibaomingDao'.
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'jingsaixinxiDao' and 'com.dao.JingsaixinxiDao' mapperInterface
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'jingsaixinxiDao'.
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'configDao' and 'com.dao.ConfigDao' mapperInterface
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'configDao'.
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'zuopindafenDao' and 'com.dao.ZuopindafenDao' mapperInterface
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'zuopindafenDao'.
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'tokenDao' and 'com.dao.TokenDao' mapperInterface
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'tokenDao'.
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'userDao' and 'com.dao.UserDao' mapperInterface
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'userDao'.
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'xueshengDao' and 'com.dao.XueshengDao' mapperInterface
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'xueshengDao'.
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'jiaoshiDao' and 'com.dao.JiaoshiDao' mapperInterface
+2026-03-06 00:02:48.172 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'jiaoshiDao'.
+2026-03-06 00:02:48.173 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'banjileixingDao' and 'com.dao.BanjileixingDao' mapperInterface
+2026-03-06 00:02:48.173 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'banjileixingDao'.
+2026-03-06 00:02:48.173 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'commonDao' and 'com.dao.CommonDao' mapperInterface
+2026-03-06 00:02:48.173 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'commonDao'.
+2026-03-06 00:02:48.443 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2026-03-06 00:02:49.380 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+2026-03-06 00:02:49.391 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-03-06 00:02:49.392 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-06 00:02:49.392 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.29]
+2026-03-06 00:02:49.466 [main] INFO  o.a.c.c.C.[.[.[/springbootrd362] - Initializing Spring embedded WebApplicationContext
+2026-03-06 00:02:49.466 [main] DEBUG o.s.web.context.ContextLoader - Published root WebApplicationContext as ServletContext attribute with name [org.springframework.web.context.WebApplicationContext.ROOT]
+2026-03-06 00:02:49.466 [main] INFO  o.s.web.context.ContextLoader - Root WebApplicationContext: initialization completed in 3362 ms
+2026-03-06 00:02:50.086 [main] DEBUG org.apache.ibatis.io.VFS - Using VFS adapter com.baomidou.mybatisplus.spring.boot.starter.SpringBootVFS
+2026-03-06 00:02:50.300 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.JiaoshiEntity matches criteria [is assignable to Object]
+2026-03-06 00:02:50.302 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.UserEntity matches criteria [is assignable to Object]
+2026-03-06 00:02:50.302 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.RegisterResultVO matches criteria [is assignable to Object]
+2026-03-06 00:02:50.303 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.JingsaibaomingEntity matches criteria [is assignable to Object]
+2026-03-06 00:02:50.303 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.view.BanjileixingView matches criteria [is assignable to Object]
+2026-03-06 00:02:50.303 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.XueshengVO matches criteria [is assignable to Object]
+2026-03-06 00:02:50.303 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.dto.UserRegisterDTO matches criteria [is assignable to Object]
+2026-03-06 00:02:50.304 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.model.ZuopindafenModel matches criteria [is assignable to Object]
+2026-03-06 00:02:50.304 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.JiaoshiVO matches criteria [is assignable to Object]
+2026-03-06 00:02:50.304 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.model.JingsaibaomingModel matches criteria [is assignable to Object]
+2026-03-06 00:02:50.305 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.view.XueshengView matches criteria [is assignable to Object]
+2026-03-06 00:02:50.305 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.JingsaixinxiEntity matches criteria [is assignable to Object]
+2026-03-06 00:02:50.306 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.view.JiaoshiView matches criteria [is assignable to Object]
+2026-03-06 00:02:50.306 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.ZuopindafenVO matches criteria [is assignable to Object]
+2026-03-06 00:02:50.306 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.model.BanjileixingModel matches criteria [is assignable to Object]
+2026-03-06 00:02:50.306 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.view.JingsaibaomingView matches criteria [is assignable to Object]
+2026-03-06 00:02:50.306 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.XueshengEntity matches criteria [is assignable to Object]
+2026-03-06 00:02:50.306 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.model.JiaoshiModel matches criteria [is assignable to Object]
+2026-03-06 00:02:50.307 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.view.JingsaixinxiView matches criteria [is assignable to Object]
+2026-03-06 00:02:50.307 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.ZuopindafenEntity matches criteria [is assignable to Object]
+2026-03-06 00:02:50.307 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.EIException matches criteria [is assignable to Object]
+2026-03-06 00:02:50.307 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.TokenEntity matches criteria [is assignable to Object]
+2026-03-06 00:02:50.307 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.JingsaibaomingVO matches criteria [is assignable to Object]
+2026-03-06 00:02:50.307 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.JingsaixinxiVO matches criteria [is assignable to Object]
+2026-03-06 00:02:50.308 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.BanjileixingEntity matches criteria [is assignable to Object]
+2026-03-06 00:02:50.308 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.model.JingsaixinxiModel matches criteria [is assignable to Object]
+2026-03-06 00:02:50.308 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.view.ZuopindafenView matches criteria [is assignable to Object]
+2026-03-06 00:02:50.308 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.ConfigEntity matches criteria [is assignable to Object]
+2026-03-06 00:02:50.308 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.model.XueshengModel matches criteria [is assignable to Object]
+2026-03-06 00:02:50.308 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.BanjileixingVO matches criteria [is assignable to Object]
+2026-03-06 00:02:50.310 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Scanned package: 'com.entity' for aliases
+2026-03-06 00:02:50.310 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Registered plugin: 'com.baomidou.mybatisplus.plugins.PaginationInterceptor@6bedbc4d'
+2026-03-06 00:02:50.311 [main] INFO  com.zaxxer.hikari.HikariDataSource - SpringBootBYSJHikariPool - Starting...
+2026-03-06 00:02:50.449 [main] INFO  com.zaxxer.hikari.HikariDataSource - SpringBootBYSJHikariPool - Start completed.
+2026-03-06 00:02:50.574 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/BanjileixingDao.xml]'
+2026-03-06 00:02:50.608 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/TokenDao.xml]'
+2026-03-06 00:02:50.617 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/CommonDao.xml]'
+2026-03-06 00:02:50.647 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/ZuopindafenDao.xml]'
+2026-03-06 00:02:50.675 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/JingsaixinxiDao.xml]'
+2026-03-06 00:02:50.694 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/ConfigDao.xml]'
+2026-03-06 00:02:50.719 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/JingsaibaomingDao.xml]'
+2026-03-06 00:02:50.743 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/JiaoshiDao.xml]'
+2026-03-06 00:02:50.770 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/UserDao.xml]'
+2026-03-06 00:02:50.788 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/XueshengDao.xml]'
+2026-03-06 00:02:50.844 [main] INFO  o.s.b.f.a.AutowiredAnnotationBeanPostProcessor - Autowired annotation is not supported on static fields: private static org.springframework.data.redis.core.RedisTemplate com.utils.CacheUtil.redisTemplate
+2026-03-06 00:02:50.857 [main] DEBUG i.n.u.i.l.InternalLoggerFactory - Using SLF4J as the default logging framework
+2026-03-06 00:02:50.860 [main] DEBUG i.l.c.r.DefaultClientResources - -Dio.netty.eventLoopThreads: 12
+2026-03-06 00:02:50.868 [main] DEBUG i.l.c.r.DefaultEventLoopGroupProvider - Creating executor io.netty.util.concurrent.DefaultEventExecutorGroup
+2026-03-06 00:02:50.892 [main] DEBUG i.n.u.i.InternalThreadLocalMap - -Dio.netty.threadLocalMap.stringBuilder.initialSize: 1024
+2026-03-06 00:02:50.892 [main] DEBUG i.n.u.i.InternalThreadLocalMap - -Dio.netty.threadLocalMap.stringBuilder.maxSize: 4096
+2026-03-06 00:02:50.897 [main] DEBUG io.netty.util.ResourceLeakDetector - -Dio.netty.leakDetection.level: simple
+2026-03-06 00:02:50.897 [main] DEBUG io.netty.util.ResourceLeakDetector - -Dio.netty.leakDetection.targetRecords: 4
+2026-03-06 00:02:50.917 [main] DEBUG i.n.util.internal.PlatformDependent - Platform: Windows
+2026-03-06 00:02:50.920 [main] DEBUG i.n.util.internal.PlatformDependent0 - -Dio.netty.noUnsafe: false
+2026-03-06 00:02:50.920 [main] DEBUG i.n.util.internal.PlatformDependent0 - Java version: 8
+2026-03-06 00:02:50.922 [main] DEBUG i.n.util.internal.PlatformDependent0 - sun.misc.Unsafe.theUnsafe: available
+2026-03-06 00:02:50.922 [main] DEBUG i.n.util.internal.PlatformDependent0 - sun.misc.Unsafe.copyMemory: available
+2026-03-06 00:02:50.923 [main] DEBUG i.n.util.internal.PlatformDependent0 - java.nio.Buffer.address: available
+2026-03-06 00:02:50.923 [main] DEBUG i.n.util.internal.PlatformDependent0 - direct buffer constructor: available
+2026-03-06 00:02:50.924 [main] DEBUG i.n.util.internal.PlatformDependent0 - java.nio.Bits.unaligned: available, true
+2026-03-06 00:02:50.924 [main] DEBUG i.n.util.internal.PlatformDependent0 - jdk.internal.misc.Unsafe.allocateUninitializedArray(int): unavailable prior to Java9
+2026-03-06 00:02:50.924 [main] DEBUG i.n.util.internal.PlatformDependent0 - java.nio.DirectByteBuffer.<init>(long, int): available
+2026-03-06 00:02:50.924 [main] DEBUG i.n.util.internal.PlatformDependent - sun.misc.Unsafe: available
+2026-03-06 00:02:50.925 [main] DEBUG i.n.util.internal.PlatformDependent - -Dio.netty.tmpdir: C:\Users\Nanko\AppData\Local\Temp (java.io.tmpdir)
+2026-03-06 00:02:50.925 [main] DEBUG i.n.util.internal.PlatformDependent - -Dio.netty.bitMode: 64 (sun.arch.data.model)
+2026-03-06 00:02:50.925 [main] DEBUG i.n.util.internal.PlatformDependent - -Dio.netty.maxDirectMemory: 3307208704 bytes
+2026-03-06 00:02:50.925 [main] DEBUG i.n.util.internal.PlatformDependent - -Dio.netty.uninitializedArrayAllocationThreshold: -1
+2026-03-06 00:02:50.926 [main] DEBUG io.netty.util.internal.CleanerJava6 - java.nio.ByteBuffer.cleaner(): available
+2026-03-06 00:02:50.926 [main] DEBUG i.n.util.internal.PlatformDependent - -Dio.netty.noPreferDirect: false
+2026-03-06 00:02:50.927 [main] DEBUG i.n.util.ResourceLeakDetectorFactory - Loaded default ResourceLeakDetector: io.netty.util.ResourceLeakDetector@7c137fd5
+2026-03-06 00:02:50.934 [main] DEBUG i.n.util.internal.PlatformDependent - org.jctools-core.MpscChunkedArrayQueue: available
+2026-03-06 00:02:50.943 [main] DEBUG reactor.util.Loggers$LoggerFactory - Using Slf4j logging framework
+2026-03-06 00:02:50.968 [main] DEBUG i.l.c.r.DefaultClientResources - LatencyUtils/HdrUtils are not available, metrics are disabled
+2026-03-06 00:02:51.034 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.numHeapArenas: 24
+2026-03-06 00:02:51.034 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.numDirectArenas: 24
+2026-03-06 00:02:51.035 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.pageSize: 8192
+2026-03-06 00:02:51.035 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.maxOrder: 11
+2026-03-06 00:02:51.035 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.chunkSize: 16777216
+2026-03-06 00:02:51.035 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.tinyCacheSize: 512
+2026-03-06 00:02:51.035 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.smallCacheSize: 256
+2026-03-06 00:02:51.035 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.normalCacheSize: 64
+2026-03-06 00:02:51.035 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.maxCachedBufferCapacity: 32768
+2026-03-06 00:02:51.035 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.cacheTrimInterval: 8192
+2026-03-06 00:02:51.035 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.cacheTrimIntervalMillis: 0
+2026-03-06 00:02:51.035 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.useCacheForAllThreads: true
+2026-03-06 00:02:51.035 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.maxCachedByteBuffersPerChunk: 1023
+2026-03-06 00:02:51.273 [main] DEBUG org.apache.tika.config.TikaConfig - loading tika config from defaults; no config file specified
+2026-03-06 00:02:51.422 [main] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - 110 mappings in 'requestMappingHandlerMapping'
+2026-03-06 00:02:51.451 [main] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Patterns [/**] in 'resourceHandlerMapping'
+2026-03-06 00:02:51.457 [main] DEBUG o.h.v.i.e.r.TraversableResolvers - Cannot find javax.persistence.Persistence on classpath. Assuming non JPA 2 environment. All properties will per default be traversable.
+2026-03-06 00:02:51.457 [main] DEBUG o.h.v.m.ResourceBundleMessageInterpolator - Loaded expression factory via original TCCL
+2026-03-06 00:02:51.457 [main] DEBUG o.h.v.i.engine.ConfigurationImpl - Setting custom MessageInterpolator of type org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator
+2026-03-06 00:02:51.458 [main] DEBUG o.h.v.i.engine.ConfigurationImpl - Setting custom ConstraintValidatorFactory of type org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory
+2026-03-06 00:02:51.458 [main] DEBUG o.h.v.i.engine.ConfigurationImpl - Setting custom ParameterNameProvider of type org.springframework.validation.beanvalidation.LocalValidatorFactoryBean$1
+2026-03-06 00:02:51.459 [main] DEBUG o.h.v.i.x.config.ValidationXmlParser - Trying to load META-INF/validation.xml for XML based Validator configuration.
+2026-03-06 00:02:51.459 [main] DEBUG o.h.v.i.x.c.ResourceLoaderHelper - Trying to load META-INF/validation.xml via user class loader
+2026-03-06 00:02:51.459 [main] DEBUG o.h.v.i.x.c.ResourceLoaderHelper - Trying to load META-INF/validation.xml via TCCL
+2026-03-06 00:02:51.459 [main] DEBUG o.h.v.i.x.c.ResourceLoaderHelper - Trying to load META-INF/validation.xml via Hibernate Validator's class loader
+2026-03-06 00:02:51.459 [main] DEBUG o.h.v.i.x.config.ValidationXmlParser - No META-INF/validation.xml found. Using annotation based configuration only.
+2026-03-06 00:02:51.462 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator as ValidatorFactory-scoped message interpolator.
+2026-03-06 00:02:51.463 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.engine.resolver.TraverseAllTraversableResolver as ValidatorFactory-scoped traversable resolver.
+2026-03-06 00:02:51.463 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.util.ExecutableParameterNameProvider as ValidatorFactory-scoped parameter name provider.
+2026-03-06 00:02:51.463 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.engine.DefaultClockProvider as ValidatorFactory-scoped clock provider.
+2026-03-06 00:02:51.463 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.engine.scripting.DefaultScriptEvaluatorFactory as ValidatorFactory-scoped script evaluator factory.
+2026-03-06 00:02:51.483 [main] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerAdapter - ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2026-03-06 00:02:51.523 [main] DEBUG o.s.w.s.m.m.a.ExceptionHandlerExceptionResolver - ControllerAdvice beans: 1 @ExceptionHandler, 1 ResponseBodyAdvice
+2026-03-06 00:02:51.550 [main] DEBUG o.h.v.i.e.r.TraversableResolvers - Cannot find javax.persistence.Persistence on classpath. Assuming non JPA 2 environment. All properties will per default be traversable.
+2026-03-06 00:02:51.550 [main] DEBUG o.h.v.m.ResourceBundleMessageInterpolator - Loaded expression factory via original TCCL
+2026-03-06 00:02:51.552 [main] DEBUG o.h.v.i.e.r.TraversableResolvers - Cannot find javax.persistence.Persistence on classpath. Assuming non JPA 2 environment. All properties will per default be traversable.
+2026-03-06 00:02:51.552 [main] DEBUG o.h.v.i.engine.ConfigurationImpl - Setting custom MessageInterpolator of type org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator
+2026-03-06 00:02:51.552 [main] DEBUG o.h.v.i.engine.ConfigurationImpl - Setting custom ConstraintValidatorFactory of type org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory
+2026-03-06 00:02:51.552 [main] DEBUG o.h.v.i.engine.ConfigurationImpl - Setting custom ParameterNameProvider of type org.springframework.validation.beanvalidation.LocalValidatorFactoryBean$1
+2026-03-06 00:02:51.552 [main] DEBUG o.h.v.i.x.config.ValidationXmlParser - Trying to load META-INF/validation.xml for XML based Validator configuration.
+2026-03-06 00:02:51.552 [main] DEBUG o.h.v.i.x.c.ResourceLoaderHelper - Trying to load META-INF/validation.xml via user class loader
+2026-03-06 00:02:51.552 [main] DEBUG o.h.v.i.x.c.ResourceLoaderHelper - Trying to load META-INF/validation.xml via TCCL
+2026-03-06 00:02:51.553 [main] DEBUG o.h.v.i.x.c.ResourceLoaderHelper - Trying to load META-INF/validation.xml via Hibernate Validator's class loader
+2026-03-06 00:02:51.553 [main] DEBUG o.h.v.i.x.config.ValidationXmlParser - No META-INF/validation.xml found. Using annotation based configuration only.
+2026-03-06 00:02:51.557 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator as ValidatorFactory-scoped message interpolator.
+2026-03-06 00:02:51.557 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.engine.resolver.TraverseAllTraversableResolver as ValidatorFactory-scoped traversable resolver.
+2026-03-06 00:02:51.557 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.util.ExecutableParameterNameProvider as ValidatorFactory-scoped parameter name provider.
+2026-03-06 00:02:51.558 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.engine.DefaultClockProvider as ValidatorFactory-scoped clock provider.
+2026-03-06 00:02:51.558 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.engine.scripting.DefaultScriptEvaluatorFactory as ValidatorFactory-scoped script evaluator factory.
+2026-03-06 00:02:51.748 [main] INFO  o.s.s.c.ThreadPoolTaskScheduler - Initializing ExecutorService 'taskScheduler'
+2026-03-06 00:02:51.780 [scheduling-1] INFO  com.config.TokenCleanTask - 开始执行 Token 过期清理任务...
+2026-03-06 00:02:51.781 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-03-06 00:02:51.797 [scheduling-1] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:02:51.802 [scheduling-1] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@69cad7df] was not registered for synchronization because synchronization is not active
+2026-03-06 00:02:51.807 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path '/springbootrd362'
+2026-03-06 00:02:51.809 [main] INFO  com.SpringbootSchemaApplication - Started SpringbootSchemaApplication in 6.351 seconds (JVM running for 7.084)
+2026-03-06 00:02:51.841 [scheduling-1] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1710397235 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:02:51.844 [scheduling-1] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (expiratedtime < ?) 
+2026-03-06 00:02:51.861 [scheduling-1] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 2026-03-06 00:02:51.788(Timestamp)
+2026-03-06 00:02:51.876 [scheduling-1] DEBUG com.dao.TokenDao.selectList - <==      Total: 0
+2026-03-06 00:02:51.876 [scheduling-1] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@69cad7df]
+2026-03-06 00:02:51.877 [scheduling-1] INFO  com.config.TokenCleanTask - Token 过期清理完成，共清理 0 条过期记录
+2026-03-06 00:03:30.117 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[.[.[/springbootrd362] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-06 00:03:30.118 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-03-06 00:03:30.118 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - Detected StandardServletMultipartResolver
+2026-03-06 00:03:30.125 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+2026-03-06 00:03:30.125 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 7 ms
+2026-03-06 00:03:30.137 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/css/app.3099d0a8.css", parameters={}
+2026-03-06 00:03:30.144 [http-nio-8080-exec-1] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:03:30.169 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:03:37.413 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/css/app.3099d0a8.css", parameters={}
+2026-03-06 00:03:37.414 [http-nio-8080-exec-5] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:03:37.430 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:03.765 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/index.html", parameters={}
+2026-03-06 00:05:03.768 [http-nio-8080-exec-3] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:03.773 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:03.840 [http-nio-8080-exec-4] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/js/chunk-vendors.7eaa20c9.js", parameters={}
+2026-03-06 00:05:03.843 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/js/app.447218e9.js", parameters={}
+2026-03-06 00:05:03.844 [http-nio-8080-exec-4] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:03.844 [http-nio-8080-exec-8] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:03.848 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/css/app.3099d0a8.css", parameters={}
+2026-03-06 00:05:03.848 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/css/chunk-vendors.2fea733a.css", parameters={}
+2026-03-06 00:05:03.850 [http-nio-8080-exec-7] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:03.850 [http-nio-8080-exec-9] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:03.854 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:03.861 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:03.871 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:03.912 [http-nio-8080-exec-4] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:04.165 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:05:04.168 [http-nio-8080-exec-10] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:05:04.177 [http-nio-8080-exec-10] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:04.177 [http-nio-8080-exec-10] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5df2bf4] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:04.178 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/fonts/element-icons.ff18efd1.woff", parameters={}
+2026-03-06 00:05:04.178 [http-nio-8080-exec-10] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@828215016 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:04.179 [http-nio-8080-exec-10] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:05:04.179 [http-nio-8080-exec-10] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:05:04.180 [http-nio-8080-exec-1] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:04.182 [http-nio-8080-exec-10] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:05:04.182 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:04.183 [http-nio-8080-exec-10] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5df2bf4]
+2026-03-06 00:05:04.212 [http-nio-8080-exec-10] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:04.212 [http-nio-8080-exec-10] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4fe6a910] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:04.213 [http-nio-8080-exec-10] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1229751070 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:04.213 [http-nio-8080-exec-10] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:05:04.213 [http-nio-8080-exec-10] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:05:04.216 [http-nio-8080-exec-10] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:05:04.217 [http-nio-8080-exec-10] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4fe6a910]
+2026-03-06 00:05:04.370 [http-nio-8080-exec-10] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:05:04.372 [http-nio-8080-exec-10] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@34f0f2d}]
+2026-03-06 00:05:04.403 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:04.404 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:05:04.404 [http-nio-8080-exec-2] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:05:04.404 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:04.405 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@53e355e9] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:04.405 [http-nio-8080-exec-2] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1427958185 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:04.406 [http-nio-8080-exec-2] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:05:04.406 [http-nio-8080-exec-2] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:05:04.408 [http-nio-8080-exec-2] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:05:04.408 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@53e355e9]
+2026-03-06 00:05:04.409 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:04.409 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2d204db0] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:04.409 [http-nio-8080-exec-2] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@2083935377 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:04.409 [http-nio-8080-exec-2] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:05:04.410 [http-nio-8080-exec-2] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:05:04.411 [http-nio-8080-exec-2] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:05:04.411 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2d204db0]
+2026-03-06 00:05:04.412 [http-nio-8080-exec-2] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:05:04.412 [http-nio-8080-exec-2] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@194687d2}]
+2026-03-06 00:05:04.413 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:06.927 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:05:06.927 [http-nio-8080-exec-6] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/option/banjileixing/leixing", parameters={}
+2026-03-06 00:05:06.928 [http-nio-8080-exec-5] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:05:06.929 [http-nio-8080-exec-5] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:06.929 [http-nio-8080-exec-6] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.CommonController#getOption(String, String, String, String)
+2026-03-06 00:05:06.929 [http-nio-8080-exec-5] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4c17b9f9] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:06.932 [http-nio-8080-exec-5] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@849663360 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:06.933 [http-nio-8080-exec-5] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:05:06.934 [http-nio-8080-exec-5] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:05:06.937 [http-nio-8080-exec-5] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:05:06.938 [http-nio-8080-exec-5] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4c17b9f9]
+2026-03-06 00:05:06.939 [http-nio-8080-exec-5] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:06.939 [http-nio-8080-exec-5] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@363dc817] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:06.940 [http-nio-8080-exec-5] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@580977541 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:06.940 [http-nio-8080-exec-5] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:05:06.941 [http-nio-8080-exec-5] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:05:06.943 [http-nio-8080-exec-5] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:05:06.943 [http-nio-8080-exec-5] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@363dc817]
+2026-03-06 00:05:06.944 [http-nio-8080-exec-5] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:05:06.944 [http-nio-8080-exec-5] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@678c341c}]
+2026-03-06 00:05:06.945 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:06.946 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:06.946 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@77481b77] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:06.948 [http-nio-8080-exec-6] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@418192969 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:06.949 [http-nio-8080-exec-6] DEBUG com.dao.CommonDao.getOption - ==>  Preparing: SELECT distinct leixing FROM banjileixing where leixing is not null and leixing !='' 
+2026-03-06 00:05:06.950 [http-nio-8080-exec-6] DEBUG com.dao.CommonDao.getOption - ==> Parameters: 
+2026-03-06 00:05:06.961 [http-nio-8080-exec-6] DEBUG com.dao.CommonDao.getOption - <==      Total: 6
+2026-03-06 00:05:06.962 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@77481b77]
+2026-03-06 00:05:06.962 [http-nio-8080-exec-6] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:05:06.962 [http-nio-8080-exec-6] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=[一类班级, 二类班级, 三类班级, 四类班级, 五类班级, 六类班级]}]
+2026-03-06 00:05:06.966 [http-nio-8080-exec-6] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:08.056 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:05:08.056 [http-nio-8080-exec-3] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:05:08.057 [http-nio-8080-exec-3] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:08.057 [http-nio-8080-exec-3] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5b95d8ff] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:08.058 [http-nio-8080-exec-3] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@644216177 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:08.059 [http-nio-8080-exec-3] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:05:08.060 [http-nio-8080-exec-3] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:05:08.061 [http-nio-8080-exec-3] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:05:08.061 [http-nio-8080-exec-3] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5b95d8ff]
+2026-03-06 00:05:08.062 [http-nio-8080-exec-3] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:08.062 [http-nio-8080-exec-3] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5bccbe1d] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:08.062 [http-nio-8080-exec-3] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@874909551 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:08.063 [http-nio-8080-exec-3] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:05:08.063 [http-nio-8080-exec-3] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:05:08.064 [http-nio-8080-exec-3] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:05:08.064 [http-nio-8080-exec-3] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5bccbe1d]
+2026-03-06 00:05:08.064 [http-nio-8080-exec-3] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:05:08.064 [http-nio-8080-exec-3] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@7ec933b5}]
+2026-03-06 00:05:08.065 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:10.810 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/xuesheng/page?page=1&limit=10&sort=id", parameters={masked}
+2026-03-06 00:05:10.811 [http-nio-8080-exec-7] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.XueshengController#page(Map, XueshengEntity, HttpServletRequest)
+2026-03-06 00:05:10.812 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:10.812 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@8b8b1f1] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:10.814 [http-nio-8080-exec-7] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1927278136 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:10.814 [http-nio-8080-exec-7] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:05:10.815 [http-nio-8080-exec-7] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:05:10.818 [http-nio-8080-exec-7] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:05:10.819 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@8b8b1f1]
+2026-03-06 00:05:10.926 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:10.926 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@19cf5262] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:10.927 [http-nio-8080-exec-7] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1120048051 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:10.964 [http-nio-8080-exec-7] DEBUG com.dao.XueshengDao.selectListView - ==>  Preparing: SELECT COUNT(1) FROM xuesheng xuesheng WHERE 1 = 1 AND (role = ?) 
+2026-03-06 00:05:10.965 [http-nio-8080-exec-7] DEBUG com.dao.XueshengDao.selectListView - ==> Parameters: 学生(String)
+2026-03-06 00:05:10.972 [http-nio-8080-exec-7] DEBUG com.dao.XueshengDao.selectListView - ==>  Preparing: SELECT xuesheng.* FROM xuesheng xuesheng WHERE 1=1 AND (role = ?) ORDER BY id ASC LIMIT 0,10 
+2026-03-06 00:05:10.972 [http-nio-8080-exec-7] DEBUG com.dao.XueshengDao.selectListView - ==> Parameters: 学生(String)
+2026-03-06 00:05:10.976 [http-nio-8080-exec-7] DEBUG com.dao.XueshengDao.selectListView - <==      Total: 6
+2026-03-06 00:05:10.976 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@19cf5262]
+2026-03-06 00:05:10.977 [http-nio-8080-exec-7] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:05:10.977 [http-nio-8080-exec-7] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.utils.PageUtils@22bf5322}]
+2026-03-06 00:05:10.980 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:11.007 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/xuesheng_zhaopian1.jpg", parameters={}
+2026-03-06 00:05:11.007 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/xuesheng_zhaopian2.jpg", parameters={}
+2026-03-06 00:05:11.007 [http-nio-8080-exec-4] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/xuesheng_zhaopian3.jpg", parameters={}
+2026-03-06 00:05:11.008 [http-nio-8080-exec-4] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:11.008 [http-nio-8080-exec-9] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:11.008 [http-nio-8080-exec-8] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:11.010 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/xuesheng_zhaopian4.jpg", parameters={}
+2026-03-06 00:05:11.012 [http-nio-8080-exec-1] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:11.012 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/xuesheng_zhaopian6.jpg", parameters={}
+2026-03-06 00:05:11.012 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/xuesheng_zhaopian5.jpg", parameters={}
+2026-03-06 00:05:11.012 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:11.012 [http-nio-8080-exec-4] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:11.012 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:11.013 [http-nio-8080-exec-2] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:11.013 [http-nio-8080-exec-10] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:11.014 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:11.016 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:11.016 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:15.815 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/jingsaixinxi/page?page=1&limit=10&sort=id", parameters={masked}
+2026-03-06 00:05:15.816 [http-nio-8080-exec-5] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.JingsaixinxiController#page(Map, JingsaixinxiEntity, HttpServletRequest)
+2026-03-06 00:05:15.832 [http-nio-8080-exec-5] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:15.833 [http-nio-8080-exec-5] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3fa9358a] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:15.835 [http-nio-8080-exec-5] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@488194648 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:15.836 [http-nio-8080-exec-5] DEBUG c.dao.JingsaixinxiDao.selectListView - ==>  Preparing: SELECT COUNT(1) FROM jingsaixinxi jingsaixinxi WHERE 1 = 1 
+2026-03-06 00:05:15.837 [http-nio-8080-exec-5] DEBUG c.dao.JingsaixinxiDao.selectListView - ==> Parameters: 
+2026-03-06 00:05:15.844 [http-nio-8080-exec-5] DEBUG c.dao.JingsaixinxiDao.selectListView - ==>  Preparing: SELECT jingsaixinxi.* FROM jingsaixinxi jingsaixinxi WHERE 1=1 ORDER BY id ASC LIMIT 0,10 
+2026-03-06 00:05:15.845 [http-nio-8080-exec-5] DEBUG c.dao.JingsaixinxiDao.selectListView - ==> Parameters: 
+2026-03-06 00:05:15.847 [http-nio-8080-exec-5] DEBUG c.dao.JingsaixinxiDao.selectListView - <==      Total: 6
+2026-03-06 00:05:15.847 [http-nio-8080-exec-5] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3fa9358a]
+2026-03-06 00:05:15.848 [http-nio-8080-exec-5] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:05:15.848 [http-nio-8080-exec-5] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.utils.PageUtils@de87c19}]
+2026-03-06 00:05:15.850 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:15.873 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/jianji.jpg", parameters={}
+2026-03-06 00:05:15.873 [http-nio-8080-exec-6] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/shuxuejianmo.jpg", parameters={}
+2026-03-06 00:05:15.874 [http-nio-8080-exec-4] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/tiaozhan.jpg", parameters={}
+2026-03-06 00:05:15.873 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/ruanjian.jpg", parameters={}
+2026-03-06 00:05:15.874 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/jixie.jpg", parameters={}
+2026-03-06 00:05:15.875 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/yingyong.jpg", parameters={}
+2026-03-06 00:05:15.875 [http-nio-8080-exec-7] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:15.875 [http-nio-8080-exec-4] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:15.875 [http-nio-8080-exec-6] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:15.875 [http-nio-8080-exec-3] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:15.875 [http-nio-8080-exec-8] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:15.876 [http-nio-8080-exec-9] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:15.883 [http-nio-8080-exec-6] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:15.883 [http-nio-8080-exec-4] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:15.885 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:15.888 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:15.889 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:15.890 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:17.913 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:05:17.913 [http-nio-8080-exec-1] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:05:17.914 [http-nio-8080-exec-1] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:17.914 [http-nio-8080-exec-1] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6ab22dbe] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:17.915 [http-nio-8080-exec-1] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1982749659 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:17.916 [http-nio-8080-exec-1] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:05:17.917 [http-nio-8080-exec-1] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:05:17.919 [http-nio-8080-exec-1] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:05:17.920 [http-nio-8080-exec-1] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6ab22dbe]
+2026-03-06 00:05:17.920 [http-nio-8080-exec-1] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:17.921 [http-nio-8080-exec-1] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4b294a89] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:17.921 [http-nio-8080-exec-1] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@951037938 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:17.922 [http-nio-8080-exec-1] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:05:17.922 [http-nio-8080-exec-1] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:05:17.923 [http-nio-8080-exec-1] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:05:17.923 [http-nio-8080-exec-1] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4b294a89]
+2026-03-06 00:05:17.924 [http-nio-8080-exec-1] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:05:17.924 [http-nio-8080-exec-1] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@479b8ae2}]
+2026-03-06 00:05:17.925 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:35.690 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:05:35.691 [http-nio-8080-exec-10] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:05:35.691 [http-nio-8080-exec-10] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:35.691 [http-nio-8080-exec-10] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@23ed7ba4] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:35.694 [http-nio-8080-exec-10] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1552531844 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:35.695 [http-nio-8080-exec-10] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:05:35.696 [http-nio-8080-exec-10] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:05:35.698 [http-nio-8080-exec-10] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:05:35.699 [http-nio-8080-exec-10] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@23ed7ba4]
+2026-03-06 00:05:35.699 [http-nio-8080-exec-10] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:35.700 [http-nio-8080-exec-10] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@dd13edd] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:35.700 [http-nio-8080-exec-10] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1445782436 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:35.701 [http-nio-8080-exec-10] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:05:35.701 [http-nio-8080-exec-10] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:05:35.703 [http-nio-8080-exec-10] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:05:35.704 [http-nio-8080-exec-10] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@dd13edd]
+2026-03-06 00:05:35.704 [http-nio-8080-exec-10] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:05:35.704 [http-nio-8080-exec-10] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@76ec0bf1}]
+2026-03-06 00:05:35.705 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:38.571 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/xuesheng/page?page=1&limit=10&sort=id", parameters={masked}
+2026-03-06 00:05:38.572 [http-nio-8080-exec-9] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.XueshengController#page(Map, XueshengEntity, HttpServletRequest)
+2026-03-06 00:05:38.573 [http-nio-8080-exec-9] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:38.573 [http-nio-8080-exec-9] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@22a7d3b3] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:38.575 [http-nio-8080-exec-9] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1559948502 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:38.576 [http-nio-8080-exec-9] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:05:38.576 [http-nio-8080-exec-9] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:05:38.579 [http-nio-8080-exec-9] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:05:38.579 [http-nio-8080-exec-9] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@22a7d3b3]
+2026-03-06 00:05:38.581 [http-nio-8080-exec-9] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:38.581 [http-nio-8080-exec-9] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@d72dce3] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:38.582 [http-nio-8080-exec-9] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@759867972 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:38.583 [http-nio-8080-exec-9] DEBUG com.dao.XueshengDao.selectListView - ==>  Preparing: SELECT COUNT(1) FROM xuesheng xuesheng WHERE 1 = 1 AND (role = ?) 
+2026-03-06 00:05:38.584 [http-nio-8080-exec-9] DEBUG com.dao.XueshengDao.selectListView - ==> Parameters: 学生(String)
+2026-03-06 00:05:38.586 [http-nio-8080-exec-9] DEBUG com.dao.XueshengDao.selectListView - ==>  Preparing: SELECT xuesheng.* FROM xuesheng xuesheng WHERE 1=1 AND (role = ?) ORDER BY id ASC LIMIT 0,10 
+2026-03-06 00:05:38.586 [http-nio-8080-exec-9] DEBUG com.dao.XueshengDao.selectListView - ==> Parameters: 学生(String)
+2026-03-06 00:05:38.590 [http-nio-8080-exec-9] DEBUG com.dao.XueshengDao.selectListView - <==      Total: 6
+2026-03-06 00:05:38.590 [http-nio-8080-exec-9] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@d72dce3]
+2026-03-06 00:05:38.591 [http-nio-8080-exec-9] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:05:38.592 [http-nio-8080-exec-9] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.utils.PageUtils@44dcdf4c}]
+2026-03-06 00:05:38.593 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:05:38.618 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/xuesheng_zhaopian1.jpg", parameters={}
+2026-03-06 00:05:38.619 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/xuesheng_zhaopian2.jpg", parameters={}
+2026-03-06 00:05:38.619 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/xuesheng_zhaopian3.jpg", parameters={}
+2026-03-06 00:05:38.619 [http-nio-8080-exec-7] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:38.620 [http-nio-8080-exec-8] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:38.620 [http-nio-8080-exec-1] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:38.620 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/xuesheng_zhaopian4.jpg", parameters={}
+2026-03-06 00:05:38.620 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/xuesheng_zhaopian5.jpg", parameters={}
+2026-03-06 00:05:38.620 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/xuesheng_zhaopian6.jpg", parameters={}
+2026-03-06 00:05:38.621 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - Completed 304 NOT_MODIFIED
+2026-03-06 00:05:38.621 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - Completed 304 NOT_MODIFIED
+2026-03-06 00:05:38.621 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - Completed 304 NOT_MODIFIED
+2026-03-06 00:05:38.622 [http-nio-8080-exec-10] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:38.622 [http-nio-8080-exec-2] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:38.622 [http-nio-8080-exec-5] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:05:38.623 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - Completed 304 NOT_MODIFIED
+2026-03-06 00:05:38.623 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - Completed 304 NOT_MODIFIED
+2026-03-06 00:05:38.623 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - Completed 304 NOT_MODIFIED
+2026-03-06 00:05:39.966 [http-nio-8080-exec-6] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:05:39.967 [http-nio-8080-exec-6] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:05:39.967 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:39.968 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1ca3e215] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:39.969 [http-nio-8080-exec-6] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1723578722 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:39.970 [http-nio-8080-exec-6] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:05:39.971 [http-nio-8080-exec-6] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:05:39.972 [http-nio-8080-exec-6] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:05:39.972 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1ca3e215]
+2026-03-06 00:05:39.972 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:05:39.972 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@65e7189f] was not registered for synchronization because synchronization is not active
+2026-03-06 00:05:39.972 [http-nio-8080-exec-6] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@2088338403 wrapping com.mysql.cj.jdbc.ConnectionImpl@437f4a6] will not be managed by Spring
+2026-03-06 00:05:39.972 [http-nio-8080-exec-6] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:05:39.973 [http-nio-8080-exec-6] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:05:39.973 [http-nio-8080-exec-6] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:05:39.973 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@65e7189f]
+2026-03-06 00:05:39.974 [http-nio-8080-exec-6] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:05:39.974 [http-nio-8080-exec-6] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@352a50d1}]
+2026-03-06 00:05:39.975 [http-nio-8080-exec-6] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:06:15.629 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/index.html", parameters={}
+2026-03-06 00:06:15.629 [http-nio-8080-exec-10] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:06:15.631 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:14:12.469 [main] INFO  com.SpringbootSchemaApplication - Starting SpringbootSchemaApplication v0.0.1-SNAPSHOT on XiaoXin with PID 6808 (C:\Users\Nanko\Desktop\BYSJ\BYSJ\Springboot_BYSJ\target\springbootrd362.jar started by Nanko in c:\Users\Nanko\Desktop\BYSJ\BYSJ)
+2026-03-06 00:14:12.472 [main] DEBUG com.SpringbootSchemaApplication - Running with Spring Boot v2.2.2.RELEASE, Spring v5.2.2.RELEASE
+2026-03-06 00:14:12.473 [main] INFO  com.SpringbootSchemaApplication - The following profiles are active: dev
+2026-03-06 00:14:13.778 [main] DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.slf4j.Slf4jImpl' adapter.
+2026-03-06 00:14:13.899 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode!
+2026-03-06 00:14:13.903 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-03-06 00:14:14.403 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 485ms. Found 0 Redis repository interfaces.
+2026-03-06 00:14:14.791 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/JingsaibaomingDao.class]
+2026-03-06 00:14:14.791 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/TokenDao.class]
+2026-03-06 00:14:14.791 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/CommonDao.class]
+2026-03-06 00:14:14.791 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/JiaoshiDao.class]
+2026-03-06 00:14:14.792 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/ConfigDao.class]
+2026-03-06 00:14:14.792 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/UserDao.class]
+2026-03-06 00:14:14.792 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/ZuopindafenDao.class]
+2026-03-06 00:14:14.792 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/JingsaixinxiDao.class]
+2026-03-06 00:14:14.792 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/XueshengDao.class]
+2026-03-06 00:14:14.792 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/com/dao/BanjileixingDao.class]
+2026-03-06 00:14:14.793 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'jingsaibaomingDao' and 'com.dao.JingsaibaomingDao' mapperInterface
+2026-03-06 00:14:14.793 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'jingsaibaomingDao'.
+2026-03-06 00:14:14.793 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'tokenDao' and 'com.dao.TokenDao' mapperInterface
+2026-03-06 00:14:14.793 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'tokenDao'.
+2026-03-06 00:14:14.793 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'commonDao' and 'com.dao.CommonDao' mapperInterface
+2026-03-06 00:14:14.793 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'commonDao'.
+2026-03-06 00:14:14.793 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'jiaoshiDao' and 'com.dao.JiaoshiDao' mapperInterface
+2026-03-06 00:14:14.793 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'jiaoshiDao'.
+2026-03-06 00:14:14.794 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'configDao' and 'com.dao.ConfigDao' mapperInterface
+2026-03-06 00:14:14.794 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'configDao'.
+2026-03-06 00:14:14.794 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'userDao' and 'com.dao.UserDao' mapperInterface
+2026-03-06 00:14:14.794 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'userDao'.
+2026-03-06 00:14:14.794 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'zuopindafenDao' and 'com.dao.ZuopindafenDao' mapperInterface
+2026-03-06 00:14:14.794 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'zuopindafenDao'.
+2026-03-06 00:14:14.794 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'jingsaixinxiDao' and 'com.dao.JingsaixinxiDao' mapperInterface
+2026-03-06 00:14:14.794 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'jingsaixinxiDao'.
+2026-03-06 00:14:14.794 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'xueshengDao' and 'com.dao.XueshengDao' mapperInterface
+2026-03-06 00:14:14.794 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'xueshengDao'.
+2026-03-06 00:14:14.794 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'banjileixingDao' and 'com.dao.BanjileixingDao' mapperInterface
+2026-03-06 00:14:14.794 [main] DEBUG o.m.s.mapper.ClassPathMapperScanner - Enabling autowire by type for MapperFactoryBean with name 'banjileixingDao'.
+2026-03-06 00:14:15.065 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2026-03-06 00:14:16.124 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+2026-03-06 00:14:16.133 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-03-06 00:14:16.134 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-06 00:14:16.134 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.29]
+2026-03-06 00:14:16.209 [main] INFO  o.a.c.c.C.[.[.[/springbootrd362] - Initializing Spring embedded WebApplicationContext
+2026-03-06 00:14:16.210 [main] DEBUG o.s.web.context.ContextLoader - Published root WebApplicationContext as ServletContext attribute with name [org.springframework.web.context.WebApplicationContext.ROOT]
+2026-03-06 00:14:16.210 [main] INFO  o.s.web.context.ContextLoader - Root WebApplicationContext: initialization completed in 3682 ms
+2026-03-06 00:14:16.893 [main] DEBUG org.apache.ibatis.io.VFS - Using VFS adapter com.baomidou.mybatisplus.spring.boot.starter.SpringBootVFS
+2026-03-06 00:14:17.114 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.JingsaixinxiEntity matches criteria [is assignable to Object]
+2026-03-06 00:14:17.117 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.view.JingsaixinxiView matches criteria [is assignable to Object]
+2026-03-06 00:14:17.118 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.model.JiaoshiModel matches criteria [is assignable to Object]
+2026-03-06 00:14:17.118 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.view.ZuopindafenView matches criteria [is assignable to Object]
+2026-03-06 00:14:17.119 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.EIException matches criteria [is assignable to Object]
+2026-03-06 00:14:17.119 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.view.BanjileixingView matches criteria [is assignable to Object]
+2026-03-06 00:14:17.119 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.ZuopindafenVO matches criteria [is assignable to Object]
+2026-03-06 00:14:17.119 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.JingsaibaomingEntity matches criteria [is assignable to Object]
+2026-03-06 00:14:17.119 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.view.JingsaibaomingView matches criteria [is assignable to Object]
+2026-03-06 00:14:17.120 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.ZuopindafenEntity matches criteria [is assignable to Object]
+2026-03-06 00:14:17.120 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.JiaoshiEntity matches criteria [is assignable to Object]
+2026-03-06 00:14:17.120 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.view.JiaoshiView matches criteria [is assignable to Object]
+2026-03-06 00:14:17.120 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.XueshengEntity matches criteria [is assignable to Object]
+2026-03-06 00:14:17.121 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.model.JingsaibaomingModel matches criteria [is assignable to Object]
+2026-03-06 00:14:17.121 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.BanjileixingVO matches criteria [is assignable to Object]
+2026-03-06 00:14:17.121 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.model.XueshengModel matches criteria [is assignable to Object]
+2026-03-06 00:14:17.121 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.JingsaibaomingVO matches criteria [is assignable to Object]
+2026-03-06 00:14:17.122 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.model.BanjileixingModel matches criteria [is assignable to Object]
+2026-03-06 00:14:17.122 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.view.XueshengView matches criteria [is assignable to Object]
+2026-03-06 00:14:17.123 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.model.JingsaixinxiModel matches criteria [is assignable to Object]
+2026-03-06 00:14:17.123 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.JiaoshiVO matches criteria [is assignable to Object]
+2026-03-06 00:14:17.123 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.ConfigEntity matches criteria [is assignable to Object]
+2026-03-06 00:14:17.123 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.TokenEntity matches criteria [is assignable to Object]
+2026-03-06 00:14:17.123 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.RegisterResultVO matches criteria [is assignable to Object]
+2026-03-06 00:14:17.124 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.BanjileixingEntity matches criteria [is assignable to Object]
+2026-03-06 00:14:17.124 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.model.ZuopindafenModel matches criteria [is assignable to Object]
+2026-03-06 00:14:17.124 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.JingsaixinxiVO matches criteria [is assignable to Object]
+2026-03-06 00:14:17.124 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.dto.UserRegisterDTO matches criteria [is assignable to Object]
+2026-03-06 00:14:17.125 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.UserEntity matches criteria [is assignable to Object]
+2026-03-06 00:14:17.125 [main] DEBUG org.apache.ibatis.io.ResolverUtil - Checking to see if class com.entity.vo.XueshengVO matches criteria [is assignable to Object]
+2026-03-06 00:14:17.126 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Scanned package: 'com.entity' for aliases
+2026-03-06 00:14:17.127 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Registered plugin: 'com.baomidou.mybatisplus.plugins.PaginationInterceptor@50ad3bc1'
+2026-03-06 00:14:17.128 [main] INFO  com.zaxxer.hikari.HikariDataSource - SpringBootBYSJHikariPool - Starting...
+2026-03-06 00:14:17.291 [main] INFO  com.zaxxer.hikari.HikariDataSource - SpringBootBYSJHikariPool - Start completed.
+2026-03-06 00:14:17.421 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/TokenDao.xml]'
+2026-03-06 00:14:17.463 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/XueshengDao.xml]'
+2026-03-06 00:14:17.508 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/JiaoshiDao.xml]'
+2026-03-06 00:14:17.537 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/JingsaixinxiDao.xml]'
+2026-03-06 00:14:17.568 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/JingsaibaomingDao.xml]'
+2026-03-06 00:14:17.594 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/ZuopindafenDao.xml]'
+2026-03-06 00:14:17.622 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/UserDao.xml]'
+2026-03-06 00:14:17.626 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/CommonDao.xml]'
+2026-03-06 00:14:17.646 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/BanjileixingDao.xml]'
+2026-03-06 00:14:17.668 [main] DEBUG o.m.spring.SqlSessionFactoryBean - Parsed mapper file: 'URL [jar:file:/C:/Users/Nanko/Desktop/BYSJ/BYSJ/Springboot_BYSJ/target/springbootrd362.jar!/BOOT-INF/classes!/mapper/ConfigDao.xml]'
+2026-03-06 00:14:17.739 [main] DEBUG i.n.u.i.l.InternalLoggerFactory - Using SLF4J as the default logging framework
+2026-03-06 00:14:17.743 [main] DEBUG i.l.c.r.DefaultClientResources - -Dio.netty.eventLoopThreads: 12
+2026-03-06 00:14:17.753 [main] DEBUG i.l.c.r.DefaultEventLoopGroupProvider - Creating executor io.netty.util.concurrent.DefaultEventExecutorGroup
+2026-03-06 00:14:17.777 [main] DEBUG i.n.u.i.InternalThreadLocalMap - -Dio.netty.threadLocalMap.stringBuilder.initialSize: 1024
+2026-03-06 00:14:17.777 [main] DEBUG i.n.u.i.InternalThreadLocalMap - -Dio.netty.threadLocalMap.stringBuilder.maxSize: 4096
+2026-03-06 00:14:17.783 [main] DEBUG io.netty.util.ResourceLeakDetector - -Dio.netty.leakDetection.level: simple
+2026-03-06 00:14:17.784 [main] DEBUG io.netty.util.ResourceLeakDetector - -Dio.netty.leakDetection.targetRecords: 4
+2026-03-06 00:14:17.807 [main] DEBUG i.n.util.internal.PlatformDependent - Platform: Windows
+2026-03-06 00:14:17.809 [main] DEBUG i.n.util.internal.PlatformDependent0 - -Dio.netty.noUnsafe: false
+2026-03-06 00:14:17.809 [main] DEBUG i.n.util.internal.PlatformDependent0 - Java version: 8
+2026-03-06 00:14:17.810 [main] DEBUG i.n.util.internal.PlatformDependent0 - sun.misc.Unsafe.theUnsafe: available
+2026-03-06 00:14:17.811 [main] DEBUG i.n.util.internal.PlatformDependent0 - sun.misc.Unsafe.copyMemory: available
+2026-03-06 00:14:17.811 [main] DEBUG i.n.util.internal.PlatformDependent0 - java.nio.Buffer.address: available
+2026-03-06 00:14:17.811 [main] DEBUG i.n.util.internal.PlatformDependent0 - direct buffer constructor: available
+2026-03-06 00:14:17.812 [main] DEBUG i.n.util.internal.PlatformDependent0 - java.nio.Bits.unaligned: available, true
+2026-03-06 00:14:17.812 [main] DEBUG i.n.util.internal.PlatformDependent0 - jdk.internal.misc.Unsafe.allocateUninitializedArray(int): unavailable prior to Java9
+2026-03-06 00:14:17.812 [main] DEBUG i.n.util.internal.PlatformDependent0 - java.nio.DirectByteBuffer.<init>(long, int): available
+2026-03-06 00:14:17.812 [main] DEBUG i.n.util.internal.PlatformDependent - sun.misc.Unsafe: available
+2026-03-06 00:14:17.813 [main] DEBUG i.n.util.internal.PlatformDependent - -Dio.netty.tmpdir: C:\Users\Nanko\AppData\Local\Temp (java.io.tmpdir)
+2026-03-06 00:14:17.813 [main] DEBUG i.n.util.internal.PlatformDependent - -Dio.netty.bitMode: 64 (sun.arch.data.model)
+2026-03-06 00:14:17.814 [main] DEBUG i.n.util.internal.PlatformDependent - -Dio.netty.maxDirectMemory: 3307208704 bytes
+2026-03-06 00:14:17.814 [main] DEBUG i.n.util.internal.PlatformDependent - -Dio.netty.uninitializedArrayAllocationThreshold: -1
+2026-03-06 00:14:17.816 [main] DEBUG io.netty.util.internal.CleanerJava6 - java.nio.ByteBuffer.cleaner(): available
+2026-03-06 00:14:17.817 [main] DEBUG i.n.util.internal.PlatformDependent - -Dio.netty.noPreferDirect: false
+2026-03-06 00:14:17.818 [main] DEBUG i.n.util.ResourceLeakDetectorFactory - Loaded default ResourceLeakDetector: io.netty.util.ResourceLeakDetector@7d9d0818
+2026-03-06 00:14:17.826 [main] DEBUG i.n.util.internal.PlatformDependent - org.jctools-core.MpscChunkedArrayQueue: available
+2026-03-06 00:14:17.837 [main] DEBUG reactor.util.Loggers$LoggerFactory - Using Slf4j logging framework
+2026-03-06 00:14:17.870 [main] DEBUG i.l.c.r.DefaultClientResources - LatencyUtils/HdrUtils are not available, metrics are disabled
+2026-03-06 00:14:17.944 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.numHeapArenas: 24
+2026-03-06 00:14:17.945 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.numDirectArenas: 24
+2026-03-06 00:14:17.945 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.pageSize: 8192
+2026-03-06 00:14:17.945 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.maxOrder: 11
+2026-03-06 00:14:17.945 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.chunkSize: 16777216
+2026-03-06 00:14:17.945 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.tinyCacheSize: 512
+2026-03-06 00:14:17.945 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.smallCacheSize: 256
+2026-03-06 00:14:17.945 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.normalCacheSize: 64
+2026-03-06 00:14:17.945 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.maxCachedBufferCapacity: 32768
+2026-03-06 00:14:17.945 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.cacheTrimInterval: 8192
+2026-03-06 00:14:17.945 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.cacheTrimIntervalMillis: 0
+2026-03-06 00:14:17.946 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.useCacheForAllThreads: true
+2026-03-06 00:14:17.946 [main] DEBUG i.n.buffer.PooledByteBufAllocator - -Dio.netty.allocator.maxCachedByteBuffersPerChunk: 1023
+2026-03-06 00:14:18.156 [main] DEBUG org.apache.tika.config.TikaConfig - loading tika config from defaults; no config file specified
+2026-03-06 00:14:18.321 [main] INFO  o.s.b.f.a.AutowiredAnnotationBeanPostProcessor - Autowired annotation is not supported on static fields: private static org.springframework.data.redis.core.RedisTemplate com.utils.CacheUtil.redisTemplate
+2026-03-06 00:14:18.407 [main] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - 110 mappings in 'requestMappingHandlerMapping'
+2026-03-06 00:14:18.438 [main] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Patterns [/**] in 'resourceHandlerMapping'
+2026-03-06 00:14:18.445 [main] DEBUG o.h.v.i.e.r.TraversableResolvers - Cannot find javax.persistence.Persistence on classpath. Assuming non JPA 2 environment. All properties will per default be traversable.
+2026-03-06 00:14:18.446 [main] DEBUG o.h.v.m.ResourceBundleMessageInterpolator - Loaded expression factory via original TCCL
+2026-03-06 00:14:18.446 [main] DEBUG o.h.v.i.engine.ConfigurationImpl - Setting custom MessageInterpolator of type org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator
+2026-03-06 00:14:18.446 [main] DEBUG o.h.v.i.engine.ConfigurationImpl - Setting custom ConstraintValidatorFactory of type org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory
+2026-03-06 00:14:18.447 [main] DEBUG o.h.v.i.engine.ConfigurationImpl - Setting custom ParameterNameProvider of type org.springframework.validation.beanvalidation.LocalValidatorFactoryBean$1
+2026-03-06 00:14:18.449 [main] DEBUG o.h.v.i.x.config.ValidationXmlParser - Trying to load META-INF/validation.xml for XML based Validator configuration.
+2026-03-06 00:14:18.450 [main] DEBUG o.h.v.i.x.c.ResourceLoaderHelper - Trying to load META-INF/validation.xml via user class loader
+2026-03-06 00:14:18.450 [main] DEBUG o.h.v.i.x.c.ResourceLoaderHelper - Trying to load META-INF/validation.xml via TCCL
+2026-03-06 00:14:18.450 [main] DEBUG o.h.v.i.x.c.ResourceLoaderHelper - Trying to load META-INF/validation.xml via Hibernate Validator's class loader
+2026-03-06 00:14:18.451 [main] DEBUG o.h.v.i.x.config.ValidationXmlParser - No META-INF/validation.xml found. Using annotation based configuration only.
+2026-03-06 00:14:18.455 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator as ValidatorFactory-scoped message interpolator.
+2026-03-06 00:14:18.455 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.engine.resolver.TraverseAllTraversableResolver as ValidatorFactory-scoped traversable resolver.
+2026-03-06 00:14:18.455 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.util.ExecutableParameterNameProvider as ValidatorFactory-scoped parameter name provider.
+2026-03-06 00:14:18.456 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.engine.DefaultClockProvider as ValidatorFactory-scoped clock provider.
+2026-03-06 00:14:18.456 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.engine.scripting.DefaultScriptEvaluatorFactory as ValidatorFactory-scoped script evaluator factory.
+2026-03-06 00:14:18.480 [main] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerAdapter - ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2026-03-06 00:14:18.542 [main] DEBUG o.s.w.s.m.m.a.ExceptionHandlerExceptionResolver - ControllerAdvice beans: 1 @ExceptionHandler, 1 ResponseBodyAdvice
+2026-03-06 00:14:18.576 [main] DEBUG o.h.v.i.e.r.TraversableResolvers - Cannot find javax.persistence.Persistence on classpath. Assuming non JPA 2 environment. All properties will per default be traversable.
+2026-03-06 00:14:18.577 [main] DEBUG o.h.v.m.ResourceBundleMessageInterpolator - Loaded expression factory via original TCCL
+2026-03-06 00:14:18.578 [main] DEBUG o.h.v.i.e.r.TraversableResolvers - Cannot find javax.persistence.Persistence on classpath. Assuming non JPA 2 environment. All properties will per default be traversable.
+2026-03-06 00:14:18.578 [main] DEBUG o.h.v.i.engine.ConfigurationImpl - Setting custom MessageInterpolator of type org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator
+2026-03-06 00:14:18.578 [main] DEBUG o.h.v.i.engine.ConfigurationImpl - Setting custom ConstraintValidatorFactory of type org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory
+2026-03-06 00:14:18.578 [main] DEBUG o.h.v.i.engine.ConfigurationImpl - Setting custom ParameterNameProvider of type org.springframework.validation.beanvalidation.LocalValidatorFactoryBean$1
+2026-03-06 00:14:18.578 [main] DEBUG o.h.v.i.x.config.ValidationXmlParser - Trying to load META-INF/validation.xml for XML based Validator configuration.
+2026-03-06 00:14:18.578 [main] DEBUG o.h.v.i.x.c.ResourceLoaderHelper - Trying to load META-INF/validation.xml via user class loader
+2026-03-06 00:14:18.579 [main] DEBUG o.h.v.i.x.c.ResourceLoaderHelper - Trying to load META-INF/validation.xml via TCCL
+2026-03-06 00:14:18.579 [main] DEBUG o.h.v.i.x.c.ResourceLoaderHelper - Trying to load META-INF/validation.xml via Hibernate Validator's class loader
+2026-03-06 00:14:18.579 [main] DEBUG o.h.v.i.x.config.ValidationXmlParser - No META-INF/validation.xml found. Using annotation based configuration only.
+2026-03-06 00:14:18.586 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator as ValidatorFactory-scoped message interpolator.
+2026-03-06 00:14:18.586 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.engine.resolver.TraverseAllTraversableResolver as ValidatorFactory-scoped traversable resolver.
+2026-03-06 00:14:18.586 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.util.ExecutableParameterNameProvider as ValidatorFactory-scoped parameter name provider.
+2026-03-06 00:14:18.586 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.engine.DefaultClockProvider as ValidatorFactory-scoped clock provider.
+2026-03-06 00:14:18.586 [main] DEBUG o.h.v.i.engine.ValidatorFactoryImpl - HV000234: Using org.hibernate.validator.internal.engine.scripting.DefaultScriptEvaluatorFactory as ValidatorFactory-scoped script evaluator factory.
+2026-03-06 00:14:18.823 [main] INFO  o.s.s.c.ThreadPoolTaskScheduler - Initializing ExecutorService 'taskScheduler'
+2026-03-06 00:14:18.866 [scheduling-1] INFO  com.config.TokenCleanTask - 开始执行 Token 过期清理任务...
+2026-03-06 00:14:18.869 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-03-06 00:14:18.884 [scheduling-1] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:14:18.890 [scheduling-1] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@145a44d9] was not registered for synchronization because synchronization is not active
+2026-03-06 00:14:18.895 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path '/springbootrd362'
+2026-03-06 00:14:18.901 [main] INFO  com.SpringbootSchemaApplication - Started SpringbootSchemaApplication in 7.106 seconds (JVM running for 7.882)
+2026-03-06 00:14:18.945 [scheduling-1] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@228178589 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:14:18.951 [scheduling-1] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (expiratedtime < ?) 
+2026-03-06 00:14:18.972 [scheduling-1] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 2026-03-06 00:14:18.874(Timestamp)
+2026-03-06 00:14:18.991 [scheduling-1] DEBUG com.dao.TokenDao.selectList - <==      Total: 0
+2026-03-06 00:14:18.992 [scheduling-1] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@145a44d9]
+2026-03-06 00:14:18.993 [scheduling-1] INFO  com.config.TokenCleanTask - Token 过期清理完成，共清理 0 条过期记录
+2026-03-06 00:16:07.418 [http-nio-8080-exec-8] INFO  o.a.c.c.C.[.[.[/springbootrd362] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-06 00:16:07.419 [http-nio-8080-exec-8] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-03-06 00:16:07.419 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - Detected StandardServletMultipartResolver
+2026-03-06 00:16:07.426 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+2026-03-06 00:16:07.426 [http-nio-8080-exec-8] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 7 ms
+2026-03-06 00:16:07.438 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/", parameters={}
+2026-03-06 00:16:07.447 [http-nio-8080-exec-8] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:16:07.451 [http-nio-8080-exec-8] DEBUG o.s.w.s.r.ResourceHttpRequestHandler - Resource not found
+2026-03-06 00:16:07.452 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - Completed 404 NOT_FOUND
+2026-03-06 00:16:07.455 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - "ERROR" dispatch for GET "/springbootrd362/error", parameters={}
+2026-03-06 00:16:07.456 [http-nio-8080-exec-8] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController#error(HttpServletRequest)
+2026-03-06 00:16:07.725 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - Exiting from "ERROR" dispatch, status 404
+2026-03-06 00:22:15.852 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/index.html", parameters={}
+2026-03-06 00:22:15.855 [http-nio-8080-exec-9] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:15.872 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:16.019 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/js/chunk-vendors.7eaa20c9.js", parameters={}
+2026-03-06 00:22:16.030 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/css/app.87bf58ee.css", parameters={}
+2026-03-06 00:22:16.027 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/js/app.a9011e17.js", parameters={}
+2026-03-06 00:22:16.029 [http-nio-8080-exec-10] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:16.030 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/css/chunk-vendors.2fea733a.css", parameters={}
+2026-03-06 00:22:16.034 [http-nio-8080-exec-2] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:16.036 [http-nio-8080-exec-1] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:16.036 [http-nio-8080-exec-3] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:16.040 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:16.050 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:16.088 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:16.133 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:16.452 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/fonts/element-icons.ff18efd1.woff", parameters={}
+2026-03-06 00:22:16.452 [http-nio-8080-exec-4] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:22:16.453 [http-nio-8080-exec-4] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:22:16.453 [http-nio-8080-exec-5] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:16.454 [http-nio-8080-exec-4] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:16.454 [http-nio-8080-exec-4] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@100bad49] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:16.456 [http-nio-8080-exec-4] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@295387611 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:16.456 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:16.457 [http-nio-8080-exec-4] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:22:16.457 [http-nio-8080-exec-4] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:22:16.461 [http-nio-8080-exec-4] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:22:16.461 [http-nio-8080-exec-4] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@100bad49]
+2026-03-06 00:22:16.489 [http-nio-8080-exec-4] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:16.490 [http-nio-8080-exec-4] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@698c2d30] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:16.491 [http-nio-8080-exec-4] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@806880762 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:16.491 [http-nio-8080-exec-4] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:22:16.492 [http-nio-8080-exec-4] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:22:16.494 [http-nio-8080-exec-4] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:22:16.495 [http-nio-8080-exec-4] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@698c2d30]
+2026-03-06 00:22:16.534 [http-nio-8080-exec-4] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:22:16.535 [http-nio-8080-exec-4] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@aeb21bc}]
+2026-03-06 00:22:16.570 [http-nio-8080-exec-4] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:16.571 [http-nio-8080-exec-6] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:22:16.572 [http-nio-8080-exec-6] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:22:16.572 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:16.572 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@33fb834e] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:16.573 [http-nio-8080-exec-6] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@319781959 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:16.573 [http-nio-8080-exec-6] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:22:16.574 [http-nio-8080-exec-6] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:22:16.576 [http-nio-8080-exec-6] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:22:16.576 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@33fb834e]
+2026-03-06 00:22:16.577 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:16.578 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6b53b884] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:16.578 [http-nio-8080-exec-6] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@472813109 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:16.578 [http-nio-8080-exec-6] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:22:16.579 [http-nio-8080-exec-6] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:22:16.581 [http-nio-8080-exec-6] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:22:16.582 [http-nio-8080-exec-6] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6b53b884]
+2026-03-06 00:22:16.583 [http-nio-8080-exec-6] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:22:16.583 [http-nio-8080-exec-6] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@6b68e79}]
+2026-03-06 00:22:16.584 [http-nio-8080-exec-6] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:16.678 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/favicon.ico", parameters={}
+2026-03-06 00:22:16.697 [http-nio-8080-exec-7] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:16.701 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:31.790 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/index.html", parameters={}
+2026-03-06 00:22:31.793 [http-nio-8080-exec-8] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:31.797 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - Completed 304 NOT_MODIFIED
+2026-03-06 00:22:32.019 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:22:32.020 [http-nio-8080-exec-9] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:22:32.021 [http-nio-8080-exec-9] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:32.022 [http-nio-8080-exec-9] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@9e022ba] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:32.024 [http-nio-8080-exec-9] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1549879259 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:32.025 [http-nio-8080-exec-9] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:22:32.025 [http-nio-8080-exec-9] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:22:32.027 [http-nio-8080-exec-9] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:22:32.028 [http-nio-8080-exec-9] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@9e022ba]
+2026-03-06 00:22:32.029 [http-nio-8080-exec-9] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:32.029 [http-nio-8080-exec-9] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5d42cdd4] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:32.029 [http-nio-8080-exec-9] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@189470264 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:32.030 [http-nio-8080-exec-9] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:22:32.030 [http-nio-8080-exec-9] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:22:32.032 [http-nio-8080-exec-9] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:22:32.032 [http-nio-8080-exec-9] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5d42cdd4]
+2026-03-06 00:22:32.034 [http-nio-8080-exec-9] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:22:32.034 [http-nio-8080-exec-9] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@129a80f4}]
+2026-03-06 00:22:32.035 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:32.036 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:22:32.037 [http-nio-8080-exec-2] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:22:32.037 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:32.037 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7c28f483] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:32.038 [http-nio-8080-exec-2] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@140867928 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:32.038 [http-nio-8080-exec-2] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:22:32.039 [http-nio-8080-exec-2] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:22:32.040 [http-nio-8080-exec-2] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:22:32.041 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7c28f483]
+2026-03-06 00:22:32.041 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:32.041 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@70763126] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:32.041 [http-nio-8080-exec-2] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1409150978 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:32.042 [http-nio-8080-exec-2] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:22:32.042 [http-nio-8080-exec-2] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:22:32.044 [http-nio-8080-exec-2] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:22:32.044 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@70763126]
+2026-03-06 00:22:32.045 [http-nio-8080-exec-2] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:22:32.045 [http-nio-8080-exec-2] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@57b3cf56}]
+2026-03-06 00:22:32.045 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:34.017 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/index.html", parameters={}
+2026-03-06 00:22:34.019 [http-nio-8080-exec-3] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:34.020 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:34.066 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/js/chunk-vendors.7eaa20c9.js", parameters={}
+2026-03-06 00:22:34.066 [http-nio-8080-exec-4] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/js/app.a9011e17.js", parameters={}
+2026-03-06 00:22:34.066 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/css/chunk-vendors.2fea733a.css", parameters={}
+2026-03-06 00:22:34.066 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/css/app.87bf58ee.css", parameters={}
+2026-03-06 00:22:34.068 [http-nio-8080-exec-1] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:34.068 [http-nio-8080-exec-10] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:34.068 [http-nio-8080-exec-4] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:34.068 [http-nio-8080-exec-5] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:34.071 [http-nio-8080-exec-1] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:34.079 [http-nio-8080-exec-4] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:34.082 [http-nio-8080-exec-10] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:34.120 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:34.224 [http-nio-8080-exec-6] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/fonts/element-icons.ff18efd1.woff", parameters={}
+2026-03-06 00:22:34.225 [http-nio-8080-exec-6] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:34.228 [http-nio-8080-exec-6] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:34.230 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:22:34.231 [http-nio-8080-exec-7] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:22:34.232 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:34.232 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@35f69308] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:34.233 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:22:34.233 [http-nio-8080-exec-8] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:22:34.233 [http-nio-8080-exec-8] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:34.234 [http-nio-8080-exec-8] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3e7c2985] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:34.235 [http-nio-8080-exec-7] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@759087988 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:34.235 [http-nio-8080-exec-8] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1704816433 wrapping com.mysql.cj.jdbc.ConnectionImpl@374a85d0] will not be managed by Spring
+2026-03-06 00:22:34.236 [http-nio-8080-exec-7] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:22:34.236 [http-nio-8080-exec-8] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:22:34.236 [http-nio-8080-exec-7] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:22:34.236 [http-nio-8080-exec-8] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:22:34.237 [http-nio-8080-exec-7] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:22:34.238 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@35f69308]
+2026-03-06 00:22:34.238 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:34.238 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5197d537] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:34.239 [http-nio-8080-exec-7] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1038994422 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:34.239 [http-nio-8080-exec-8] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:22:34.239 [http-nio-8080-exec-7] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:22:34.239 [http-nio-8080-exec-8] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3e7c2985]
+2026-03-06 00:22:34.240 [http-nio-8080-exec-8] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:34.240 [http-nio-8080-exec-7] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:22:34.240 [http-nio-8080-exec-8] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7ce5a1f5] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:34.240 [http-nio-8080-exec-8] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@969007998 wrapping com.mysql.cj.jdbc.ConnectionImpl@374a85d0] will not be managed by Spring
+2026-03-06 00:22:34.241 [http-nio-8080-exec-8] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:22:34.241 [http-nio-8080-exec-8] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:22:34.242 [http-nio-8080-exec-7] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:22:34.242 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5197d537]
+2026-03-06 00:22:34.242 [http-nio-8080-exec-7] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:22:34.242 [http-nio-8080-exec-7] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@57304d29}]
+2026-03-06 00:22:34.243 [http-nio-8080-exec-8] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:22:34.243 [http-nio-8080-exec-8] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7ce5a1f5]
+2026-03-06 00:22:34.244 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:34.245 [http-nio-8080-exec-8] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:22:34.245 [http-nio-8080-exec-8] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@67fab5c9}]
+2026-03-06 00:22:34.247 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:34.309 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/admin/dist/favicon.ico", parameters={}
+2026-03-06 00:22:34.310 [http-nio-8080-exec-9] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:34.312 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:47.183 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/banjileixing/page?page=1&limit=10&sort=id", parameters={masked}
+2026-03-06 00:22:47.184 [http-nio-8080-exec-2] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.BanjileixingController#page(Map, BanjileixingEntity, HttpServletRequest)
+2026-03-06 00:22:47.184 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:47.185 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@28594c30] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:47.186 [http-nio-8080-exec-2] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@789696921 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:47.187 [http-nio-8080-exec-2] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:22:47.187 [http-nio-8080-exec-2] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:22:47.189 [http-nio-8080-exec-2] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:22:47.189 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@28594c30]
+2026-03-06 00:22:47.272 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:47.272 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@729200fb] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:47.272 [http-nio-8080-exec-2] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1395094316 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:47.316 [http-nio-8080-exec-2] DEBUG c.dao.BanjileixingDao.selectListView - ==>  Preparing: SELECT COUNT(1) FROM banjileixing banjileixing WHERE 1 = 1 
+2026-03-06 00:22:47.317 [http-nio-8080-exec-2] DEBUG c.dao.BanjileixingDao.selectListView - ==> Parameters: 
+2026-03-06 00:22:47.322 [http-nio-8080-exec-2] DEBUG c.dao.BanjileixingDao.selectListView - ==>  Preparing: SELECT banjileixing.* FROM banjileixing banjileixing WHERE 1=1 ORDER BY id ASC LIMIT 0,10 
+2026-03-06 00:22:47.323 [http-nio-8080-exec-2] DEBUG c.dao.BanjileixingDao.selectListView - ==> Parameters: 
+2026-03-06 00:22:47.325 [http-nio-8080-exec-2] DEBUG c.dao.BanjileixingDao.selectListView - <==      Total: 6
+2026-03-06 00:22:47.325 [http-nio-8080-exec-2] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@729200fb]
+2026-03-06 00:22:47.326 [http-nio-8080-exec-2] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:22:47.326 [http-nio-8080-exec-2] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.utils.PageUtils@7b7e5462}]
+2026-03-06 00:22:47.332 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:52.275 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/jingsaibaoming/page?page=1&limit=10&sort=id", parameters={masked}
+2026-03-06 00:22:52.276 [http-nio-8080-exec-3] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.JingsaibaomingController#page(Map, JingsaibaomingEntity, HttpServletRequest)
+2026-03-06 00:22:52.277 [http-nio-8080-exec-3] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:52.277 [http-nio-8080-exec-3] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@254b6379] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:52.279 [http-nio-8080-exec-3] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1825933198 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:52.280 [http-nio-8080-exec-3] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:22:52.282 [http-nio-8080-exec-3] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:22:52.285 [http-nio-8080-exec-3] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:22:52.286 [http-nio-8080-exec-3] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@254b6379]
+2026-03-06 00:22:52.312 [http-nio-8080-exec-3] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:52.313 [http-nio-8080-exec-3] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@b2c8470] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:52.314 [http-nio-8080-exec-3] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@225877804 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:52.315 [http-nio-8080-exec-3] DEBUG c.d.JingsaibaomingDao.selectListView - ==>  Preparing: SELECT COUNT(1) FROM jingsaibaoming jingsaibaoming WHERE 1 = 1 
+2026-03-06 00:22:52.315 [http-nio-8080-exec-3] DEBUG c.d.JingsaibaomingDao.selectListView - ==> Parameters: 
+2026-03-06 00:22:52.325 [http-nio-8080-exec-3] DEBUG c.d.JingsaibaomingDao.selectListView - ==>  Preparing: SELECT jingsaibaoming.* FROM jingsaibaoming jingsaibaoming WHERE 1=1 ORDER BY id ASC LIMIT 0,10 
+2026-03-06 00:22:52.325 [http-nio-8080-exec-3] DEBUG c.d.JingsaibaomingDao.selectListView - ==> Parameters: 
+2026-03-06 00:22:52.328 [http-nio-8080-exec-3] DEBUG c.d.JingsaibaomingDao.selectListView - <==      Total: 6
+2026-03-06 00:22:52.329 [http-nio-8080-exec-3] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@b2c8470]
+2026-03-06 00:22:52.330 [http-nio-8080-exec-3] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:22:52.330 [http-nio-8080-exec-3] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.utils.PageUtils@7cf315a6}]
+2026-03-06 00:22:52.333 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:59.081 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/jingsaixinxi/page?page=1&limit=10&sort=id", parameters={masked}
+2026-03-06 00:22:59.082 [http-nio-8080-exec-5] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.JingsaixinxiController#page(Map, JingsaixinxiEntity, HttpServletRequest)
+2026-03-06 00:22:59.100 [http-nio-8080-exec-5] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:22:59.101 [http-nio-8080-exec-5] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1346449] was not registered for synchronization because synchronization is not active
+2026-03-06 00:22:59.102 [http-nio-8080-exec-5] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1322160164 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:22:59.103 [http-nio-8080-exec-5] DEBUG c.dao.JingsaixinxiDao.selectListView - ==>  Preparing: SELECT COUNT(1) FROM jingsaixinxi jingsaixinxi WHERE 1 = 1 
+2026-03-06 00:22:59.104 [http-nio-8080-exec-5] DEBUG c.dao.JingsaixinxiDao.selectListView - ==> Parameters: 
+2026-03-06 00:22:59.107 [http-nio-8080-exec-5] DEBUG c.dao.JingsaixinxiDao.selectListView - ==>  Preparing: SELECT jingsaixinxi.* FROM jingsaixinxi jingsaixinxi WHERE 1=1 ORDER BY id ASC LIMIT 0,10 
+2026-03-06 00:22:59.108 [http-nio-8080-exec-5] DEBUG c.dao.JingsaixinxiDao.selectListView - ==> Parameters: 
+2026-03-06 00:22:59.111 [http-nio-8080-exec-5] DEBUG c.dao.JingsaixinxiDao.selectListView - <==      Total: 6
+2026-03-06 00:22:59.111 [http-nio-8080-exec-5] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1346449]
+2026-03-06 00:22:59.112 [http-nio-8080-exec-5] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:22:59.112 [http-nio-8080-exec-5] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.utils.PageUtils@1414827d}]
+2026-03-06 00:22:59.115 [http-nio-8080-exec-5] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:59.135 [http-nio-8080-exec-6] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/shuxuejianmo.jpg", parameters={}
+2026-03-06 00:22:59.136 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/ruanjian.jpg", parameters={}
+2026-03-06 00:22:59.138 [http-nio-8080-exec-6] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:59.138 [http-nio-8080-exec-7] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:59.139 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/jianji.jpg", parameters={}
+2026-03-06 00:22:59.139 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/tiaozhan.jpg", parameters={}
+2026-03-06 00:22:59.139 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/jixie.jpg", parameters={}
+2026-03-06 00:22:59.139 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/upload/yingyong.jpg", parameters={}
+2026-03-06 00:22:59.139 [http-nio-8080-exec-9] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:59.140 [http-nio-8080-exec-2] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:59.140 [http-nio-8080-exec-8] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:59.140 [http-nio-8080-exec-3] DEBUG o.s.w.s.h.SimpleUrlHandlerMapping - Mapped to ResourceHttpRequestHandler ["classpath:/resources/", "classpath:/static/", "classpath:/admin/", "classpath:/front/", "classpath:/public/"]
+2026-03-06 00:22:59.150 [http-nio-8080-exec-6] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:59.151 [http-nio-8080-exec-9] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:59.152 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:59.163 [http-nio-8080-exec-2] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:59.164 [http-nio-8080-exec-3] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:22:59.165 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
+2026-03-06 00:24:18.878 [scheduling-1] INFO  com.config.TokenCleanTask - 开始执行 Token 过期清理任务...
+2026-03-06 00:24:18.879 [scheduling-1] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:24:18.879 [scheduling-1] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@484fcf3f] was not registered for synchronization because synchronization is not active
+2026-03-06 00:24:18.881 [scheduling-1] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@726434417 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:24:18.881 [scheduling-1] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (expiratedtime < ?) 
+2026-03-06 00:24:18.881 [scheduling-1] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 2026-03-06 00:24:18.879(Timestamp)
+2026-03-06 00:24:18.882 [scheduling-1] DEBUG com.dao.TokenDao.selectList - <==      Total: 0
+2026-03-06 00:24:18.883 [scheduling-1] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@484fcf3f]
+2026-03-06 00:24:18.883 [scheduling-1] INFO  com.config.TokenCleanTask - Token 过期清理完成，共清理 0 条过期记录
+2026-03-06 00:24:49.471 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - GET "/springbootrd362/users/session", parameters={}
+2026-03-06 00:24:49.472 [http-nio-8080-exec-7] DEBUG o.s.w.s.m.m.a.RequestMappingHandlerMapping - Mapped to com.controller.UserController#getCurrUser(HttpServletRequest)
+2026-03-06 00:24:49.472 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:24:49.472 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4d18e42] was not registered for synchronization because synchronization is not active
+2026-03-06 00:24:49.475 [http-nio-8080-exec-7] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@1010632893 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:24:49.477 [http-nio-8080-exec-7] DEBUG com.dao.TokenDao.selectList - ==>  Preparing: SELECT id AS id,userid,username,tablename,`role`,token,expiratedtime,addtime FROM token WHERE (token = ?) 
+2026-03-06 00:24:49.477 [http-nio-8080-exec-7] DEBUG com.dao.TokenDao.selectList - ==> Parameters: 4i4ndw107k88pf232hrl4wucmcj4biox(String)
+2026-03-06 00:24:49.480 [http-nio-8080-exec-7] DEBUG com.dao.TokenDao.selectList - <==      Total: 1
+2026-03-06 00:24:49.481 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4d18e42]
+2026-03-06 00:24:49.481 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - Creating a new SqlSession
+2026-03-06 00:24:49.481 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@ba9f7ac] was not registered for synchronization because synchronization is not active
+2026-03-06 00:24:49.481 [http-nio-8080-exec-7] DEBUG o.m.s.t.SpringManagedTransaction - JDBC Connection [HikariProxyConnection@612534351 wrapping com.mysql.cj.jdbc.ConnectionImpl@18cf0cc9] will not be managed by Spring
+2026-03-06 00:24:49.482 [http-nio-8080-exec-7] DEBUG com.dao.UserDao.selectById - ==>  Preparing: SELECT id AS id,username,`password`,`role`,addtime FROM users WHERE id=? 
+2026-03-06 00:24:49.483 [http-nio-8080-exec-7] DEBUG com.dao.UserDao.selectById - ==> Parameters: 2(Long)
+2026-03-06 00:24:49.485 [http-nio-8080-exec-7] DEBUG com.dao.UserDao.selectById - <==      Total: 1
+2026-03-06 00:24:49.486 [http-nio-8080-exec-7] DEBUG org.mybatis.spring.SqlSessionUtils - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@ba9f7ac]
+2026-03-06 00:24:49.487 [http-nio-8080-exec-7] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-03-06 00:24:49.487 [http-nio-8080-exec-7] DEBUG o.s.w.s.m.m.a.RequestResponseBodyMethodProcessor - Writing [{code=0, data=com.entity.UserEntity@6ec1f496}]
+2026-03-06 00:24:49.488 [http-nio-8080-exec-7] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
