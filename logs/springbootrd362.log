@@ -1,0 +1,27 @@
+2026-03-05 14:25:01.361 [main] INFO  com.SpringbootSchemaApplication - Starting SpringbootSchemaApplication on XiaoXin with PID 8160 (C:\Users\Nanko\Desktop\BYSJ\BYSJ\Springboot_BYSJ\target\classes started by Nanko in C:\Users\Nanko\Desktop\BYSJ\BYSJ)
+2026-03-05 14:25:01.363 [main] INFO  com.SpringbootSchemaApplication - No active profile set, falling back to default profiles: default
+2026-03-05 14:25:03.432 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode!
+2026-03-05 14:25:03.434 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-03-05 14:25:04.227 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 777ms. Found 0 Redis repository interfaces.
+2026-03-05 14:25:04.478 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2026-03-05 14:25:04.713 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+2026-03-05 14:25:04.719 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-03-05 14:25:04.719 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-05 14:25:04.719 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.29]
+2026-03-05 14:25:04.821 [main] INFO  o.a.c.c.C.[.[.[/springbootrd362] - Initializing Spring embedded WebApplicationContext
+2026-03-05 14:25:04.821 [main] INFO  o.s.web.context.ContextLoader - Root WebApplicationContext: initialization completed in 3393 ms
+2026-03-05 14:25:05.036 [main] INFO  com.zaxxer.hikari.HikariDataSource - SpringBootBYSJHikariPool - Starting...
+2026-03-05 14:25:05.584 [main] INFO  com.zaxxer.hikari.HikariDataSource - SpringBootBYSJHikariPool - Start completed.
+2026-03-05 14:25:05.963 [main] INFO  o.s.b.f.a.AutowiredAnnotationBeanPostProcessor - Autowired annotation is not supported on static fields: private static org.springframework.data.redis.core.RedisTemplate com.utils.CacheUtil.redisTemplate
+2026-03-05 14:25:06.477 [main] INFO  o.s.s.c.ThreadPoolTaskScheduler - Initializing ExecutorService 'taskScheduler'
+2026-03-05 14:25:06.509 [scheduling-1] INFO  com.config.TokenCleanTask - 开始执行 Token 过期清理任务...
+2026-03-05 14:25:06.510 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-03-05 14:25:06.543 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path '/springbootrd362'
+2026-03-05 14:25:06.546 [main] INFO  com.SpringbootSchemaApplication - Started SpringbootSchemaApplication in 5.618 seconds (JVM running for 6.792)
+2026-03-05 14:25:06.592 [scheduling-1] INFO  com.config.TokenCleanTask - Token 过期清理完成，共清理 0 条过期记录
+2026-03-05 14:25:53.054 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[.[.[/springbootrd362] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-05 14:25:53.054 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-03-05 14:25:53.064 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 10 ms
+2026-03-05 14:26:16.657 [SpringContextShutdownHook] INFO  o.s.s.c.ThreadPoolTaskScheduler - Shutting down ExecutorService 'taskScheduler'
+2026-03-05 14:26:16.684 [SpringContextShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - SpringBootBYSJHikariPool - Shutdown initiated...
+2026-03-05 14:26:16.689 [SpringContextShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - SpringBootBYSJHikariPool - Shutdown completed.

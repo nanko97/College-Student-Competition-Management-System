@@ -13,16 +13,17 @@
     <artifactId>springbootrd362</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>springboot-schema</name>
-    <description>springboot学习框架</description>
+    <description>springboot 学习框架</description>
 
     <properties>
         <java.version>1.8</java.version>
-        <fastjson.version>1.2.83</fastjson.version>
+        <fastjson2.version>2.0.43</fastjson2.version>
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
         <mybatis-plus.version>3.4.2</mybatis-plus.version>
         <hutool.version>5.8.23</hutool.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <commons-io.version>2.11.0</commons-io.version>
+        <tika.version>2.9.1</tika.version>
     </properties>
 
     <dependencies>
@@ -49,17 +50,12 @@
             <artifactId>shiro-spring</artifactId>
             <version>1.3.2</version>
         </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <!-- Spring Security加密依赖 -->
+        <!-- Spring Security 加密依赖 -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
-        <!-- Lombok（日志注解） -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -107,11 +103,17 @@
             <version>${hutool.version}</version>
         </dependency>
 
-        <!-- FastJson -->
+        <!-- FastJson2 (安全版本) -->
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>${fastjson.version}</version>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>${fastjson2.version}</version>
+        </dependency>
+        <!-- 文件类型检测工具 -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>${tika.version}</version>
         </dependency>
         <!--		<dependency>-->
         <!--		    <groupId>com.microsoft.sqlserver</groupId>-->
@@ -163,7 +165,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.8</source> <!-- 适配主流JDK版本 -->
+                    <source>1.8</source> <!-- 适配主流 JDK 版本 -->
                     <target>1.8</target>
                     <encoding>UTF-8</encoding>
                 </configuration>

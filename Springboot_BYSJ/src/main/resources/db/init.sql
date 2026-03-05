@@ -195,5 +195,77 @@ INSERT INTO `config` (`name`, `value`) VALUES
 ('login_max_fail_count', '5'),
 ('upload_max_size', '10485760');
 
+-- =============================================
+-- 示例数据 (用于毕业演示)
+-- 说明：以下是测试数据，可根据需要删除
+-- =============================================
+
+-- 示例学生账号 (密码：123456，BCrypt 加密)
+-- 注意：实际密码需要使用 BCrypt 加密，这里使用占位符，实际使用时请通过注册功能创建
+INSERT INTO `xuesheng` (`id`, `xuehao`, `mima`, `xueshengxingming`, `xingbie`, `xueyuanmingcheng`, `banji`, `shouji`, `youxiang`) VALUES
+(1001, '2022001', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iDJgYR6sKdZwFpCqGz.xYzQhLzW.', '张三', '男', '计算机学院', '计算机 2201', '13800138001', 'zhangsan@example.com'),
+(1002, '2022002', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iDJgYR6sKdZwFpCqGz.xYzQhLzW.', '李四', '女', '软件学院', '软件工程 2201', '13800138002', 'lisi@example.com'),
+(1003, '2022003', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iDJgYR6sKdZwFpCqGz.xYzQhLzW.', '王五', '男', '信息学院', '信息安全 2201', '13800138003', 'wangwu@example.com');
+
+-- 示例教师账号 (密码：123456，BCrypt 加密)
+INSERT INTO `jiaoshi` (`id`, `gonghao`, `mima`, `jiaoshixingming`, `xingbie`, `xueyuanmingcheng`, `zhicheng`, `shouji`, `youxiang`) VALUES
+(2001, 'T2022001', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iDJgYR6sKdZwFpCqGz.xYzQhLzW.', '赵老师', '男', '计算机学院', '教授', '13800138010', 'zhao@example.com'),
+(2002, 'T2022002', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iDJgYR6sKdZwFpCqGz.xYzQhLzW.', '钱老师', '女', '软件学院', '副教授', '13800138011', 'qian@example.com');
+
+-- 示例竞赛信息
+INSERT INTO `jingsaixinxi` (`jingsaimingcheng`, `jingsaileibie`, `jingsaishijian`, `fengmian`, `lianxiren`, `lianxidianhua`, `sfsh`) VALUES
+('全国大学生程序设计竞赛', '学科竞赛', '2026-06-15 09:00:00', '/upload/contest1.jpg', '赵老师', '010-12345678', '是'),
+('中国"互联网+"大学生创新创业大赛', '创新创业', '2026-07-20 14:00:00', '/upload/contest2.jpg', '钱老师', '010-12345679', '是'),
+('全国大学生数学建模竞赛', '学科竞赛', '2026-09-10 08:00:00', '/upload/contest3.jpg', '孙老师', '010-12345680', '是'),
+('挑战杯全国大学生课外学术科技作品竞赛', '科技创新', '2026-05-25 10:00:00', '/upload/contest4.jpg', '李老师', '010-12345681', '是'),
+('全国大学生电子设计竞赛', '学科竞赛', '2026-08-05 09:00:00', '/upload/contest5.jpg', '周老师', '010-12345682', '是');
+
+-- 示例报名信息
+INSERT INTO `jingsaibaoming` (`jingsaibianhao`, `jingsaimingcheng`, `xuehao`, `xueshengxingming`, `baomingshuoming`, `sfsh`) VALUES
+('CONTEST2026001', '全国大学生程序设计竞赛', '2022001', '张三', '已准备好参赛材料', '是'),
+('CONTEST2026001', '全国大学生程序设计竞赛', '2022002', '李四', '团队报名，共 3 人', '是'),
+('CONTEST2026002', '中国"互联网+"大学生创新创业大赛', '2022001', '张三', '创新项目：智能校园系统', '否'),
+('CONTEST2026003', '全国大学生数学建模竞赛', '2022003', '王五', '个人参赛', '是');
+
+-- 示例作品打分
+INSERT INTO `zuopindafen` (`zuopinmingcheng`, `zuopinjieshao`, `dafenshu`, `dafenbeizhu`, `gonghao`, `jiaoshixingming`) VALUES
+('基于 AI 的图像识别系统', '使用深度学习技术实现图像分类和识别', 92.5, '创新性较强，代码规范良好', 'T2022001', '赵老师'),
+('校园二手交易平台', '为在校大学生提供便捷的二手物品交易服务', 88.0, '功能完整，界面友好', 'T2022001', '赵老师'),
+('智能考勤管理系统', '基于人脸识别的课堂考勤系统', 90.0, '实用性强，性能优秀', 'T2022002', '钱老师'),
+('在线考试系统设计与实现', '支持多种题型的在线考试平台', 85.5, '系统稳定，但 UI 有待优化', 'T2022002', '钱老师');
+
+-- 示例班级类型
+INSERT INTO `banjileixing` (`banjileixing`) VALUES
+('本科'),
+('专科'),
+('研究生'),
+('继续教育');
+
+-- =============================================
+-- 重要提示
+-- =============================================
+-- 1. 以上示例数据的密码均为 BCrypt 加密后的密文
+--    实际登录时请使用明文密码：123456
+-- 
+-- 2. 管理员账号：
+--    用户名：admin
+--    密码：admin123
+--
+-- 3. 学生账号示例：
+--    学号：2022001 / 2022002 / 2022003
+--    密码：123456
+--
+-- 4. 教师账号示例：
+--    工号：T2022001 / T2022002
+--    密码：123456
+--
+-- 5. 如需清空示例数据，可执行：
+--    DELETE FROM jingsaixinxi WHERE id >= 100;
+--    DELETE FROM jingsaibaoming WHERE id >= 100;
+--    DELETE FROM zuopindafen WHERE id >= 100;
+--    DELETE FROM xuesheng WHERE id >= 1000;
+--    DELETE FROM jiaoshi WHERE id >= 2000;
+-- =============================================
+
 -- 完成提示
-SELECT '数据库初始化完成！' AS message;
+SELECT '✅ 数据库初始化完成！示例数据已加载。' AS message;

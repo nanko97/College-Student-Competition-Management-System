@@ -1,6 +1,6 @@
 package com.interceptor;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.annotation.IgnoreAuth;
 import com.entity.TokenEntity;
 import com.service.TokenService;

@@ -25,22 +25,29 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 上传文件映射表
- * 优化点：路径兼容、文件安全、异常处理、日志输出、jar包运行兼容
+ * 文件上传/下载 Controller
+ * 
+ * 【毕业设计优化版】
+ * 功能：处理文件上传和下载请求
+ * 特点：
+ * - 支持常见图片、文档格式
+ * - 文件大小限制（默认 10MB）
+ * - 兼容 IDE 和 jar包运行
  */
 @RestController
 @RequestMapping("file")
-@Slf4j  // 新增日志注解，替代System.out
+@Slf4j
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class FileController {
+    
     @Autowired
     private ConfigService configService;
 
     @Autowired
-    private ServletContext servletContext;  // 用于兼容jar包运行时的静态资源路径
+    private ServletContext servletContext;  // 用于兼容 jar包运行时的静态资源路径
 
-    // 新增：从配置文件读取上传相关参数，避免硬编码
-    @Value("${file.upload.max-size:10485760}")  // 默认10MB（字节）
+    // 从配置文件读取上传相关参数
+    @Value("${file.upload.max-size:10485760}")  // 默认 10MB（字节）
     private long maxFileSize;
 
     @Value("${file.upload.allow-types:jpg,png,jpeg,gif,pdf,doc,docx}")
@@ -51,9 +58,19 @@ public class FileController {
 
     /**
      * 上传文件
-     * 优化：文件校验、路径兼容、异常细化、日志输出
+     * 
+     * 【毕业设计简化版】
+     * 流程：
+     * 1. 检查文件是否为空
+     * 2. 检查文件大小
+     * 3. 检查文件类型（通过后缀名）
+     * 4. 保存文件到服务器
+     * 
+     * @param file 上传的文件
+     * @param type 文件类型标识（可选）
+     * @return 返回文件名
      */
-    @PostMapping("/upload")  // 明确请求方式为POST，更规范
+    @PostMapping("/upload")
     public R upload(
             @RequestParam("file") MultipartFile file,
             @RequestParam(required = false) String type) throws Exception {
@@ -68,10 +85,10 @@ public class FileController {
         if (file.getSize() > maxFileSize) {
             log.warn("文件上传失败：文件大小超过限制，当前大小：{}，限制：{}",
                     file.getSize(), maxFileSize);
-            throw new EIException("文件大小超过限制（最大" + maxFileSize/1024/1024 + "MB）");
+            throw new EIException("文件大小超过限制（最大" + (maxFileSize/1024/1024) + "MB）");
         }
 
-        // 3. 文件类型校验
+        // 3. 文件类型校验（基于后缀名）
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || !originalFilename.contains(".")) {
             log.warn("文件上传失败：文件名非法，无后缀");
@@ -85,7 +102,7 @@ public class FileController {
             throw new EIException("不支持该文件类型，仅支持：" + allowFileTypes);
         }
 
-        // 4. 构建上传目录（兼容IDE和jar包运行）
+        // 4. 构建上传目录（兼容 IDE 和 jar包运行）
         File uploadDir = getUploadDir();
         if (!uploadDir.exists()) {
             boolean mkdirs = uploadDir.mkdirs();
@@ -95,12 +112,12 @@ public class FileController {
             }
         }
 
-        // 5. 生成唯一文件名（避免覆盖）
+        // 5. 生成唯一文件名（使用时间戳避免覆盖）
         String fileName = new Date().getTime() + "." + fileExt;
-        File destFile = new File(uploadDir, fileName);  // 简化路径拼接，避免分隔符问题
+        File destFile = new File(uploadDir, fileName);
 
         try {
-            // 6. 保存文件（使用Files.copy更稳定）
+            // 6. 保存文件
             Files.copy(file.getInputStream(), destFile.toPath());
             log.info("文件上传成功：{} -> {}", originalFilename, destFile.getAbsolutePath());
         } catch (IOException e) {
@@ -109,16 +126,17 @@ public class FileController {
             throw new EIException("文件保存失败：" + e.getMessage());
         }
 
-
         return R.ok().put("file", fileName);
     }
 
     /**
      * 下载文件
-     * 优化：异常处理、日志输出、路径兼容
+     * 
+     * @param fileName 文件名
+     * @return 文件内容
      */
     @IgnoreAuth
-    @GetMapping("/download")  // 明确请求方式为GET
+    @GetMapping("/download")
     public ResponseEntity<byte[]> download(@RequestParam String fileName) {
         // 参数校验
         if (StringUtils.isBlank(fileName)) {
@@ -127,7 +145,7 @@ public class FileController {
         }
 
         try {
-            // 构建文件路径（兼容IDE和jar包运行）
+            // 构建文件路径（兼容 IDE 和 jar包运行）
             File uploadDir = getUploadDir();
             File file = new File(uploadDir, fileName);
 
@@ -136,11 +154,6 @@ public class FileController {
                 log.warn("文件下载失败：文件不存在，路径：{}", file.getAbsolutePath());
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-
-            // 权限校验（保留原有注释，可根据实际需求补充）
-            /*if(!fileService.canRead(file, SessionManager.getSessionUser())){
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            }*/
 
             // 封装响应头
             HttpHeaders headers = new HttpHeaders();
@@ -160,8 +173,9 @@ public class FileController {
     }
 
     /**
-     * 私有方法：获取上传目录（兼容IDE和jar包运行）
-     * 解决：jar包运行时ResourceUtils.getURL("classpath:static")读取失败的问题
+     * 获取上传目录（兼容 IDE 和 jar包运行）
+     * 
+     * @return 上传目录 File 对象
      */
     private File getUploadDir() {
         // 优先使用配置的上传路径
@@ -170,9 +184,9 @@ public class FileController {
             return uploadDir;
         }
 
-        // 相对路径：兼容IDE（classpath:static/upload）和jar包（运行目录/upload）
+        // 相对路径：兼容 IDE（classpath:static/upload）和jar包（运行目录/upload）
         String realPath = servletContext.getRealPath("/static/upload/");
-        if (realPath == null) {  // jar包运行时realPath为null
+        if (realPath == null) {  // jar包运行时realPath为 null
             return new File(uploadRootPath);
         }
         return new File(realPath);

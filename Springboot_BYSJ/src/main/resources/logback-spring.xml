@@ -1,65 +1,186 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="60 seconds" debug="false">
     
-    <!-- 控制台输出 -->
+    <!-- ==================== 属性定义 ==================== -->
+    <!-- 日志输出格式 -->
+    <property name="LOG_PATTERN" 
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+    
+    <!-- 日志文件路径 -->
+    <property name="LOG_PATH" value="logs"/>
+    <property name="LOG_FILE_NAME" value="springbootrd362"/>
+    
+    <!-- ==================== 控制台输出 ==================== -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>${LOG_PATTERN}</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>
     
-    <!-- 文件输出 -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/springbootrd362.log</file>
+    <!-- ==================== 文件输出 - INFO 级别 ==================== -->
+    <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/info.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/springbootrd362.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${LOG_PATH}/info.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    
+    <!-- ==================== 文件输出 - WARN 级别 ==================== -->
+    <appender name="WARN_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/warn.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/warn.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    
+    <!-- ==================== 文件输出 - ERROR 级别 ==================== -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>90</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    
+    <!-- ==================== 综合日志文件（所有级别） ==================== -->
+    <appender name="ALL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>100MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
             <maxHistory>30</maxHistory>
-            <totalSizeCap>1GB</totalSizeCap>
+            <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>${LOG_PATTERN}</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>
     
-    <!-- 异步日志配置 - 提升性能 -->
-    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+    <!-- ==================== 异步日志配置（提升性能） ==================== -->
+    <appender name="ASYNC_INFO" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>512</queueSize>
         <discardingThreshold>0</discardingThreshold>
         <includeCallerData>false</includeCallerData>
-        <appender-ref ref="FILE"/>
+        <appender-ref ref="INFO_FILE"/>
     </appender>
     
-    <appender name="ASYNC_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+    <appender name="ASYNC_WARN" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>512</queueSize>
         <discardingThreshold>0</discardingThreshold>
         <includeCallerData>false</includeCallerData>
-        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="WARN_FILE"/>
     </appender>
     
-    <!-- 数据库操作日志 - 生产环境关闭 SQL 显示以提升性能 -->
-    <logger name="com.ibatis" level="WARN"/>
+    <appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="ERROR_FILE"/>
+    </appender>
+    
+    <appender name="ASYNC_ALL" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="ALL_FILE"/>
+    </appender>
+    
+    <!-- ==================== 开发环境配置 ==================== -->
+    <springProfile name="dev">
+        <!-- 根日志级别：DEBUG（输出详细日志） -->
+        <root level="DEBUG">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ALL_FILE"/>
+        </root>
+        
+        <!-- 业务包日志级别 -->
+        <logger name="com" level="DEBUG"/>
+        <logger name="com.controller" level="DEBUG"/>
+        <logger name="com.service" level="DEBUG"/>
+        <logger name="com.dao" level="DEBUG"/>
+        
+        <!-- MyBatis SQL 输出（便于调试） -->
+        <logger name="org.apache.ibatis" level="DEBUG"/>
+        <logger name="java.sql.Connection" level="DEBUG"/>
+        <logger name="java.sql.Statement" level="DEBUG"/>
+        <logger name="java.sql.PreparedStatement" level="DEBUG"/>
+        
+        <!-- Spring 框架日志 -->
+        <logger name="org.springframework" level="INFO"/>
+        <logger name="org.springframework.web" level="DEBUG"/>
+    </springProfile>
+    
+    <!-- ==================== 生产环境配置 ==================== -->
+    <springProfile name="prod">
+        <!-- 根日志级别：INFO（减少日志量） -->
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_INFO"/>
+            <appender-ref ref="ASYNC_WARN"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+            <appender-ref ref="ASYNC_ALL"/>
+        </root>
+        
+        <!-- 业务包日志级别（精简） -->
+        <logger name="com" level="INFO"/>
+        <logger name="com.controller" level="WARN"/>
+        <logger name="com.service" level="INFO"/>
+        <logger name="com.dao" level="WARN"/>
+        
+        <!-- MyBatis SQL 关闭（提升性能） -->
+        <logger name="org.apache.ibatis" level="WARN"/>
+        <logger name="java.sql.Connection" level="WARN"/>
+        <logger name="java.sql.Statement" level="WARN"/>
+        <logger name="java.sql.PreparedStatement" level="WARN"/>
+        
+        <!-- Spring 框架日志 -->
+        <logger name="org.springframework" level="INFO"/>
+        <logger name="org.springframework.web" level="WARN"/>
+        
+        <!-- HikariCP 连接池日志 -->
+        <logger name="com.zaxxer.hikari" level="INFO"/>
+    </springProfile>
+    
+    <!-- ==================== 特殊日志控制 ==================== -->
+    <!-- 第三方框架日志级别控制 -->
     <logger name="com.baomidou.mybatisplus" level="WARN"/>
-    <logger name="org.apache.ibatis" level="WARN"/>
-    <logger name="java.sql.Connection" level="WARN"/>
-    <logger name="java.sql.Statement" level="WARN"/>
-    <logger name="java.sql.PreparedStatement" level="WARN"/>
+    <logger name="cn.hutool" level="INFO"/>
+    <logger name="com.alibaba.fastjson2" level="INFO"/>
     
-    <!-- Spring 框架日志级别 -->
-    <logger name="org.springframework" level="INFO"/>
-    <logger name="org.springframework.web" level="INFO"/>
-    
-    <!-- HikariCP 连接池日志 -->
+    <!-- 数据库连接池 -->
     <logger name="com.zaxxer.hikari" level="INFO"/>
-    
-    <!-- 根日志级别 - INFO 级别平衡性能和调试需求 -->
-    <root level="INFO">
-        <appender-ref ref="ASYNC_CONSOLE"/>
-        <appender-ref ref="ASYNC_FILE"/>
-    </root>
     
 </configuration>

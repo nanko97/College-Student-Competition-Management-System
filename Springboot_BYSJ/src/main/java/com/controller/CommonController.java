@@ -24,10 +24,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 /**
  * 通用接口
@@ -121,7 +117,7 @@ public class CommonController {
             log.error("人脸比对 IO 异常", e);
             return R.error("系统繁忙，请稍后再试");
         }
-        return R.ok().put("data", com.alibaba.fastjson.JSONObject.parse(res.get("result").toString()));
+        return R.ok().put("data", com.alibaba.fastjson2.JSONObject.parse(res.get("result").toString()));
     }
 
     /**

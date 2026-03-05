@@ -63,12 +63,49 @@
           <el-input 
             v-model="form.password" 
             type="password"
-            placeholder="6-20 位字母、数字或特殊字符"
+            :placeholder="passwordPlaceholder"
             prefix-icon="el-icon-lock"
             show-password
             clearable
+            @input="onPasswordInput"
           ></el-input>
         </el-form-item>
+        
+        <!-- 密码强度提示 -->
+        <div v-if="showPasswordStrength" class="password-strength-container">
+          <div class="strength-label">
+            <span>密码强度：</span>
+            <span :class="['strength-text', 'strength-' + passwordStrengthLevel]">
+              {{ passwordStrengthText }}
+            </span>
+            <span class="strength-score">{{ passwordStrengthScore }}分</span>
+          </div>
+          <div class="strength-bars">
+            <div 
+              v-for="(bar, index) in 4" 
+              :key="index"
+              :class="['strength-bar', getBarClass(index)]"
+            ></div>
+          </div>
+          <div class="strength-requirements">
+            <div :class="['requirement-item', { met: hasUpperCase }]">
+              <i :class="hasUpperCase ? 'el-icon-success' : 'el-icon-circle-close'"></i>
+              <span>大写字母</span>
+            </div>
+            <div :class="['requirement-item', { met: hasLowerCase }]">
+              <i :class="hasLowerCase ? 'el-icon-success' : 'el-icon-circle-close'"></i>
+              <span>小写字母</span>
+            </div>
+            <div :class="['requirement-item', { met: hasDigit }]">
+              <i :class="hasDigit ? 'el-icon-success' : 'el-icon-circle-close'"></i>
+              <span>数字</span>
+            </div>
+            <div :class="['requirement-item', { met: hasSpecialChar }]">
+              <i :class="hasSpecialChar ? 'el-icon-success' : 'el-icon-circle-close'"></i>
+              <span>特殊字符</span>
+            </div>
+          </div>
+        </div>
 
         <el-form-item label="确认密码" prop="confirmPassword">
           <el-input 
@@ -289,15 +326,105 @@ export default {
       checkingAccount: false,
       accountAvailable: null, // null: 未检查，true: 可用，false: 已存在
       submitting: false,
-      showAdvancedFields: false
+      showAdvancedFields: false,
+      
+      // 密码强度相关
+      showPasswordStrength: false,
+      passwordStrengthScore: 0,
+      passwordStrengthLevel: 'weak', // weak, medium, strong, very-strong
+      hasUpperCase: false,
+      hasLowerCase: false,
+      hasDigit: false,
+      hasSpecialChar: false
     };
   },
   computed: {
     accountPlaceholder() {
       return this.form.role === '学生' ? '请输入学号（4-20 位）' : '请输入工号（4-20 位）';
+    },
+    passwordPlaceholder() {
+      return this.form.role === '学生' ? '6-20 位字母、数字或特殊字符' : '6-20 位字母、数字或特殊字符';
+    },
+    passwordStrengthText() {
+      const levelMap = {
+        'weak': '极弱',
+        'medium': '弱',
+        'strong': '中',
+        'very-strong': '强'
+      };
+      return levelMap[this.passwordStrengthLevel] || '极弱';
     }
   },
   methods: {
+    // 密码强度检测
+    onPasswordInput() {
+      const password = this.form.password;
+      
+      if (!password) {
+        this.showPasswordStrength = false;
+        return;
+      }
+      
+      this.showPasswordStrength = true;
+      
+      // 检测密码包含的字符类型
+      this.hasUpperCase = /[A-Z]/.test(password);
+      this.hasLowerCase = /[a-z]/.test(password);
+      this.hasDigit = /\d/.test(password);
+      this.hasSpecialChar = /[^A-Za-z0-9]/.test(password);
+      
+      // 计算密码强度分数
+      this.passwordStrengthScore = this.calculatePasswordStrength(password);
+      
+      // 确定强度等级
+      if (this.passwordStrengthScore < 30) {
+        this.passwordStrengthLevel = 'weak';
+      } else if (this.passwordStrengthScore < 60) {
+        this.passwordStrengthLevel = 'medium';
+      } else if (this.passwordStrengthScore < 80) {
+        this.passwordStrengthLevel = 'strong';
+      } else {
+        this.passwordStrengthLevel = 'very-strong';
+      }
+    },
+    
+    // 计算密码强度分数
+    calculatePasswordStrength(password) {
+      let score = 0;
+      
+      // 基础分（长度）
+      score += Math.min(password.length * 4, 40);
+      
+      // 复杂度分
+      if (/[A-Z]/.test(password)) score += 10;
+      if (/[a-z]/.test(password)) score += 10;
+      if (/\d/.test(password)) score += 10;
+      if (/[^A-Za-z0-9]/.test(password)) score += 20;
+      
+      // 额外加分（长度超过 12）
+      if (password.length >= 12) {
+        score += 10;
+      }
+      
+      return Math.min(score, 100);
+    },
+    
+    // 获取进度条样式
+    getBarClass(index) {
+      const activeBars = Math.ceil(this.passwordStrengthScore / 25);
+      const levelColors = {
+        1: 'bar-weak',
+        2: 'bar-medium',
+        3: 'bar-strong',
+        4: 'bar-very-strong'
+      };
+      
+      if (index < activeBars) {
+        return levelColors[activeBars] || 'bar-weak';
+      }
+      return '';
+    },
+    
     // 角色切换时重置账号可用性状态
     onRoleChange() {
       this.accountAvailable = null;
@@ -983,6 +1110,118 @@ $text-color: #2c3e50;
         display: block;
         margin-top: -10px;
       }
+      
+      // 密码强度提示样式
+      .password-strength-container {
+        margin-top: -18px;
+        margin-bottom: 15px;
+        padding: 12px 15px;
+        background: #f5f7fa;
+        border-radius: 8px;
+        animation: slideDown 0.3s ease-out;
+        
+        .strength-label {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 8px;
+          font-size: 13px;
+          
+          span:first-child {
+            color: $info-color;
+          }
+          
+          .strength-text {
+            font-weight: 600;
+            transition: all 0.3s;
+            
+            &.strength-weak {
+              color: $danger-color;
+            }
+            
+            &.strength-medium {
+              color: $warning-color;
+            }
+            
+            &.strength-strong {
+              color: #409EFF;
+            }
+            
+            &.strength-very-strong {
+              color: $success-color;
+            }
+          }
+          
+          .strength-score {
+            color: $primary-color;
+            font-weight: 600;
+            font-size: 12px;
+          }
+        }
+        
+        .strength-bars {
+          display: flex;
+          gap: 6px;
+          margin-bottom: 10px;
+          
+          .strength-bar {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #e0e0e0;
+            transition: all 0.3s ease;
+            
+            &.bar-weak {
+              background: $danger-color;
+              box-shadow: 0 0 8px rgba($danger-color, 0.5);
+            }
+            
+            &.bar-medium {
+              background: $warning-color;
+              box-shadow: 0 0 8px rgba($warning-color, 0.5);
+            }
+            
+            &.bar-strong {
+              background: #409EFF;
+              box-shadow: 0 0 8px rgba(#409EFF, 0.5);
+            }
+            
+            &.bar-very-strong {
+              background: $success-color;
+              box-shadow: 0 0 8px rgba($success-color, 0.5);
+            }
+          }
+        }
+        
+        .strength-requirements {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 6px;
+          
+          .requirement-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: $info-color;
+            transition: all 0.3s;
+            
+            i {
+              font-size: 14px;
+              margin-right: 4px;
+              color: #c0c4cc;
+              transition: all 0.3s;
+            }
+            
+            &.met {
+              color: $success-color;
+              
+              i {
+                color: $success-color;
+              }
+            }
+          }
+        }
+      }
 
       .submit-btn {
         width: 100%;
@@ -1148,6 +1387,17 @@ $text-color: #2c3e50;
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

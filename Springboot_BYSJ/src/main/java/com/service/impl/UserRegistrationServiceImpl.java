@@ -11,7 +11,7 @@ import com.service.UserRegistrationService;
 import com.service.UserService;
 import com.service.XueshengService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +32,8 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
     @Autowired
     private UserService userService;
     
-    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -65,7 +66,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
         XueshengEntity student = new XueshengEntity<>();
         student.setId(userId);
         student.setXuehao(dto.getAccount());
-        student.setMima(passwordEncoder.encode(dto.getPassword())); // BCrypt 加密
+        student.setMima(passwordEncoder.encode(dto.getPassword())); // 密码加密
         student.setXueshengxingming(dto.getName());
         student.setXingbie(dto.getGender());
         student.setXueyuanmingcheng(dto.getCollege());
@@ -97,7 +98,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
         JiaoshiEntity teacher = new JiaoshiEntity<>();
         teacher.setId(userId);
         teacher.setGonghao(dto.getAccount());
-        teacher.setMima(passwordEncoder.encode(dto.getPassword())); // BCrypt 加密
+        teacher.setMima(passwordEncoder.encode(dto.getPassword())); // 密码加密
         teacher.setJiaoshixingming(dto.getName());
         teacher.setXingbie(dto.getGender());
         teacher.setXueyuanmingcheng(dto.getCollege());
