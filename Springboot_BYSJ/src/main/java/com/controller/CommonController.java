@@ -11,6 +11,7 @@ import com.service.ConfigService;
 import com.utils.BaiduUtil;
 import com.utils.FileUtil;
 import com.utils.R;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +23,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 通用接口
  */
+@Slf4j
 @RestController
 public class CommonController {
     @Autowired
@@ -37,6 +44,29 @@ public class CommonController {
     private static AipFace client = null;
 
     private static String BAIDU_DITU_AK = null;
+    
+    // 允许的表名白名单（防止 SQL 注入）
+    private static final Set<String> ALLOWED_TABLES = new HashSet<>(Arrays.asList(
+        "xuesheng", "jiaoshi", "jingsaixinxi", "jingsaibaoming", 
+        "zuopindafen", "banjileixing", "config", "token", "users"
+    ));
+    
+    // 允许的列名白名单
+    private static final Pattern COLUMN_PATTERN = Pattern.compile("^[a-zA-Z0-9_]+$");
+    
+    /**
+     * 校验表名是否合法
+     */
+    private boolean isValidTable(String tableName) {
+        return tableName != null && ALLOWED_TABLES.contains(tableName.toLowerCase());
+    }
+    
+    /**
+     * 校验列名是否合法
+     */
+    private boolean isValidColumn(String columnName) {
+        return columnName != null && COLUMN_PATTERN.matcher(columnName).matches();
+    }
 
     @RequestMapping("/location")
     public R location(String lng, String lat) {
@@ -83,12 +113,13 @@ public class CommonController {
             requests.add(req1);
             requests.add(req2);
             res = client.match(requests);
-            System.out.println(res.get("result"));
+            log.info("人脸比对结果：{}", res.opt("result"));
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            log.error("人脸比对文件不存在：{}", face1, e);
             return R.error("文件不存在");
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("人脸比对 IO 异常", e);
+            return R.error("系统繁忙，请稍后再试");
         }
         return R.ok().put("data", com.alibaba.fastjson.JSONObject.parse(res.get("result").toString()));
     }
@@ -103,6 +134,16 @@ public class CommonController {
     @IgnoreAuth
     @RequestMapping("/option/{tableName}/{columnName}")
     public R getOption(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName, String level, String parent) {
+        // 校验表名和列名，防止 SQL 注入
+        if (!isValidTable(tableName)) {
+            log.warn("非法的表名：{}", tableName);
+            return R.error("非法的表名");
+        }
+        if (!isValidColumn(columnName)) {
+            log.warn("非法的列名：{}", columnName);
+            return R.error("非法的列名");
+        }
+        
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("table", tableName);
         params.put("column", columnName);
@@ -126,6 +167,16 @@ public class CommonController {
     @IgnoreAuth
     @RequestMapping("/follow/{tableName}/{columnName}")
     public R getFollowByOption(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName, @RequestParam String columnValue) {
+        // 校验表名和列名，防止 SQL 注入
+        if (!isValidTable(tableName)) {
+            log.warn("非法的表名：{}", tableName);
+            return R.error("非法的表名");
+        }
+        if (!isValidColumn(columnName)) {
+            log.warn("非法的列名：{}", columnName);
+            return R.error("非法的列名");
+        }
+        
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("table", tableName);
         params.put("column", columnName);
@@ -143,6 +194,11 @@ public class CommonController {
      */
     @RequestMapping("/sh/{tableName}")
     public R sh(@PathVariable("tableName") String tableName, @RequestBody Map<String, Object> map) {
+        // 校验表名，防止 SQL 注入
+        if (!isValidTable(tableName)) {
+            log.warn("非法的表名：{}", tableName);
+            return R.error("非法的表名");
+        }
         map.put("table", tableName);
         commonService.sh(map);
         return R.ok();
@@ -161,6 +217,16 @@ public class CommonController {
     @RequestMapping("/remind/{tableName}/{columnName}/{type}")
     public R remindCount(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName,
                          @PathVariable("type") String type, @RequestParam Map<String, Object> map) {
+        // 校验表名和列名，防止 SQL 注入
+        if (!isValidTable(tableName)) {
+            log.warn("非法的表名：{}", tableName);
+            return R.error("非法的表名");
+        }
+        if (!isValidColumn(columnName)) {
+            log.warn("非法的列名：{}", columnName);
+            return R.error("非法的列名");
+        }
+        
         map.put("table", tableName);
         map.put("column", columnName);
         map.put("type", type);
@@ -196,6 +262,16 @@ public class CommonController {
     @IgnoreAuth
     @RequestMapping("/cal/{tableName}/{columnName}")
     public R cal(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName) {
+        // 校验表名和列名，防止 SQL 注入
+        if (!isValidTable(tableName)) {
+            log.warn("非法的表名：{}", tableName);
+            return R.error("非法的表名");
+        }
+        if (!isValidColumn(columnName)) {
+            log.warn("非法的列名：{}", columnName);
+            return R.error("非法的列名");
+        }
+        
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("table", tableName);
         params.put("column", columnName);
@@ -209,6 +285,16 @@ public class CommonController {
     @IgnoreAuth
     @RequestMapping("/group/{tableName}/{columnName}")
     public R group(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName) {
+        // 校验表名和列名，防止 SQL 注入
+        if (!isValidTable(tableName)) {
+            log.warn("非法的表名：{}", tableName);
+            return R.error("非法的表名");
+        }
+        if (!isValidColumn(columnName)) {
+            log.warn("非法的列名：{}", columnName);
+            return R.error("非法的列名");
+        }
+        
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("table", tableName);
         params.put("column", columnName);
@@ -230,6 +316,20 @@ public class CommonController {
     @IgnoreAuth
     @RequestMapping("/value/{tableName}/{xColumnName}/{yColumnName}")
     public R value(@PathVariable("tableName") String tableName, @PathVariable("yColumnName") String yColumnName, @PathVariable("xColumnName") String xColumnName) {
+        // 校验表名和列名，防止 SQL 注入
+        if (!isValidTable(tableName)) {
+            log.warn("非法的表名：{}", tableName);
+            return R.error("非法的表名");
+        }
+        if (!isValidColumn(xColumnName)) {
+            log.warn("非法的 X 列名：{}", xColumnName);
+            return R.error("非法的列名");
+        }
+        if (!isValidColumn(yColumnName)) {
+            log.warn("非法的 Y 列名：{}", yColumnName);
+            return R.error("非法的列名");
+        }
+        
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("table", tableName);
         params.put("xColumn", xColumnName);

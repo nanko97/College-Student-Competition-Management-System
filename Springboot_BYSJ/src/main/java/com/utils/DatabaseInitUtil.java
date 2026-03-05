@@ -20,6 +20,9 @@ public class DatabaseInitUtil {
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             System.out.println("✓ 数据库连接成功");
             
+            // 修复数据库字段（添加 role 字段）
+            fixDatabaseFields(conn);
+            
             // 创建 users 表
             createUsersTable(conn);
             
@@ -38,6 +41,34 @@ public class DatabaseInitUtil {
             System.err.println("✗ 数据库初始化失败：" + e.getMessage());
             e.printStackTrace();
         }
+    }
+    
+    private static void fixDatabaseFields(Connection conn) throws SQLException {
+        System.out.println("正在修复数据库字段...");
+        
+        try (Statement stmt = conn.createStatement()) {
+            // 检查 xuesheng 表是否有 role 字段
+            ResultSet rs = stmt.executeQuery("SHOW COLUMNS FROM xuesheng LIKE 'role'");
+            if (!rs.next()) {
+                // 字段不存在，添加
+                stmt.execute("ALTER TABLE xuesheng ADD COLUMN role VARCHAR(20) DEFAULT '学生' COMMENT '角色'");
+                System.out.println("✓ xuesheng 表 role 字段添加成功");
+            } else {
+                System.out.println("ℹ xuesheng 表 role 字段已存在");
+            }
+            
+            // 检查 jiaoshi 表是否有 role 字段
+            rs = stmt.executeQuery("SHOW COLUMNS FROM jiaoshi LIKE 'role'");
+            if (!rs.next()) {
+                // 字段不存在，添加
+                stmt.execute("ALTER TABLE jiaoshi ADD COLUMN role VARCHAR(20) DEFAULT '教师' COMMENT '角色'");
+                System.out.println("✓ jiaoshi 表 role 字段添加成功");
+            } else {
+                System.out.println("ℹ jiaoshi 表 role 字段已存在");
+            }
+        }
+        
+        System.out.println("✓ 数据库字段修复完成");
     }
     
     private static void createUsersTable(Connection conn) throws SQLException {

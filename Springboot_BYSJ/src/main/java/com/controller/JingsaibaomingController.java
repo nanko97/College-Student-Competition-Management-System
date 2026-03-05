@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.entity.JingsaibaomingEntity;
 import com.entity.view.JingsaibaomingView;
 import com.service.JingsaibaomingService;
+import com.utils.IdWorker;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
 import com.utils.R;
+import com.utils.ValidatorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,12 +42,14 @@ public class JingsaibaomingController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params, JingsaibaomingEntity jingsaibaoming,
                   HttpServletRequest request) {
-        String tableName = request.getSession().getAttribute("tableName").toString();
-        if (tableName.equals("jiaoshi")) {
-            jingsaibaoming.setGonghao((String) request.getSession().getAttribute("username"));
-        }
-        if (tableName.equals("xuesheng")) {
-            jingsaibaoming.setXuehao((String) request.getSession().getAttribute("username"));
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        if (tableName != null) {
+            if (tableName.equals("jiaoshi")) {
+                jingsaibaoming.setGonghao((String) request.getSession().getAttribute("username"));
+            }
+            if (tableName.equals("xuesheng")) {
+                jingsaibaoming.setXuehao((String) request.getSession().getAttribute("username"));
+            }
         }
         EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<JingsaibaomingEntity>();
         PageUtils page = jingsaibaomingService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, jingsaibaoming), params), params));
@@ -109,8 +113,8 @@ public class JingsaibaomingController {
      */
     @RequestMapping("/save")
     public R save(@RequestBody JingsaibaomingEntity jingsaibaoming, HttpServletRequest request) {
-        jingsaibaoming.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
-        //ValidatorUtils.validateEntity(jingsaibaoming);
+        jingsaibaoming.setId(IdWorker.getId());
+        ValidatorUtils.validateEntity(jingsaibaoming);
         jingsaibaomingService.insert(jingsaibaoming);
         return R.ok();
     }
@@ -120,8 +124,8 @@ public class JingsaibaomingController {
      */
     @RequestMapping("/add")
     public R add(@RequestBody JingsaibaomingEntity jingsaibaoming, HttpServletRequest request) {
-        jingsaibaoming.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
-        //ValidatorUtils.validateEntity(jingsaibaoming);
+        jingsaibaoming.setId(IdWorker.getId());
+        ValidatorUtils.validateEntity(jingsaibaoming);
         jingsaibaomingService.insert(jingsaibaoming);
         return R.ok();
     }
@@ -131,7 +135,7 @@ public class JingsaibaomingController {
      */
     @RequestMapping("/update")
     public R update(@RequestBody JingsaibaomingEntity jingsaibaoming, HttpServletRequest request) {
-        //ValidatorUtils.validateEntity(jingsaibaoming);
+        ValidatorUtils.validateEntity(jingsaibaoming);
         jingsaibaomingService.updateById(jingsaibaoming);//全部更新
         return R.ok();
     }
@@ -184,12 +188,14 @@ public class JingsaibaomingController {
             wrapper.le(columnName, map.get("remindend"));
         }
 
-        String tableName = request.getSession().getAttribute("tableName").toString();
-        if (tableName.equals("jiaoshi")) {
-            wrapper.eq("gonghao", (String) request.getSession().getAttribute("username"));
-        }
-        if (tableName.equals("xuesheng")) {
-            wrapper.eq("xuehao", (String) request.getSession().getAttribute("username"));
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        if (tableName != null) {
+            if (tableName.equals("jiaoshi")) {
+                wrapper.eq("gonghao", (String) request.getSession().getAttribute("username"));
+            }
+            if (tableName.equals("xuesheng")) {
+                wrapper.eq("xuehao", (String) request.getSession().getAttribute("username"));
+            }
         }
 
         int count = jingsaibaomingService.selectCount(wrapper);

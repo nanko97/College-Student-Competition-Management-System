@@ -6,9 +6,11 @@ import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.entity.JingsaixinxiEntity;
 import com.entity.view.JingsaixinxiView;
 import com.service.JingsaixinxiService;
+import com.utils.IdWorker;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
 import com.utils.R;
+import com.utils.ValidatorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,8 +43,8 @@ public class JingsaixinxiController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params, JingsaixinxiEntity jingsaixinxi,
                   HttpServletRequest request) {
-        String tableName = request.getSession().getAttribute("tableName").toString();
-        if (tableName.equals("jiaoshi")) {
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        if (tableName != null && tableName.equals("jiaoshi")) {
             jingsaixinxi.setGonghao((String) request.getSession().getAttribute("username"));
         }
         EntityWrapper<JingsaixinxiEntity> ew = new EntityWrapper<JingsaixinxiEntity>();
@@ -108,8 +110,8 @@ public class JingsaixinxiController {
      */
     @RequestMapping("/save")
     public R save(@RequestBody JingsaixinxiEntity jingsaixinxi, HttpServletRequest request) {
-        jingsaixinxi.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
-        //ValidatorUtils.validateEntity(jingsaixinxi);
+        jingsaixinxi.setId(IdWorker.getId());
+        ValidatorUtils.validateEntity(jingsaixinxi);
         jingsaixinxiService.insert(jingsaixinxi);
         return R.ok();
     }
@@ -119,8 +121,8 @@ public class JingsaixinxiController {
      */
     @RequestMapping("/add")
     public R add(@RequestBody JingsaixinxiEntity jingsaixinxi, HttpServletRequest request) {
-        jingsaixinxi.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
-        //ValidatorUtils.validateEntity(jingsaixinxi);
+        jingsaixinxi.setId(IdWorker.getId());
+        ValidatorUtils.validateEntity(jingsaixinxi);
         jingsaixinxiService.insert(jingsaixinxi);
         return R.ok();
     }
@@ -130,7 +132,7 @@ public class JingsaixinxiController {
      */
     @RequestMapping("/update")
     public R update(@RequestBody JingsaixinxiEntity jingsaixinxi, HttpServletRequest request) {
-        //ValidatorUtils.validateEntity(jingsaixinxi);
+        ValidatorUtils.validateEntity(jingsaixinxi);
         jingsaixinxiService.updateById(jingsaixinxi);//全部更新
         return R.ok();
     }
@@ -183,8 +185,8 @@ public class JingsaixinxiController {
             wrapper.le(columnName, map.get("remindend"));
         }
 
-        String tableName = request.getSession().getAttribute("tableName").toString();
-        if (tableName.equals("jiaoshi")) {
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        if (tableName != null && tableName.equals("jiaoshi")) {
             wrapper.eq("gonghao", (String) request.getSession().getAttribute("username"));
         }
 

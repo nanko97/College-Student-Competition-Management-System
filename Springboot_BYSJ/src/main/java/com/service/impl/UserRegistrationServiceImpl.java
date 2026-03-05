@@ -42,8 +42,8 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
             return RegisterResultVO.error("账号已存在");
         }
         
-        // 2. 根据角色创建对应实体
-        Long userId = new Date().getTime();
+        // 2. 根据角色创建对应实体（使用雪花算法生成唯一 ID）
+        Long userId = com.utils.IdWorker.getId();
         
         switch (dto.getRole()) {
             case "学生":

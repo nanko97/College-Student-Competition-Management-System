@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.entity.ZuopindafenEntity;
 import com.entity.view.ZuopindafenView;
 import com.service.ZuopindafenService;
+import com.utils.IdWorker;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
 import com.utils.R;
+import com.utils.ValidatorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,12 +42,14 @@ public class ZuopindafenController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params, ZuopindafenEntity zuopindafen,
                   HttpServletRequest request) {
-        String tableName = request.getSession().getAttribute("tableName").toString();
-        if (tableName.equals("xuesheng")) {
-            zuopindafen.setXuehao((String) request.getSession().getAttribute("username"));
-        }
-        if (tableName.equals("jiaoshi")) {
-            zuopindafen.setGonghao((String) request.getSession().getAttribute("username"));
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        if (tableName != null) {
+            if (tableName.equals("xuesheng")) {
+                zuopindafen.setXuehao((String) request.getSession().getAttribute("username"));
+            }
+            if (tableName.equals("jiaoshi")) {
+                zuopindafen.setGonghao((String) request.getSession().getAttribute("username"));
+            }
         }
         EntityWrapper<ZuopindafenEntity> ew = new EntityWrapper<ZuopindafenEntity>();
         PageUtils page = zuopindafenService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zuopindafen), params), params));
@@ -109,8 +113,8 @@ public class ZuopindafenController {
      */
     @RequestMapping("/save")
     public R save(@RequestBody ZuopindafenEntity zuopindafen, HttpServletRequest request) {
-        zuopindafen.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
-        //ValidatorUtils.validateEntity(zuopindafen);
+        zuopindafen.setId(IdWorker.getId());
+        ValidatorUtils.validateEntity(zuopindafen);
         zuopindafenService.insert(zuopindafen);
         return R.ok();
     }
@@ -120,8 +124,8 @@ public class ZuopindafenController {
      */
     @RequestMapping("/add")
     public R add(@RequestBody ZuopindafenEntity zuopindafen, HttpServletRequest request) {
-        zuopindafen.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
-        //ValidatorUtils.validateEntity(zuopindafen);
+        zuopindafen.setId(IdWorker.getId());
+        ValidatorUtils.validateEntity(zuopindafen);
         zuopindafenService.insert(zuopindafen);
         return R.ok();
     }
@@ -131,7 +135,7 @@ public class ZuopindafenController {
      */
     @RequestMapping("/update")
     public R update(@RequestBody ZuopindafenEntity zuopindafen, HttpServletRequest request) {
-        //ValidatorUtils.validateEntity(zuopindafen);
+        ValidatorUtils.validateEntity(zuopindafen);
         zuopindafenService.updateById(zuopindafen);//全部更新
         return R.ok();
     }
@@ -184,12 +188,14 @@ public class ZuopindafenController {
             wrapper.le(columnName, map.get("remindend"));
         }
 
-        String tableName = request.getSession().getAttribute("tableName").toString();
-        if (tableName.equals("xuesheng")) {
-            wrapper.eq("xuehao", (String) request.getSession().getAttribute("username"));
-        }
-        if (tableName.equals("jiaoshi")) {
-            wrapper.eq("gonghao", (String) request.getSession().getAttribute("username"));
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        if (tableName != null) {
+            if (tableName.equals("xuesheng")) {
+                wrapper.eq("xuehao", (String) request.getSession().getAttribute("username"));
+            }
+            if (tableName.equals("jiaoshi")) {
+                wrapper.eq("gonghao", (String) request.getSession().getAttribute("username"));
+            }
         }
 
         int count = zuopindafenService.selectCount(wrapper);

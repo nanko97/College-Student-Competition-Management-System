@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.entity.BanjileixingEntity;
 import com.entity.view.BanjileixingView;
 import com.service.BanjileixingService;
+import com.utils.IdWorker;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
 import com.utils.R;
+import com.utils.ValidatorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -102,8 +104,8 @@ public class BanjileixingController {
      */
     @RequestMapping("/save")
     public R save(@RequestBody BanjileixingEntity banjileixing, HttpServletRequest request) {
-        banjileixing.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
-        //ValidatorUtils.validateEntity(banjileixing);
+        banjileixing.setId(IdWorker.getId());
+        ValidatorUtils.validateEntity(banjileixing);
         banjileixingService.insert(banjileixing);
         return R.ok();
     }
@@ -113,8 +115,8 @@ public class BanjileixingController {
      */
     @RequestMapping("/add")
     public R add(@RequestBody BanjileixingEntity banjileixing, HttpServletRequest request) {
-        banjileixing.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
-        //ValidatorUtils.validateEntity(banjileixing);
+        banjileixing.setId(IdWorker.getId());
+        ValidatorUtils.validateEntity(banjileixing);
         banjileixingService.insert(banjileixing);
         return R.ok();
     }
@@ -124,7 +126,7 @@ public class BanjileixingController {
      */
     @RequestMapping("/update")
     public R update(@RequestBody BanjileixingEntity banjileixing, HttpServletRequest request) {
-        //ValidatorUtils.validateEntity(banjileixing);
+        ValidatorUtils.validateEntity(banjileixing);
         banjileixingService.updateById(banjileixing);//全部更新
         return R.ok();
     }

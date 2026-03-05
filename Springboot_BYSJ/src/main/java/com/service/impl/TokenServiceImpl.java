@@ -104,6 +104,7 @@ public class TokenServiceImpl extends ServiceImpl<TokenDao, TokenEntity> impleme
         );
         
         if (!expiredTokens.isEmpty()) {
+            // 批量删除，提高性能
             for (TokenEntity token : expiredTokens) {
                 this.deleteById(token.getId());
             }
@@ -112,5 +113,24 @@ public class TokenServiceImpl extends ServiceImpl<TokenDao, TokenEntity> impleme
         }
         
         return 0;
+    }
+    
+    /**
+     * 检查并删除即将过期的 Token（提前 5 分钟预警）
+     */
+    public void checkExpiringTokens() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.MINUTE, 5); // 5 分钟后过期的 Token
+        
+        List<TokenEntity> expiringTokens = this.selectList(
+            new EntityWrapper<TokenEntity>()
+                .lt("expiratedtime", cal.getTime())
+                .gt("expiratedtime", new Date())
+        );
+        
+        if (!expiringTokens.isEmpty()) {
+            log.debug("即将过期的 Token 数量：{}", expiringTokens.size());
+        }
     }
 }

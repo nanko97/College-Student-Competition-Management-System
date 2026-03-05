@@ -397,25 +397,29 @@ export default {
 
 <style lang="scss" scoped>
 // 变量定义
-$primary-color: #409EFF;
+$primary-color: #667eea;
+$primary-dark: #764ba2;
+$secondary-color: #f093fb;
+$accent-color: #4facfe;
 $success-color: #67C23A;
 $warning-color: #E6A23C;
 $danger-color: #F56C6C;
 $info-color: #909399;
-$bg-gradient-start: #667eea;
-$bg-gradient-end: #764ba2;
+$text-color: #2c3e50;
 
 .register-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  background: linear-gradient(135deg, $bg-gradient-start 0%, $bg-gradient-end 100%);
+  padding: 30px;
+  background: linear-gradient(135deg, $primary-color 0%, $primary-dark 50%, $secondary-color 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
   position: relative;
   overflow: hidden;
 
-  // 背景装饰
+  // 动态背景粒子
   .background {
     position: absolute;
     width: 100%;
@@ -426,27 +430,498 @@ $bg-gradient-end: #764ba2;
     .shape {
       position: absolute;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
+      background: radial-gradient(circle, rgba(79, 172, 254, 0.3) 0%, rgba(79, 172, 254, 0.05) 70%);
       animation: float 20s infinite;
+      filter: blur(10px);
 
       &:nth-child(1) {
-        width: 300px;
-        height: 300px;
-        left: -100px;
-        top: -100px;
+        width: 500px;
+        height: 500px;
+        left: -200px;
+        top: -200px;
         animation-delay: 0s;
       }
 
       &:nth-child(2) {
-        width: 200px;
-        height: 200px;
-        right: -50px;
-        bottom: -50px;
-        animation-delay: 5s;
+        width: 400px;
+        height: 400px;
+        right: -150px;
+        bottom: -150px;
+        animation-delay: 7s;
+        background: radial-gradient(circle, rgba(240, 147, 251, 0.3) 0%, rgba(240, 147, 251, 0.05) 70%);
       }
 
       &:nth-child(3) {
+        width: 300px;
+        height: 300px;
+        right: 20%;
+        top: 30%;
+        animation-delay: 14s;
+        background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, rgba(102, 126, 234, 0.05) 70%);
+      }
+
+      &:nth-child(4) {
         width: 150px;
+        height: 150px;
+        left: 30%;
+        bottom: 20%;
+        animation-delay: 5s;
+      }
+
+      &:nth-child(5) {
+        width: 200px;
+        height: 200px;
+        left: 60%;
+        top: 10%;
+        animation-delay: 10s;
+      }
+    }
+
+    // 添加网格背景
+    .grid-bg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: gridMove 30s linear infinite;
+    }
+  }
+
+  // 注册卡片
+  .register-card {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    box-shadow: 
+      0 25px 80px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    padding: 50px 45px;
+    width: 100%;
+    max-width: 650px;
+    z-index: 1;
+    animation: slideIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    max-height: 90vh;
+    overflow-y: auto;
+
+    // 自定义滚动条
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: $primary-color;
+      border-radius: 3px;
+      
+      &:hover {
+        background: $primary-dark;
+      }
+    }
+
+    // 卡片顶部装饰条
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, $primary-color, $accent-color, $secondary-color);
+      background-size: 200% 100%;
+      animation: shimmer 3s infinite;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 35px;
+      position: relative;
+
+      .title {
+        color: $text-color;
+        font-size: 36px;
+        font-weight: 700;
+        margin: 0 0 12px 0;
+        background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: titlePulse 2s ease-in-out infinite;
+        
+        i {
+          color: $primary-color;
+          margin-right: 12px;
+          font-size: 40px;
+          animation: iconBounce 2s ease-in-out infinite;
+          display: inline-block;
+        }
+      }
+
+      .subtitle {
+        color: $info-color;
+        font-size: 15px;
+        margin: 0;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    .register-form {
+      /deep/ .el-form-item {
+        margin-bottom: 24px;
+      }
+
+      .role-selector {
+        width: 100%;
+        
+        /deep/ .el-radio-button__inner {
+          width: 130px;
+          text-align: center;
+          font-size: 14px;
+          font-weight: 500;
+          padding: 12px 16px;
+          border-radius: 12px !important;
+          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          background: #f5f7fa;
+          border: 2px solid transparent;
+          
+          &:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+            background: #fff;
+          }
+          
+          i {
+            margin-right: 6px;
+            font-size: 16px;
+          }
+        }
+        
+        /deep/ .el-radio-button__orig-radio:checked + .el-radio-button__inner {
+          background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+          border-color: $primary-color;
+          box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+          transform: translateY(-2px);
+          color: #fff;
+          
+          i {
+            animation: iconSpin 0.6s ease;
+          }
+        }
+      }
+
+      /deep/ .el-input-group__prepend {
+        background-color: transparent;
+        border: none;
+        padding: 0 12px;
+        
+        i {
+          color: $primary-color;
+          font-size: 18px;
+          transition: all 0.3s;
+        }
+      }
+
+      /deep/ .el-input {
+        .el-input__inner {
+          height: 46px;
+          border-radius: 12px;
+          border: 2px solid #e8ecef;
+          font-size: 14px;
+          transition: all 0.3s;
+          background: #fafbfc;
+          
+          &:focus {
+            border-color: $primary-color;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            background: #fff;
+            transform: translateY(-1px);
+          }
+        }
+      }
+
+      /deep/ .el-button--primary {
+        background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+        border: none;
+        border-radius: 8px;
+        transition: all 0.3s;
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+      }
+
+      /deep/ .el-divider {
+        margin: 20px 0;
+        background: linear-gradient(to right, transparent, #e8ecef, transparent);
+        
+        /deep/ .el-divider__text {
+          color: $info-color;
+          font-weight: 500;
+          font-size: 13px;
+        }
+      }
+
+      /deep/ .el-collapse {
+        border: none;
+        margin-top: 15px;
+        
+        /deep/ .el-collapse-item__header {
+          background: linear-gradient(135deg, rgba($primary-color, 0.05) 0%, rgba($primary-dark, 0.05) 100%);
+          border: none;
+          padding: 14px 20px;
+          font-size: 14px;
+          font-weight: 600;
+          color: $primary-color;
+          border-radius: 8px !important;
+          transition: all 0.3s;
+          
+          &:hover {
+            background: linear-gradient(135deg, rgba($primary-color, 0.1) 0%, rgba($primary-dark, 0.1) 100%);
+          }
+          
+          /deep/ .el-collapse-item__arrow {
+            transition: all 0.3s;
+          }
+        }
+        
+        /deep/ .el-collapse-item__wrap {
+          border: none;
+          background: rgba($primary-color, 0.02);
+          border-radius: 0 0 8px 8px;
+          padding: 20px;
+        }
+      }
+
+      /deep/ .el-radio-group {
+        /deep/ .el-radio {
+          margin-right: 20px;
+          font-weight: 500;
+          
+          /deep/ .el-radio__input.is-checked + .el-radio__label {
+            color: $primary-color;
+          }
+        }
+      }
+
+      .form-footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 25px;
+        border-top: 2px solid #f0f2f5;
+        
+        span {
+          color: $info-color;
+          font-size: 14px;
+          margin-right: 10px;
+        }
+        
+        /deep/ .el-link {
+          font-weight: 600;
+          transition: all 0.3s;
+          
+          &:hover {
+            transform: translateX(-3px);
+          }
+          
+          i {
+            animation: arrowLeft 2s ease-in-out infinite;
+            display: inline-block;
+          }
+        }
+      }
+
+      .submit-btn {
+        width: 100%;
+        height: 52px;
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: 3px;
+        background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+        border: none;
+        border-radius: 12px;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        overflow: hidden;
+        margin-top: 10px;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+          transition: 0.5s;
+        }
+        
+        &:hover {
+          transform: translateY(-3px) scale(1.02);
+          box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+          background: linear-gradient(135deg, lighten($primary-color, 5%) 0%, lighten($primary-dark, 5%) 100%);
+          
+          &::before {
+            left: 100%;
+          }
+        }
+        
+        &:active {
+          transform: translateY(-1px) scale(0.98);
+        }
+      }
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .register-container {
+    padding: 15px;
+    
+    .register-card {
+      padding: 35px 25px;
+      
+      .card-header {
+        .title {
+          font-size: 28px;
+        }
+      }
+    }
+  }
+}
+
+// 动画集合
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(40px, -40px) rotate(90deg);
+  }
+  50% {
+    transform: translate(-40px, 40px) rotate(180deg);
+  }
+  75% {
+    transform: translate(40px, 40px) rotate(270deg);
+  }
+}
+
+@keyframes gridMove {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 50px 50px;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes titlePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes iconBounce {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-5px) rotate(-5deg);
+  }
+  75% {
+    transform: translateY(-5px) rotate(5deg);
+  }
+}
+
+@keyframes iconSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes arrowLeft {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-5px);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Element UI 深度样式覆盖
+/deep/ .el-form-item__label {
+  font-weight: 500;
+  color: $text-color;
+  font-size: 14px;
+}
+
+/deep/ .el-input__inner {
+  border-radius: 12px;
+  height: 46px;
+  transition: all 0.3s;
+  
+  &:focus {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  }
+}
+
+/deep/ .el-checkbox__inner {
+  border-radius: 4px;
+  border: 2px solid #dcdfe6;
+  transition: all 0.3s;
+}
+
+/deep/ .el-button--primary {
+  &:hover {
+    background: linear-gradient(135deg, lighten($primary-color, 8%) 0%, lighten($primary-dark, 8%) 100%);
+  }
+}
+</style>
         height: 150px;
         right: 30%;
         top: 20%;
