@@ -47,6 +47,23 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
             return false;
         }
 
+        // 放行静态资源和前端页面
+        String requestURI = request.getRequestURI();
+        if (requestURI.contains("/admin/") || 
+            requestURI.contains("/front/") || 
+            requestURI.contains("/static/") ||
+            requestURI.endsWith(".html") ||
+            requestURI.endsWith(".js") ||
+            requestURI.endsWith(".css") ||
+            requestURI.endsWith(".png") ||
+            requestURI.endsWith(".jpg") ||
+            requestURI.endsWith(".jpeg") ||
+            requestURI.endsWith(".gif") ||
+            requestURI.endsWith(".ico") ||
+            requestURI.endsWith(".woff2")) {
+            return true;
+        }
+
         IgnoreAuth annotation;
         if (handler instanceof HandlerMethod) {
             annotation = ((HandlerMethod) handler).getMethodAnnotation(IgnoreAuth.class);
@@ -78,7 +95,6 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
             // 新增：权限校验
             if (userPermissionService != null) {
                 String role = tokenEntity.getRole();
-                String requestURI = request.getRequestURI();
                 
                 if (!userPermissionService.hasPermission(role, requestURI)) {
                     response.setCharacterEncoding("UTF-8");

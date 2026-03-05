@@ -28,6 +28,10 @@ server:
 # 2. Spring 核心配置
 # --------------------------------------------
 spring:
+  # Profile 配置
+  profiles:
+    active: dev                        # 激活的开发环境配置（dev/prod）
+  
   # 2.1 数据库配置【重要】
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
