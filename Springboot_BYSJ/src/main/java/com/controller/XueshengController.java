@@ -129,11 +129,10 @@ public class XueshengController {
                 return R.error("学号和密码不能为空");
             }
             
-            // 2. 密码强度校验
-            String passwordError = PasswordValidator.validateAndGetError(xuesheng.getMima());
-            if (passwordError != null) {
-                log.warn("学生注册失败：{}", passwordError);
-                return R.error(passwordError);
+            // 2. 密码强度校验（毕业设计模式，仅检查长度）
+            if (!PasswordValidator.isValidSimple(xuesheng.getMima())) {
+                log.warn("学生注册失败：密码长度不能少于 6 位");
+                return R.error("密码长度不能少于 6 位");
             }
             
             // 3. 检查账号是否存在

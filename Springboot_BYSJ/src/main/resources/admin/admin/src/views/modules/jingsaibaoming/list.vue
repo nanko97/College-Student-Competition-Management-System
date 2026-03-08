@@ -23,18 +23,18 @@
         <el-row class="ad" :style="{justifyContent:contents.btnAdAllBoxPosition=='1'?'flex-start':contents.btnAdAllBoxPosition=='2'?'center':'flex-end'}">
           <el-form-item>
             <el-button
-              v-if="isAuth('jingsaibaoming','新增') && contents.btnAdAllIcon == 1 && contents.btnAdAllIconPosition == 1"
+              v-if="(isAuth('jingsaibaoming','新增') || this.$storage.get('role') == '学生') && contents.btnAdAllIcon == 1 && contents.btnAdAllIconPosition == 1"
               type="success"
               icon="el-icon-plus"
               @click="addOrUpdateHandler()"
             >{{ contents.btnAdAllFont == 1?'新增':'' }}</el-button>
             <el-button
-              v-if="isAuth('jingsaibaoming','新增') && contents.btnAdAllIcon == 1 && contents.btnAdAllIconPosition == 2"
+              v-if="(isAuth('jingsaibaoming','新增') || this.$storage.get('role') == '学生') && contents.btnAdAllIcon == 1 && contents.btnAdAllIconPosition == 2"
               type="success"
               @click="addOrUpdateHandler()"
             >{{ contents.btnAdAllFont == 1?'新增':'' }}<i class="el-icon-plus el-icon--right" /></el-button>
             <el-button
-              v-if="isAuth('jingsaibaoming','新增') && contents.btnAdAllIcon == 0"
+              v-if="(isAuth('jingsaibaoming','新增') || this.$storage.get('role') == '学生') && contents.btnAdAllIcon == 0"
               type="success"
               @click="addOrUpdateHandler()"
             >{{ contents.btnAdAllFont == 1?'新增':'' }}</el-button>
@@ -510,6 +510,10 @@ export default {
         page: this.pageIndex,
         limit: this.pageSize,
         sort: 'id',
+      }
+      // 学生只能查看自己的报名记录
+      if (this.$storage.get('role') == '学生') {
+        params['xuehao'] = this.$storage.get('username');
       }
           if(this.searchForm.jingsaimingcheng!='' && this.searchForm.jingsaimingcheng!=undefined){
             params['jingsaimingcheng'] = '%' + this.searchForm.jingsaimingcheng + '%'

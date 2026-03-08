@@ -2,9 +2,18 @@ import Vue from 'vue'
 import App from '@/App.vue'
 // element ui 完全引入
 import ElementUI from 'element-ui'
+// 加载样式文件
 import '@/assets/css/element-variables.scss'
 import '@/assets/css/style.scss'
 import '@/assets/css/common.scss'
+// 全局样式修复（对齐和遮挡问题）
+import '@/assets/css/common-fix.css'
+// 表单和对话框样式修复
+import '@/assets/css/form-dialog-fix.css'
+// 注册和登录页面样式修复
+import '@/assets/css/auth-pages-fix.css'
+// 登录页面专项修复（按钮对齐）
+import '@/assets/css/login-fix.css'
 // 加载路由
 // import router from '@/router/router-static.js';
 import router from '@/router/router-static.js';

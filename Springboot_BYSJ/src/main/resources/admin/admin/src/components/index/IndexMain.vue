@@ -103,8 +103,9 @@
 
 	.el-main {
 		background-color: #F6F8FA;
-		padding: 0 24px;
-		// padding-top: 60px;
+		padding: 0 !important; // 移除默认内边距
+		margin-left: 200px; // 侧边栏宽度
+		min-height: 100vh;
 	}
 
 	.router-view {
@@ -116,9 +117,11 @@
 
 	.bread-crumbs {
 		width: 100%;
-		// border-bottom: 1px solid #e9eef3;
-		// border-top: 1px solid #e9eef3;
-		margin-top: 10px;
+		margin-top: 0; // 移除顶部边距，避免遮挡
 		box-sizing: border-box;
+		position: sticky;
+		top: 0;
+		z-index: 100;
+		background: #fff;
 	}
 </style>

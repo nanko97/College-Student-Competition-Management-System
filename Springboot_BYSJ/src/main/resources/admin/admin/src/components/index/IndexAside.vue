@@ -44,12 +44,36 @@ export default {
 </script>
 <style lang="scss" scoped>
 .index-aside {
-  margin-top: 80px;
-  overflow: hidden;
+  margin-top: 0 !important; // 移除顶部边距，避免遮挡
+  height: calc(100vh - 60px) !important; // 减去头部高度
+  position: fixed !important;
+  left: 0;
+  top: 60px; // 头部高度
+  z-index: 999;
+  
   .index-aside-inner {
-    width: 217px;
+    width: 200px;
     height: 100%;
-    overflow-y: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
+    
+    // 美化滚动条
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+      
+      &:hover {
+        background: #a8a8a8;
+      }
+    }
   }
 }
 </style>

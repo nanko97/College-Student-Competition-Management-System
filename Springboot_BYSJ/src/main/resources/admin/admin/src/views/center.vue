@@ -164,16 +164,6 @@ export default {
       }
     });
     this.xueshengxingbieOptions = "男,女".split(',')
-    this.$http({
-      url: `option/banjileixing/leixing`,
-      method: "get"
-    }).then(({ data }) => {
-      if (data && data.code === 0) {
-        this.xueshengbanjiOptions = data.data;
-      } else {
-        this.$message.error(data.msg);
-      }
-    });
     this.jiaoshixingbieOptions = "男,女".split(',')
   },
   methods: {

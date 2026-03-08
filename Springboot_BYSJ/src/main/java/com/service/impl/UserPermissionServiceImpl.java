@@ -15,16 +15,37 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     
     // 学生允许访问的接口前缀
     private static final Set<String> STUDENT_PERMISSIONS = new HashSet<>(Arrays.asList(
+        // 竞赛相关
         "/jingsaixinxi/list",
         "/jingsaixinxi/detail",
+        "/jingsaixinxi/page",
+        "/jingsaixinxi/query",
+        "/jingsaixinxi/info",
+        // 报名相关
         "/jingsaibaoming/add",
+        "/jingsaibaoming/save",  // 添加报名保存接口权限
         "/jingsaibaoming/my",
         "/jingsaibaoming/list",
+        "/jingsaibaoming/page",
         "/jingsaibaoming/info",
+        "/jingsaibaoming/query",
+        "/jingsaibaoming/update",
+        "/jingsaibaoming/delete",
+        // 作品评分相关
         "/zuopindafen/list",
+        "/zuopindafen/page",
+        "/zuopindafen/info",
+        "/zuopindafen/query",
+        "/zuopindafen/my",
+        // 学生自己的信息
         "/xuesheng/info",
         "/xuesheng/update",
+        "/xuesheng/session",
+        "/xuesheng/resetPass",
+        // 文件下载
         "/file/download",
+        "/file/upload",
+        // 系统配置
         "/config/list",
         "/common/*"
     ));

@@ -21,13 +21,6 @@ const menu = {
             }, {
                 "child": [{"buttons": ["查看", "删除"], "menu": "竞赛报名", "menuJump": "列表", "tableName": "jingsaibaoming"}],
                 "menu": "竞赛报名管理"
-            }, {
-                "child": [{
-                    "buttons": ["新增", "查看", "修改", "删除"],
-                    "menu": "班级类型",
-                    "menuJump": "列表",
-                    "tableName": "banjileixing"
-                }], "menu": "班级类型管理"
             }],
             "frontMenu": [],
             "hasBackLogin": "是",
@@ -39,17 +32,14 @@ const menu = {
         }, {
             "backMenu": [{
                 "child": [{
-                    "buttons": ["查看", "报名", "查看评论"],
+                    "buttons": ["查看", "报名"],
                     "menu": "竞赛信息",
                     "menuJump": "列表",
                     "tableName": "jingsaixinxi"
                 }], "menu": "竞赛信息管理"
             }, {
-                "child": [{"buttons": ["查看", "支付"], "menu": "竞赛报名", "menuJump": "列表", "tableName": "jingsaibaoming"}],
+                "child": [{"buttons": ["查看"], "menu": "我的报名", "menuJump": "列表", "tableName": "jingsaibaoming"}],
                 "menu": "竞赛报名管理"
-            }, {
-                "child": [{"buttons": ["查看"], "menu": "作品打分", "menuJump": "列表", "tableName": "zuopindafen"}],
-                "menu": "作品打分管理"
             }],
             "frontMenu": [],
             "hasBackLogin": "是",

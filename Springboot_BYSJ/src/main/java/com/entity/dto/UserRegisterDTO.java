@@ -23,7 +23,6 @@ public class UserRegisterDTO implements Serializable {
     private String name;
     
     @NotBlank(message = "角色不能为空")
-    @Pattern(regexp = "^(学生 | 教师 | 管理员)$", message = "角色必须是学生、教师或管理员")
     private String role;
     
     private String email;

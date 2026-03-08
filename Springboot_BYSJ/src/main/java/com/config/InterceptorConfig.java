@@ -53,9 +53,11 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/resources/")
                 .addResourceLocations("classpath:/static/")
-                .addResourceLocations("classpath:/admin/")
-                .addResourceLocations("classpath:/front/")
-                .addResourceLocations("classpath:/public/");
+                // 使用文件路径访问前端资源（实际存在的路径）
+                .addResourceLocations("file:./src/main/resources/admin/")
+                .addResourceLocations("classpath:/public/")
+                // 添加上传文件目录映射，允许访问 upload/ 目录下的文件
+                .addResourceLocations("file:./upload/");
         super.addResourceHandlers(registry);
     }
 }

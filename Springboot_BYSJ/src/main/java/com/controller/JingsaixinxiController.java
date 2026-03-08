@@ -2,8 +2,10 @@ package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.entity.JingsaibaomingEntity;
 import com.entity.JingsaixinxiEntity;
 import com.entity.view.JingsaixinxiView;
+import com.service.JingsaibaomingService;
 import com.service.impl.JingsaixinxiServiceImpl;
 import com.service.JingsaixinxiService;
 import com.utils.IdWorker;
@@ -11,6 +13,8 @@ import com.utils.MPUtil;
 import com.utils.PageUtils;
 import com.utils.R;
 import com.utils.ValidatorUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -21,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -39,10 +44,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("/jingsaixinxi")
 @Slf4j // 日志注解，便于问题排查
+@Api(tags = "竞赛信息管理", description = "提供竞赛信息的增删改查、列表查询、提醒等功能")
 public class JingsaixinxiController {
     
     @Autowired
     private JingsaixinxiService jingsaixinxiService;
+    
+    @Autowired
+    private JingsaibaomingService jingsaibaomingService;
 
     /**
      * 后端分页列表查询
@@ -57,6 +66,7 @@ public class JingsaixinxiController {
      * @param request HTTP 请求 (获取会话信息)
      * @return R 统一返回结果，包含分页数据
      */
+    @ApiOperation("分页查询竞赛列表 (后台管理)")
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params, 
                   JingsaixinxiEntity jingsaixinxi,
@@ -96,6 +106,7 @@ public class JingsaixinxiController {
      * @param request HTTP 请求
      * @return R 统一返回结果，包含分页数据
      */
+    @ApiOperation("分页查询竞赛列表 (前台展示)")
     @IgnoreAuth // 忽略权限验证，允许未登录用户访问
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params, 
@@ -149,6 +160,7 @@ public class JingsaixinxiController {
      * @param jingsaixinxi 竞赛信息实体 (用于条件查询)
      * @return R 统一返回结果，包含竞赛视图数据
      */
+    @ApiOperation("条件查询竞赛详情")
     @RequestMapping("/query")
     public R query(JingsaixinxiEntity jingsaixinxi) {
         try {
@@ -181,6 +193,7 @@ public class JingsaixinxiController {
      * @param id 竞赛 ID
      * @return R 统一返回结果，包含竞赛详情
      */
+    @ApiOperation("根据 ID 查询竞赛详情 (后台)")
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id) {
         try {
@@ -254,8 +267,14 @@ public class JingsaixinxiController {
      * @param request HTTP 请求 (获取会话信息)
      * @return R 统一返回结果
      */
+    @ApiOperation("保存竞赛信息")
     @RequestMapping("/save")
     public R save(@RequestBody JingsaixinxiEntity jingsaixinxi, HttpServletRequest request) {
+        log.info("保存竞赛请求数据：{}", jingsaixinxi);
+        log.info("当前会话信息 - tableName: {}, username: {}", 
+                request.getSession().getAttribute("tableName"),
+                request.getSession().getAttribute("username"));
+        
         // 1. 基础参数校验
         if (!StringUtils.hasText(jingsaixinxi.getJingsaimingcheng())) {
             log.warn("保存竞赛失败：竞赛名称为空");
@@ -267,8 +286,16 @@ public class JingsaixinxiController {
             String tableName = (String) request.getSession().getAttribute("tableName");
             if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
-                jingsaixinxi.setGonghao(gonghao);
-                log.info("教师 {} 发布新竞赛：{}", gonghao, jingsaixinxi.getJingsaimingcheng());
+                if (StringUtils.hasText(gonghao)) {
+                    jingsaixinxi.setGonghao(gonghao);
+                    log.info("教师 {} 发布新竞赛：{}, 数据：{}", gonghao, 
+                            jingsaixinxi.getJingsaimingcheng(), jingsaixinxi);
+                } else {
+                    log.error("教师工号为空，无法保存竞赛");
+                    return R.error("请先登录");
+                }
+            } else {
+                log.warn("当前用户角色：{}, 不是教师角色", tableName);
             }
             
             // 3. 实体校验 (使用验证工具类)
@@ -276,11 +303,20 @@ public class JingsaixinxiController {
             
             // 4. 生成唯一 ID 并保存
             jingsaixinxi.setId(IdWorker.getId());
-            jingsaixinxiService.insert(jingsaixinxi);
+            boolean result = jingsaixinxiService.insert(jingsaixinxi);
             
-            log.info("保存竞赛信息成功，ID: {}, 名称：{}", 
-                     jingsaixinxi.getId(), jingsaixinxi.getJingsaimingcheng());
-            return R.ok("保存成功");
+            log.info("保存竞赛信息{}，ID: {}, 名称：{}, 工号：{}", 
+                    result ? "成功" : "失败",
+                    jingsaixinxi.getId(), 
+                    jingsaixinxi.getJingsaimingcheng(),
+                    jingsaixinxi.getGonghao());
+            
+            if (result) {
+                return R.ok("保存成功");
+            } else {
+                log.error("数据库插入返回 false");
+                return R.error("保存失败，数据库操作异常");
+            }
             
         } catch (Exception e) {
             log.error("保存竞赛信息异常：", e);
@@ -343,6 +379,7 @@ public class JingsaixinxiController {
      * @param request HTTP 请求
      * @return R 统一返回结果
      */
+    @ApiOperation("修改竞赛信息")
     @RequestMapping("/update")
     public R update(@RequestBody JingsaixinxiEntity jingsaixinxi, HttpServletRequest request) {
         // 1. 参数校验
@@ -382,6 +419,7 @@ public class JingsaixinxiController {
      * @param ids 竞赛 ID 数组
      * @return R 统一返回结果
      */
+    @ApiOperation("批量删除竞赛信息")
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids) {
         // 1. 参数校验
@@ -474,6 +512,68 @@ public class JingsaixinxiController {
         } catch (Exception e) {
             log.error("竞赛提醒查询异常：", e);
             return R.error("查询失败，请重试");
+        }
+    }
+    
+    /**
+     * 数据统计接口
+     * 功能：统计竞赛数量、报名人数、审核状态等数据
+     * 
+     * 应用场景：
+     * - 首页仪表盘展示
+     * - 管理员查看系统概况
+     * - 教师查看所发布竞赛的统计
+     * 
+     * @param request HTTP 请求
+     * @return R 统一返回结果，包含统计数据
+     */
+    @RequestMapping("/statistics")
+    public R statistics(HttpServletRequest request) {
+        try {
+            Map<String, Object> stats = new HashMap<>();
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            
+            // 1. 统计竞赛数量
+            EntityWrapper<JingsaixinxiEntity> contestEw = new EntityWrapper<>();
+            if ("jiaoshi".equals(tableName)) {
+                // 教师只能查看自己的竞赛
+                String gonghao = (String) request.getSession().getAttribute("username");
+                contestEw.eq("gonghao", gonghao);
+            }
+            stats.put("totalContests", jingsaixinxiService.selectCount(contestEw));
+            
+            // 2. 统计报名人数
+            EntityWrapper<JingsaibaomingEntity> applyEw = new EntityWrapper<>();
+            if ("jiaoshi".equals(tableName)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                applyEw.eq("gonghao", gonghao);
+            }
+            stats.put("totalApplications", jingsaibaomingService.selectCount(applyEw));
+            
+            // 3. 统计已审核数量
+            EntityWrapper<JingsaibaomingEntity> approvedEw = new EntityWrapper<>();
+            approvedEw.eq("sfsh", "是");
+            if ("jiaoshi".equals(tableName)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                approvedEw.eq("gonghao", gonghao);
+            }
+            stats.put("approvedApplications", jingsaibaomingService.selectCount(approvedEw));
+            
+            // 4. 统计待审核数量
+            EntityWrapper<JingsaibaomingEntity> pendingEw = new EntityWrapper<>();
+            pendingEw.eq("sfsh", "否");
+            if ("jiaoshi".equals(tableName)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                pendingEw.eq("gonghao", gonghao);
+            }
+            stats.put("pendingApplications", jingsaibaomingService.selectCount(pendingEw));
+            
+            log.info("统计数据查询成功，角色：{}", tableName);
+            return R.ok(stats);
+            
+        } catch (Exception e) {
+            log.error("统计数据查询异常：", e);
+            return R.error("统计查询失败，请重试");
         }
     }
 }

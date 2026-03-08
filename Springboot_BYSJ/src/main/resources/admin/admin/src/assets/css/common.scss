@@ -1,12 +1,12 @@
-// 全局统一样式 - 赛博朋克风格
-// 与登录页面保持一致的视觉风格
+// 全局统一样式 - 优化版（提高可读性）
+// 保持赛博朋克风格的同时增强文字对比度
 
 $primary-color: #00f2fe !default;
 $secondary-color: #4facfe !default;
 $accent-color: #667eea !default;
 $dark-bg: #0a0e27 !default;
 $text-primary: #ffffff !default;
-$text-secondary: #a0aec0 !default;
+$text-secondary: #e0e0e0 !default;  // 提高亮度
 $panel-bg: rgba(255, 255, 255, 0.98) !default;
 $success-color: #00d293 !default;
 $warning-color: #ffb02e !default;
@@ -46,6 +46,24 @@ body {
       0 0 0 1px rgba($primary-color, 0.1) inset;
     padding: 25px;
     margin-bottom: 20px;
+    
+    // 确保表单和表格内的文字清晰可见
+    .el-form-item__label,
+    .el-input__inner,
+    .el-textarea__inner,
+    .el-select__input,
+    .el-table th,
+    .el-table td,
+    .el-button,
+    span, p, div {
+      color: #2c3e50 !important;
+    }
+    
+    // 表头文字加粗
+    .el-table th {
+      font-weight: 600;
+      color: #303133 !important;
+    }
   }
   
   // 表单内容区域
@@ -162,15 +180,18 @@ body {
       
       th.el-table__cell {
         background: linear-gradient(135deg, rgba($primary-color, 0.1) 0%, rgba($secondary-color, 0.1) 100%);
-        color: $primary-color;
+        color: #2c3e50 !important;  // 提高表头文字对比度
         font-weight: 600;
         font-size: 15px;
         border-bottom: 2px solid rgba($primary-color, 0.2);
+        text-align: center;  // 表头居中
       }
       
       td.el-table__cell {
         border-bottom: 1px solid rgba($primary-color, 0.1);
         transition: all 0.3s;
+        color: #2c3e50 !important;  // 提高单元格文字对比度
+        text-align: center;  // 单元格内容居中
         
         &:hover {
           background: rgba($primary-color, 0.05);

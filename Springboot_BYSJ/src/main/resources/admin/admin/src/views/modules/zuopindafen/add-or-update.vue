@@ -59,13 +59,13 @@
       </el-col>
       <el-col :span="12">
         <el-form-item class="input" v-if="type!='info'"  label="作品评分" prop="zuopinpingfen">
-          <el-input v-model="ruleForm.zuopinpingfen" 
-              placeholder="作品评分" clearable  :readonly="ro.zuopinpingfen"></el-input>
+          <el-input-number v-model="ruleForm.zuopinpingfen" 
+              placeholder="作品评分" :min="0" :max="100" clearable  :readonly="ro.zuopinpingfen"></el-input-number>
         </el-form-item>
         <div v-else>
           <el-form-item class="input" label="作品评分" prop="zuopinpingfen">
-              <el-input v-model="ruleForm.zuopinpingfen" 
-                placeholder="作品评分" readonly></el-input>
+              <el-input-number v-model="ruleForm.zuopinpingfen" 
+                placeholder="作品评分" :min="0" :max="100" readonly></el-input-number>
           </el-form-item>
         </div>
       </el-col>
@@ -329,21 +329,34 @@ export default {
         }
       }
       // 获取用户信息
+      const sessionTable = this.$storage.get('sessionTable');
+      if (!sessionTable) {
+        console.error('sessionTable 为空，无法获取用户信息');
+        this.$message.error('请先登录');
+        return;
+      }
+      
       this.$http({
-        url: `${this.$storage.get('sessionTable')}/session`,
+        url: `${sessionTable}/session`,
         method: "get"
       }).then(({ data }) => {
         if (data && data.code === 0) {
           var json = data.data;
-		if(json.gonghao!=''&&json.gonghao){
-              		this.ruleForm.gonghao = json.gonghao
-		}
-		if(json.jiaoshixingming!=''&&json.jiaoshixingming){
-              		this.ruleForm.jiaoshixingming = json.jiaoshixingming
-		}
+          if(json.gonghao != '' && json.gonghao) {
+            this.ruleForm.gonghao = json.gonghao;
+            console.log('自动填充工号:', json.gonghao);
+          }
+          if(json.jiaoshixingming != '' && json.jiaoshixingming) {
+            this.ruleForm.jiaoshixingming = json.jiaoshixingming;
+            console.log('自动填充教师姓名:', json.jiaoshixingming);
+          }
         } else {
-          this.$message.error(data.msg);
+          console.error('获取用户信息失败:', data.msg);
+          this.$message.error(data.msg || '获取用户信息失败');
         }
+      }).catch(error => {
+        console.error('获取用户信息异常:', error);
+        this.$message.error('获取用户信息失败，请重新登录');
       });
     },
     // 多级联动参数

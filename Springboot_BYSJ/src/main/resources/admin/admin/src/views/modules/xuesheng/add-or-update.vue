@@ -340,27 +340,29 @@ export default {
         }
       }
       // 获取用户信息
+      const sessionTable = this.$storage.get('sessionTable');
+      if (!sessionTable) {
+        console.error('sessionTable 为空，无法获取用户信息');
+        this.$message.error('请先登录');
+        return;
+      }
+      
       this.$http({
-        url: `${this.$storage.get('sessionTable')}/session`,
+        url: `${sessionTable}/session`,
         method: "get"
       }).then(({ data }) => {
         if (data && data.code === 0) {
           var json = data.data;
+          console.log('获取用户信息成功:', json);
         } else {
-          this.$message.error(data.msg);
+          console.error('获取用户信息失败:', data.msg);
+          this.$message.error(data.msg || '获取用户信息失败');
         }
+      }).catch(error => {
+        console.error('获取用户信息异常:', error);
+        this.$message.error('获取用户信息失败，请重新登录');
       });
             this.xingbieOptions = "男,女".split(',')
-            this.$http({
-              url: `option/banjileixing/leixing`,
-              method: "get"
-            }).then(({ data }) => {
-              if (data && data.code === 0) {
-                this.banjiOptions = data.data;
-              } else {
-                this.$message.error(data.msg);
-              }
-            });
          
     },
     // 多级联动参数

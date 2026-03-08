@@ -15,7 +15,6 @@ import xuesheng from '@/views/modules/xuesheng/list'
 import jingsaibaoming from '@/views/modules/jingsaibaoming/list'
 import jiaoshi from '@/views/modules/jiaoshi/list'
 import zuopindafen from '@/views/modules/zuopindafen/list'
-import banjileixing from '@/views/modules/banjileixing/list'
 
 Vue.use(VueRouter);
 
@@ -71,11 +70,6 @@ const routes = [{
       path: '/zuopindafen',
       name: '作品打分',
       component: zuopindafen
-    }
-    , {
-      path: '/banjileixing',
-      name: '班级类型',
-      component: banjileixing
     }
   ]
 },

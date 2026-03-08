@@ -80,12 +80,12 @@ export default {
       this.$router.push('/index/');
     },
     navigateToFeature(feature) {
-      // 根据功能名称映射到对应的路由
+      // 根据功能名称映射到对应的路由名称（使用中文，与路由配置一致）
       const routeMap = {
-        '竞赛管理': 'jingsaixinxi',
-        '在线报名': 'jingsaibaoming',
-        '作品评审': 'zuopindafen',  // 使用作品打分路由
-        '成绩查看': 'jingsaixinxi'  // 暂时使用竞赛信息路由
+        '竞赛管理': '竞赛信息',
+        '在线报名': '竞赛报名',
+        '作品评审': '作品打分',
+        '成绩查看': '竞赛信息'
       }
       const routeName = routeMap[feature.text]
       if (routeName) {
@@ -191,6 +191,7 @@ $accent-color: #4facfe;
       grid-template-columns: repeat(2, 1fr);
       gap: 20px;
       margin-bottom: 40px;
+      width: 100%;
 
       .feature-item {
         background: linear-gradient(135deg, rgba($primary-color, 0.05) 0%, rgba($primary-dark, 0.05) 100%);
@@ -201,6 +202,7 @@ $accent-color: #4facfe;
         cursor: pointer;
         animation: fadeInUp 0.6s ease-out backwards;
         user-select: none;
+        min-width: 0; // 防止内容溢出
 
         &:hover {
           transform: translateY(-8px) scale(1.05);
@@ -233,6 +235,7 @@ $accent-color: #4facfe;
           justify-content: center;
           transition: all 0.4s;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          flex-shrink: 0; // 防止图标被压缩
 
           i {
             font-size: 28px;
@@ -246,6 +249,9 @@ $accent-color: #4facfe;
           font-weight: 600;
           color: #2c3e50;
           letter-spacing: 0.5px;
+          white-space: nowrap; // 防止文字换行
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
       }
     }

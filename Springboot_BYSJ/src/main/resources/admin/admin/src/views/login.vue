@@ -326,7 +326,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 $primary-color: #00f2fe;
 $secondary-color: #4facfe;
 $accent-color: #667eea;
@@ -389,6 +389,7 @@ $text-secondary: #a0aec0;
     justify-content: center;
     padding: 40px;
     z-index: 1;
+    position: relative;
     
     .panel-content {
       width: 100%;
@@ -403,6 +404,11 @@ $text-secondary: #a0aec0;
       padding: 50px 45px;
       animation: panelSlideIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative;
+      z-index: 10;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;  // 水平居中所有子元素
       
       &::before {
         content: '';
@@ -413,6 +419,7 @@ $text-secondary: #a0aec0;
         height: 3px;
         background: linear-gradient(90deg, $primary-color, $secondary-color, $accent-color);
         animation: gradientFlow 3s linear infinite;
+        z-index: 1;
       }
     }
   }
@@ -512,6 +519,8 @@ $text-secondary: #a0aec0;
   
   // 登录表单
   .login-form {
+    width: 100%;  // 确保表单占满父容器宽度
+    
     .role-cards {
       display: flex;
       gap: 15px;
@@ -613,34 +622,33 @@ $text-secondary: #a0aec0;
       
       .input-icon {
         position: absolute;
-        left: 15px;
+        left: 18px;
         top: 50%;
         transform: translateY(-50%);
         font-size: 18px;
         color: $primary-color;
-        z-index: 1;
+        z-index: 10;  // 提高层级
         transition: all 0.3s;
+        pointer-events: none;  // 防止图标阻挡点击
       }
-      
-     ::v-deep .el-input__inner {
-        height: 50px;
-        padding-left: 50px;
-        border-radius: 12px;
-        border: 2px solid rgba($primary-color, 0.2);
-        background: rgba($primary-color, 0.02);
-        transition: all 0.3s;
-        font-size: 15px;
-        
-        &:focus {
-          border-color: $primary-color;
-          box-shadow: 0 0 0 4px rgba($primary-color, 0.1);
-          background: #fff;
-          
-          ~ .input-icon {
-            animation: iconBounce 0.6s ease;
-          }
-        }
-      }
+    }
+    
+    // 强制覆盖 ElementUI 的默认样式
+    .input-wrapper .el-input__inner {
+      height: 50px !important;
+      padding-left: 60px !important;  // 强制增加左边距
+      padding-right: 15px !important;
+      border-radius: 12px !important;
+      border: 2px solid rgba($primary-color, 0.2) !important;
+      background: rgba($primary-color, 0.02) !important;
+      font-size: 15px !important;
+      box-sizing: border-box !important;
+    }
+    
+    .input-wrapper .el-input__inner:focus {
+      border-color: $primary-color !important;
+      box-shadow: 0 0 0 4px rgba($primary-color, 0.1) !important;
+      background: #fff !important;
     }
     
     .form-options {

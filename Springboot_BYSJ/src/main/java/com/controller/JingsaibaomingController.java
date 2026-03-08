@@ -5,8 +5,10 @@ import com.annotation.OperationLog;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.entity.JingsaibaomingEntity;
+import com.entity.JingsaixinxiEntity;
 import com.entity.view.JingsaibaomingView;
 import com.service.JingsaibaomingService;
+import com.service.JingsaixinxiService;
 import com.utils.IdWorker;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
@@ -44,6 +46,9 @@ public class JingsaibaomingController {
     
     @Autowired
     private JingsaibaomingService jingsaibaomingService;
+    
+    @Autowired
+    private JingsaixinxiService jingsaixinxiService;
 
     /**
      * 后端分页列表查询
@@ -271,6 +276,21 @@ public class JingsaibaomingController {
             return R.error("参赛人员不能为空");
         }
         
+        // 新增：检查竞赛是否已结束（使用竞赛名称查询）
+        if (StringUtils.hasText(jingsaibaoming.getJingsaimingcheng())) {
+            EntityWrapper<JingsaixinxiEntity> ew = new EntityWrapper<>();
+            ew.eq("jingsaimingcheng", jingsaibaoming.getJingsaimingcheng());
+            JingsaixinxiEntity jingsai = jingsaixinxiService.selectOne(ew);
+            
+            if (jingsai != null && jingsai.getJingsaishijian() != null) {
+                // 如果当前时间超过竞赛时间，则不允许报名
+                if (jingsai.getJingsaishijian().before(new Date())) {
+                    log.warn("报名失败：竞赛 {} 已结束", jingsai.getJingsaimingcheng());
+                    return R.error("该竞赛已结束，无法提交申请");
+                }
+            }
+        }
+        
         try {
             // 2. 自动填充学号 (如果是学生自己报名)
             String tableName = (String) request.getSession().getAttribute("tableName");
@@ -287,7 +307,19 @@ public class JingsaibaomingController {
             // 3. 实体校验
             ValidatorUtils.validateEntity(jingsaibaoming);
             
-            // 4. 生成唯一 ID 并保存
+            // 4. 检查是否重复报名
+            EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<>();
+            ew.eq("xuehao", jingsaibaoming.getXuehao());
+            ew.eq("jingsaimingcheng", jingsaibaoming.getJingsaimingcheng());
+            Integer count = jingsaibaomingService.selectCount(ew);
+            if (count > 0) {
+                log.warn("报名失败：学生 {} 已报名竞赛 {}", 
+                        jingsaibaoming.getXuehao(), 
+                        jingsaibaoming.getJingsaimingcheng());
+                return R.error("您已经报名过该竞赛，不能重复报名");
+            }
+            
+            // 5. 生成唯一 ID 并保存
             jingsaibaoming.setId(IdWorker.getId());
             jingsaibaomingService.insert(jingsaibaoming);
             

@@ -1,0 +1,572 @@
+/* ============================================
+   注册和登录页面优化
+   修复对齐、间距和响应式问题
+   ============================================ */
+
+/* -----------------
+   1. 容器基础布局
+   ----------------- */
+.register-container,
+.login-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* -----------------
+   2. 卡片容器优化
+   ----------------- */
+.register-card,
+.login-panel {
+  max-width: 600px;
+  width: 90%;
+  margin: 20px auto;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 16px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(102, 126, 234, 0.1) inset;
+  position: relative;
+  z-index: 10;
+}
+
+/* -----------------
+   3. 标题区域优化
+   ----------------- */
+.card-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.card-header .title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.card-header .title i {
+  color: #667eea;
+  font-size: 36px;
+}
+
+.card-header .subtitle {
+  font-size: 14px;
+  color: #909399;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+/* -----------------
+   4. 表单布局优化
+   ----------------- */
+.register-form,
+.login-form {
+  width: 100%;
+}
+
+.el-form-item {
+  margin-bottom: 24px;
+}
+
+.el-form-item__label {
+  font-weight: 500;
+  color: #606266;
+  line-height: 40px;
+}
+
+/* -----------------
+   5. 输入框优化
+   ----------------- */
+.el-input__inner {
+  height: 44px;
+  line-height: 44px;
+  border-radius: 8px;
+  border: 2px solid #e4e7ed;
+  transition: all 0.3s;
+  font-size: 15px;
+}
+
+.el-input__inner:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.el-input__inner:hover {
+  border-color: #c0c4cc;
+}
+
+/* 带图标的输入框 */
+.el-input--prefix .el-input__inner {
+  padding-left: 45px;
+}
+
+.el-input--suffix .el-input__inner {
+  padding-right: 45px;
+}
+
+.el-input__icon {
+  line-height: 44px;
+  color: #c0c4cc;
+  transition: all 0.3s;
+}
+
+.el-input.is-focus .el-input__icon {
+  color: #667eea;
+}
+
+/* -----------------
+   6. 按钮优化
+   ----------------- */
+.el-button {
+  height: 44px;
+  padding: 0 25px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.el-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.el-button--primary:active {
+  transform: translateY(0);
+}
+
+/* -----------------
+   7. 单选按钮组优化
+   ----------------- */
+.role-selector {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+}
+
+.el-radio-button {
+  flex: 1;
+}
+
+.el-radio-button__inner {
+  height: 44px;
+  line-height: 44px;
+  padding: 0 20px;
+  border-radius: 8px;
+  border: 2px solid #dcdfe6;
+  background: #f5f7fa;
+  transition: all 0.3s;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.el-radio-button__inner i {
+  font-size: 18px;
+}
+
+.el-radio-button__orig-radio:checked + .el-radio-button__inner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: #fff;
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
+}
+
+.el-radio-button__orig-radio:checked + .el-radio-button__inner i {
+  animation: iconBounce 0.5s ease;
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* -----------------
+   8. 密码强度提示优化
+   ----------------- */
+.password-strength-container {
+  margin-top: -18px;
+  margin-bottom: 20px;
+  padding: 15px 20px;
+  background: #f5f7fa;
+  border-radius: 8px;
+  border-left: 4px solid #e4e7ed;
+  transition: all 0.3s;
+}
+
+.strength-label {
+  font-size: 13px;
+  color: #606266;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.strength-text {
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.strength-weak { color: #f56c6c; }
+.strength-medium { color: #e6a23c; }
+.strength-strong { color: #67c23a; }
+.strength-very-strong { color: #409eff; }
+
+.strength-score {
+  margin-left: auto;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.strength-bars {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.strength-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: #e4e7ed;
+  transition: all 0.3s;
+}
+
+.strength-bar.active-1 { background: #f56c6c; }
+.strength-bar.active-2 { background: #e6a23c; }
+.strength-bar.active-3 { background: #67c23a; }
+.strength-bar.active-4 { background: #409eff; }
+
+.strength-requirements {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #909399;
+  transition: all 0.3s;
+}
+
+.requirement-item.met {
+  color: #67c23a;
+}
+
+.requirement-item i {
+  font-size: 14px;
+}
+
+/* -----------------
+   9. 分割线优化
+   ----------------- */
+.el-divider {
+  background: linear-gradient(90deg, transparent, #e4e7ed, transparent);
+  margin: 25px 0;
+}
+
+.el-divider__text {
+  background: #fff;
+  padding: 0 15px;
+  color: #909399;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 2px;
+}
+
+/* -----------------
+   10. 复选框优化
+   ----------------- */
+.el-checkbox {
+  margin-right: 0;
+}
+
+.el-checkbox__input.is-checked + .el-checkbox__label {
+  color: #667eea;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+/* -----------------
+   11. 链接样式优化
+   ----------------- */
+.el-link {
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.el-link--primary {
+  color: #667eea;
+}
+
+.el-link--primary:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+/* -----------------
+   12. 表尾区域优化
+   ----------------- */
+.form-footer {
+  text-align: center;
+  margin-top: 25px;
+  padding-top: 25px;
+  border-top: 1px solid #ebeef5;
+  font-size: 14px;
+  color: #909399;
+}
+
+.form-footer span {
+  margin-right: 8px;
+}
+
+/* -----------------
+   13. 背景装饰优化
+   ----------------- */
+.background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  animation: float 20s ease-in-out infinite;
+}
+
+.shape:nth-child(1) {
+  width: 300px;
+  height: 300px;
+  top: -100px;
+  left: -100px;
+  animation-delay: 0s;
+}
+
+.shape:nth-child(2) {
+  width: 400px;
+  height: 400px;
+  bottom: -150px;
+  right: -150px;
+  animation-delay: 7s;
+}
+
+.shape:nth-child(3) {
+  width: 200px;
+  height: 200px;
+  top: 50%;
+  left: 50%;
+  animation-delay: 14s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(50px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-50px, 50px) scale(0.9);
+  }
+}
+
+/* -----------------
+   14. 响应式优化
+   ----------------- */
+@media screen and (max-width: 768px) {
+  .register-card,
+  .login-panel {
+    width: 95%;
+    padding: 30px 20px;
+  }
+  
+  .card-header .title {
+    font-size: 26px;
+  }
+  
+  .card-header .subtitle {
+    font-size: 12px;
+  }
+  
+  .el-form-item__label {
+    width: 80px !important;
+  }
+  
+  .role-selector {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .strength-requirements {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .register-card,
+  .login-panel {
+    padding: 25px 15px;
+  }
+  
+  .el-button {
+    width: 100%;
+  }
+  
+  .el-input__inner {
+    font-size: 14px;
+  }
+}
+
+/* -----------------
+   15. 加载状态优化
+   ----------------- */
+.el-button.is-loading {
+  position: relative;
+}
+
+.el-button.is-loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  cursor: not-allowed;
+}
+
+/* -----------------
+   16. 错误提示优化
+   ----------------- */
+.el-form-item.is-error .el-input__inner {
+  border-color: #f56c6c;
+  animation: inputShake 0.3s;
+}
+
+@keyframes inputShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.el-form-item__error {
+  font-size: 12px;
+  color: #f56c6c;
+  margin-top: 5px;
+}
+
+/* -----------------
+   17. 成功动画
+   ----------------- */
+@keyframes successPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.check-success {
+  animation: successPop 0.5s ease;
+}
+
+/* -----------------
+   18. 消息提示优化
+   ----------------- */
+.el-message {
+  min-width: 200px;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.el-message--success {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+  border-color: #67c23a;
+}
+
+.el-message--warning {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-color: #e6a23c;
+}
+
+.el-message--error {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border-color: #f56c6c;
+}
+
+/* -----------------
+   19. 工具类
+   ----------------- */
+.text-center {
+  text-align: center;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+/* -----------------
+   20. 打印样式
+   ----------------- */
+@media print {
+  .background,
+  .form-footer {
+    display: none;
+  }
+  
+  .register-card,
+  .login-panel {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+}

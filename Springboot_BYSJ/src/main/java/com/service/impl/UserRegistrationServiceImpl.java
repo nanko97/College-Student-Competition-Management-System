@@ -46,7 +46,13 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
         // 2. 根据角色创建对应实体（使用雪花算法生成唯一 ID）
         Long userId = com.utils.IdWorker.getId();
         
-        switch (dto.getRole()) {
+        // 统一角色名称（支持中文和拼音）
+        String role = dto.getRole();
+        if ("xuesheng".equals(role)) role = "学生";
+        else if ("jiaoshi".equals(role)) role = "教师";
+        else if ("guanliyuan".equals(role)) role = "管理员";
+        
+        switch (role) {
             case "学生":
                 return registerStudent(dto, userId);
             case "教师":
@@ -63,7 +69,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
      */
     private RegisterResultVO registerStudent(UserRegisterDTO dto, Long userId) {
         // 1. 创建学生记录
-        XueshengEntity student = new XueshengEntity<>();
+        XueshengEntity student = new XueshengEntity();
         student.setId(userId);
         student.setXuehao(dto.getAccount());
         student.setMima(passwordEncoder.encode(dto.getPassword())); // 密码加密
@@ -95,7 +101,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
      */
     private RegisterResultVO registerTeacher(UserRegisterDTO dto, Long userId) {
         // 1. 创建教师记录
-        JiaoshiEntity teacher = new JiaoshiEntity<>();
+        JiaoshiEntity teacher = new JiaoshiEntity();
         teacher.setId(userId);
         teacher.setGonghao(dto.getAccount());
         teacher.setMima(passwordEncoder.encode(dto.getPassword())); // 密码加密
@@ -141,6 +147,11 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
     
     @Override
     public boolean validateAccountUnique(String role, String account) {
+        // 统一角色名称（支持中文和拼音）
+        if ("xuesheng".equals(role)) role = "学生";
+        else if ("jiaoshi".equals(role)) role = "教师";
+        else if ("guanliyuan".equals(role)) role = "管理员";
+        
         switch (role) {
             case "学生":
                 XueshengEntity student = xueshengService.selectOne(

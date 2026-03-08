@@ -171,16 +171,7 @@ CREATE TABLE `zuopindafen` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='作品打分表';
 
--- 9. 班级类型表
-DROP TABLE IF EXISTS `banjileixing`;
-CREATE TABLE `banjileixing` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键 ID',
-  `banjileixing` varchar(50) DEFAULT NULL COMMENT '班级类型',
-  `addtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='班级类型表';
-
--- 10. 配置表
+-- 9. 配置表
 DROP TABLE IF EXISTS `config`;
 CREATE TABLE `config` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键 ID',
@@ -233,13 +224,6 @@ INSERT INTO `zuopindafen` (`zuopinmingcheng`, `zuopinjieshao`, `dafenshu`, `dafe
 ('校园二手交易平台', '为在校大学生提供便捷的二手物品交易服务', 88.0, '功能完整，界面友好', 'T2022001', '赵老师'),
 ('智能考勤管理系统', '基于人脸识别的课堂考勤系统', 90.0, '实用性强，性能优秀', 'T2022002', '钱老师'),
 ('在线考试系统设计与实现', '支持多种题型的在线考试平台', 85.5, '系统稳定，但 UI 有待优化', 'T2022002', '钱老师');
-
--- 示例班级类型
-INSERT INTO `banjileixing` (`banjileixing`) VALUES
-('本科'),
-('专科'),
-('研究生'),
-('继续教育');
 
 -- =============================================
 -- 重要提示

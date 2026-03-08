@@ -273,6 +273,12 @@ public class ZuopindafenController {
             return R.error("作品分数不能为空");
         }
         
+        // 4. 分数范围校验（0-100）
+        if (zuopindafen.getZuopinpingfen() < 0 || zuopindafen.getZuopinpingfen() > 100) {
+            log.warn("保存评分失败：分数超出范围，分数：{}", zuopindafen.getZuopinpingfen());
+            return R.error("评分范围为 0-100 分");
+        }
+        
         try {
             // 2. 自动填充工号 (如果是教师评分)
             String tableName = (String) request.getSession().getAttribute("tableName");
@@ -387,6 +393,12 @@ public class ZuopindafenController {
             return R.error("作品分数不能为空");
         }
         
+        // 4. 分数范围校验（0-100）
+        if (zuopindafen.getZuopinpingfen() < 0 || zuopindafen.getZuopinpingfen() > 100) {
+            log.warn("修改评分失败：分数超出范围，ID: {}, 分数：{}", zuopindafen.getId(), zuopindafen.getZuopinpingfen());
+            return R.error("评分范围为 0-100 分");
+        }
+        
         try {
             // 2. 实体校验
             ValidatorUtils.validateEntity(zuopindafen);
@@ -416,7 +428,9 @@ public class ZuopindafenController {
      * @return R 统一返回结果
      */
     @RequestMapping("/delete")
-    public R delete(@RequestBody Long[] ids) {
+    public R delete(@RequestBody Long[] ids, HttpServletRequest request) {
+        log.debug("删除请求接收到的 IDs: {}", Arrays.toString(ids));
+        
         // 1. 参数校验
         if (ids == null || ids.length == 0) {
             log.warn("删除评分失败：ID 数组为空");
@@ -424,15 +438,49 @@ public class ZuopindafenController {
         }
         
         try {
-            // 2. 批量删除
+            // 2. 权限控制：只有教师和管理员可以删除评分
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            log.debug("当前用户表名：{}", tableName);
+            
+            if (tableName == null) {
+                log.warn("删除评分失败：用户未登录");
+                return R.error("请先登录");
+            }
+            
+            if ("xuesheng".equals(tableName)) {
+                log.warn("学生尝试删除评分记录，IP: {}", request.getRemoteAddr());
+                return R.error("学生无权删除评分记录");
+            }
+            
+            // 3. 如果是教师，只能删除自己的评分
+            if ("jiaoshi".equals(tableName)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                log.debug("当前教师工号：{}", gonghao);
+                
+                for (Long id : ids) {
+                    ZuopindafenEntity zuopindafen = zuopindafenService.selectById(id);
+                    if (zuopindafen == null) {
+                        log.warn("删除评分失败：评分记录不存在，ID: {}", id);
+                        return R.error("评分记录不存在");
+                    }
+                    if (!gonghao.equals(zuopindafen.getGonghao())) {
+                        log.warn("教师 {} 尝试删除其他教师的评分记录，ID: {}, 记录工号：{}", 
+                                 gonghao, id, zuopindafen.getGonghao());
+                        return R.error("只能删除自己的评分记录");
+                    }
+                }
+            }
+            
+            // 4. 批量删除
+            int count = ids.length;
             zuopindafenService.deleteBatchIds(Arrays.asList(ids));
             
-            log.info("删除作品评分成功，IDs: {}", Arrays.toString(ids));
+            log.info("删除作品评分成功，用户：{}, 删除 IDs: {}, 数量：{}", tableName, Arrays.toString(ids), count);
             return R.ok("删除成功");
             
         } catch (Exception e) {
             log.error("删除作品评分 ID{}异常：", Arrays.toString(ids), e);
-            return R.error("删除失败，请联系管理员");
+            return R.error("删除失败：" + e.getMessage());
         }
     }
 

@@ -326,7 +326,7 @@ export default {
       checkingAccount: false,
       accountAvailable: null, // null: 未检查，true: 可用，false: 已存在
       submitting: false,
-      showAdvancedFields: false,
+      showAdvancedFields: true,
       
       // 密码强度相关
       showPasswordStrength: false,
@@ -522,7 +522,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 // 变量定义
 $primary-color: #667eea;
 $primary-dark: #764ba2;
