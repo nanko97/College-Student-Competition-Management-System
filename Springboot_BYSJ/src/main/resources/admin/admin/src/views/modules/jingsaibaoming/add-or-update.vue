@@ -284,22 +284,28 @@ export default {
           jiaoshixingming: [
           ],
           jingsaimingcheng: [
+            { required: true, message: '请输入竞赛名称', trigger: 'blur' }
           ],
           jingsaileixing: [
           ],
           cansaileixing: [
           ],
           cansairenyuan: [
+            { required: true, message: '请输入参赛人员', trigger: 'blur' },
+            { min: 1, max: 50, message: '长度在 1 到 50 个字符之间', trigger: 'blur' }
           ],
           cansaizuopin: [
           ],
           cansaixuanyan: [
+            { required: true, message: '请选择参赛宣言', trigger: 'change' }
           ],
           shenqingriqi: [
           ],
           xuehao: [
+            { required: true, message: '请输入学号', trigger: 'blur' }
           ],
           xueshengxingming: [
+            { required: true, message: '请输入学生姓名', trigger: 'blur' }
           ],
           sfsh: [
           ],

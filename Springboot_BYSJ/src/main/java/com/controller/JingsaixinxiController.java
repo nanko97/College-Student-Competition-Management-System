@@ -345,8 +345,13 @@ public class JingsaixinxiController {
             String tableName = (String) request.getSession().getAttribute("tableName");
             if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
-                jingsaixinxi.setGonghao(gonghao);
-                log.info("教师 {} 添加新竞赛：{}", gonghao, jingsaixinxi.getJingsaimingcheng());
+                if (StringUtils.hasText(gonghao)) {
+                    jingsaixinxi.setGonghao(gonghao);
+                    log.info("教师 {} 添加新竞赛：{}", gonghao, jingsaixinxi.getJingsaimingcheng());
+                } else {
+                    log.error("教师工号为空，无法添加竞赛");
+                    return R.error("请先登录");
+                }
             }
             
             // 3. 实体校验

@@ -265,6 +265,8 @@ public class JingsaibaomingController {
     @OperationLog("添加竞赛报名")
     @RequestMapping("/save")
     public R save(@RequestBody JingsaibaomingEntity jingsaibaoming, HttpServletRequest request) {
+        log.info("收到报名请求：{}", jingsaibaoming);
+        
         // 1. 基础参数校验
         if (!StringUtils.hasText(jingsaibaoming.getXuehao())) {
             log.warn("保存报名失败：学号为空");
@@ -282,12 +284,22 @@ public class JingsaibaomingController {
             ew.eq("jingsaimingcheng", jingsaibaoming.getJingsaimingcheng());
             JingsaixinxiEntity jingsai = jingsaixinxiService.selectOne(ew);
             
-            if (jingsai != null && jingsai.getJingsaishijian() != null) {
+            if (jingsai == null) {
+                log.warn("报名失败：竞赛 {} 不存在", jingsaibaoming.getJingsaimingcheng());
+                return R.error("该竞赛不存在，无法报名");
+            }
+            
+            if (jingsai.getJingsaishijian() != null) {
                 // 如果当前时间超过竞赛时间，则不允许报名
                 if (jingsai.getJingsaishijian().before(new Date())) {
                     log.warn("报名失败：竞赛 {} 已结束", jingsai.getJingsaimingcheng());
                     return R.error("该竞赛已结束，无法提交申请");
                 }
+            }
+            
+            // 检查竞赛是否允许报名
+            if (StringUtils.hasText(jingsai.getBaomingshuoming())) {
+                log.debug("竞赛 {} 的报名说明：{}", jingsai.getJingsaimingcheng(), jingsai.getBaomingshuoming());
             }
         }
         
@@ -296,12 +308,13 @@ public class JingsaibaomingController {
             String tableName = (String) request.getSession().getAttribute("tableName");
             if ("xuesheng".equals(tableName)) {
                 String xuehao = (String) request.getSession().getAttribute("username");
-                jingsaibaoming.setXuehao(xuehao);
-                
-                // 可选：自动填充学生姓名
-                // jingsaibaoming.setXueshengxingming(...);
-                
-                log.info("学生 {} 报名竞赛：{}", xuehao, jingsaibaoming.getJingsaimingcheng());
+                if (StringUtils.hasText(xuehao)) {
+                    jingsaibaoming.setXuehao(xuehao);
+                    log.info("学生 {} 报名竞赛：{}", xuehao, jingsaibaoming.getJingsaimingcheng());
+                } else {
+                    log.error("学生 session 中学号为空");
+                    return R.error("请先登录");
+                }
             }
             
             // 3. 实体校验
@@ -323,14 +336,17 @@ public class JingsaibaomingController {
             jingsaibaoming.setId(IdWorker.getId());
             jingsaibaomingService.insert(jingsaibaoming);
             
-            log.info("保存报名信息成功，ID: {}, 学号：{}, 竞赛：{}", 
+            log.info("保存报名信息成功，ID: {}, 学号：{}, 竞赛：{}, 队伍名称：{}", 
                      jingsaibaoming.getId(), 
                      jingsaibaoming.getXuehao(), 
-                     jingsaibaoming.getJingsaimingcheng());
+                     jingsaibaoming.getJingsaimingcheng(),
+                     jingsaibaoming.getDuowumingcheng());
             return R.ok("报名成功");
             
         } catch (Exception e) {
-            log.error("保存报名信息异常：", e);
+            log.error("保存报名信息异常：学号={}, 竞赛={}", 
+                     jingsaibaoming.getXuehao(), 
+                     jingsaibaoming.getJingsaimingcheng(), e);
             return R.error("报名失败，请联系管理员");
         }
     }
