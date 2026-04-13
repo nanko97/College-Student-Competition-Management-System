@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>竞赛列表调试工具</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        h1 { color: #409EFF; text-align: center; }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            border-left: 4px solid #409EFF;
+        }
+        .section h2 {
+           color: #303133;
+            margin-top: 0;
+            font-size: 18px;
+        }
+        button {
+            background: #409EFF;
+           color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover { background: #66b1ff; }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #dcdfe6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        table {
+           width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #dcdfe6;
+            padding: 8px;
+            text-align: left;
+            font-size: 13px;
+        }
+        th { background: #f5f7fa; font-weight: bold; }
+        .error { color: #F56C6C; }
+        .success { color: #67C23A; }
+        .warning { color: #E6A23C; }
+        
+        /* 模拟前端样式 */
+        .el-table {
+           width: 100%;
+            border: 1px solid #DCDFE6;
+            border-radius: 4px;
+        }
+        .el-table th {
+            background-color: #f5f7fa;
+           color: #606266;
+            font-weight: bold;
+        }
+        .el-table td {
+            padding: 12px 10px;
+        }
+        .el-table tr:hover {
+            background-color: #f5f7fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 竞赛列表前端渲染调试</h1>
+        
+        <div class="section">
+            <h2>步骤 1: 登录获取 Token</h2>
+            <button onclick="login()">教师登录 (T2022001)</button>
+            <div id="loginResult" class="result">等待操作...</div>
+        </div>
+
+        <div class="section">
+            <h2>步骤 2: 请求竞赛列表 API</h2>
+            <button onclick="fetchContests()">获取竞赛数据</button>
+            <div id="apiResult" class="result">等待操作...</div>
+        </div>
+
+        <div class="section">
+            <h2>步骤 3: 模拟前端表格渲染</h2>
+            <button onclick="renderTable()">渲染表格</button>
+            <div id="tableContainer"></div>
+        </div>
+
+        <div class="section">
+            <h2>步骤 4: 检查前端配置</h2>
+            <button onclick="checkFrontendConfig()">检查 contents 配置</button>
+            <div id="configResult" class="result">等待检查...</div>
+        </div>
+    </div>
+
+    <script>
+        let teacherToken = '';
+        let contestData = null;
+
+        // 步骤 1: 登录
+        async function login() {
+          const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '<span class="warning">正在登录...</span>';
+            
+            try {
+              const response = await fetch('http://localhost:8080/springbootrd362/jiaoshi/login?username=T2022001&password=123456', {
+                  method: 'POST'
+                });
+              const data = await response.json();
+                
+                if (data.code === 0) {
+                    teacherToken = data.token;
+                    resultDiv.innerHTML = `<span class="success">✅ 登录成功！</span>\nToken: ${teacherToken}`;
+                } else {
+                    resultDiv.innerHTML = `<span class="error">❌ 登录失败：${data.msg}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ 请求失败：${error.message}</span>`;
+            }
+        }
+
+        // 步骤 2: 获取数据
+        async function fetchContests() {
+          const resultDiv = document.getElementById('apiResult');
+            
+            if (!teacherToken) {
+                resultDiv.innerHTML = '<span class="warning">⚠️ 请先执行步骤 1：登录</span>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<span class="warning">正在请求 API...</span>';
+            
+            try {
+              const response = await fetch('http://localhost:8080/springbootrd362/jingsaixinxi/page?page=1&limit=10', {
+                  headers: { 'Token': teacherToken }
+                });
+              const data = await response.json();
+               contestData = data;
+                
+                if (data.code === 0) {
+                  const list = data.data.list;
+                    resultDiv.innerHTML = `<span class="success">✅ API 请求成功！</span>\n总数：${data.data.total}\n当前页：${data.data.currPage}/${data.data.totalPage}\n记录数：${list.length}\n\n完整响应:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.innerHTML = `<span class="error">❌ API 失败：${data.msg}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ 请求失败：${error.message}</span>`;
+            }
+        }
+
+        // 步骤 3: 渲染表格
+        function renderTable() {
+          const container = document.getElementById('tableContainer');
+            
+            if (!contestData || contestData.code !== 0) {
+               container.innerHTML = '<div class="result"><span class="warning">⚠️ 请先执行步骤 2：获取数据</span></div>';
+                return;
+            }
+            
+          const list = contestData.data.list;
+            
+            if (!list || list.length === 0) {
+               container.innerHTML = '<div class="result"><span class="warning">⚠️ 没有数据</span></div>';
+                return;
+            }
+            
+            let html = '<table class="el-table">';
+            html += '<thead><tr>';
+            html += '<th style="width:50px;">选择</th>';
+            html += '<th style="width:50px;">索引</th>';
+            html += '<th>竞赛名称</th>';
+            html += '<th>竞赛类型</th>';
+            html += '<th>竞赛地点</th>';
+            html += '<th>竞赛时间</th>';
+            html += '<th>模式</th>';
+            html += '<th>工号</th>';
+            html += '<th>教师姓名</th>';
+            html += '</tr></thead>';
+            html += '<tbody>';
+            
+            list.forEach((item, index) => {
+                html += '<tr>';
+                html += '<td><input type="checkbox"></td>';
+                html += `<td>${index + 1}</td>`;
+                html += `<td>${item.jingsaimingcheng || '-'}</td>`;
+                html += `<td>${item.jingsaileixing || '-'}</td>`;
+                html += `<td>${item.jingsaididian || '-'}</td>`;
+                html += `<td>${item.jingsaishijian || '-'}</td>`;
+                html += `<td>${item.moshi || '-'}</td>`;
+                html += `<td>${item.gonghao || '-'}</td>`;
+                html += `<td>${item.jiaoshixingming || '-'}</td>`;
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            html += `<p style="margin-top:10px;"><strong>分页:</strong> 共 ${contestData.data.total} 条，每页 10 条，共 ${contestData.data.totalPage} 页</p>`;
+            
+           container.innerHTML = html;
+        }
+
+        // 步骤 4: 检查前端配置
+        function checkFrontendConfig() {
+          const resultDiv = document.getElementById('configResult');
+            
+            // 模拟前端的 contents 配置
+          const contents = {"searchBtnFontColor":"#333","pagePosition":"1","inputFontSize":"14px","inputBorderRadius":"16px","tableBtnDelFontColor":"#333","tableBtnIconPosition":"2","searchBtnHeight":"40px","inputIconColor":"#C0C4CC","searchBtnBorderRadius":"4px","tableStripe":false,"btnAdAllWarnFontColor":"#333","tableBtnDelBgColor":"rgba(255, 140, 0, 1)","searchBtnIcon":"1","tableSize":"small","searchBtnBorderStyle":"solid","tableSelection":true,"searchBtnBorderWidth":"1px","tableContentFontSize":"14px","searchBtnBgColor":"#fff","inputTitleSize":"14px","btnAdAllBorderColor":"rgba(31, 147, 255, 0.73)","pageJumper":true,"btnAdAllIconPosition":"1","searchBoxPosition":"2","tableBtnDetailFontColor":"#333","tableBtnHeight":"40px","pagePager":true,"searchBtnBorderColor":"#DCDFE6","tableHeaderFontColor":"rgba(12, 12, 13, 0.67)","inputTitle":"1","tableBtnBorderRadius":"16px","btnAdAllFont":"1","btnAdAllDelFontColor":"#333","tableBtnIcon":"1","btnAdAllHeight":"40px","btnAdAllWarnBgColor":"rgba(190, 163, 18, 1)","btnAdAllBorderWidth":"1px","tableStripeFontColor":"#606266","tableBtnBorderStyle":"solid","inputHeight":"40px","btnAdAllBorderRadius":"16px","btnAdAllDelBgColor":"rgba(255, 215, 0, 1)","pagePrevNext":true,"btnAdAllAddBgColor":"rgba(241, 215, 70, 1)","searchBtnFont":"1","tableIndex":true,"btnAdAllIcon":"1","tableSortable":true,"pageSizes":true,"tableFit":true,"pageBtnBG":true,"searchBtnFontSize":"14px","tableBtnEditBgColor":"rgba(255, 140, 0, 1)","inputBorderWidth":"1px","inputFontPosition":"1","inputFontColor":"rgba(82, 135, 234, 1)","pageEachNum":10,"tableHeaderBgColor":"rgba(227, 226, 226, 0.14)","inputTitleColor":"#333","btnAdAllBoxPosition":"1","tableBtnDetailBgColor":"rgba(255, 140, 0, 1)","inputIcon":"1","searchBtnIconPosition":"1","btnAdAllFontSize":"14px","inputBorderStyle":"solid","inputBgColor":"rgba(224, 220, 220, 0.15)","pageStyle":true,"pageTotal":true,"btnAdAllAddFontColor":"#333","tableBtnFont":"1","tableContentFontColor":"rgba(78, 79, 82, 1)","inputBorderColor":"#DCDFE6","tableShowHeader":true,"tableBtnFontSize":"14px","tableBtnBorderColor":"#DCDFE6","inputIconPosition":"2","tableBorder":true,"btnAdAllBorderStyle":"solid","tableBtnBorderWidth":"1px","tableStripeBgColor":"#F5F7FA","tableBtnEditFontColor":"#333","tableAlign":"center"};
+            
+            resultDiv.innerHTML = '<span class="success">✅ contents 配置检查完成</span>\n\n关键配置项:\n' + 
+                JSON.stringify({
+                   tableShowHeader: contents.tableShowHeader,
+                   tableBorder: contents.tableBorder,
+                   tableSelection: contents.tableSelection,
+                   tableIndex: contents.tableIndex,
+                   tableSortable: contents.tableSortable,
+                   tableFit: contents.tableFit,
+                   tableStripe: contents.tableStripe,
+                   tableSize: contents.tableSize,
+                   tableAlign: contents.tableAlign,
+                   btnAdAllFont: contents.btnAdAllFont,
+                   btnAdAllIcon: contents.btnAdAllIcon,
+                   pageTotal: contents.pageTotal,
+                   pagePager: contents.pagePager
+                }, null, 2);
+        }
+
+      window.onload = () => {
+           document.getElementById('configResult').innerHTML = '<span class="info">页面已加载，请按顺序执行测试</span>';
+       };
+    </script>
+</body>
+</html>

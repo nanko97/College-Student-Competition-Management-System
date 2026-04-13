@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>检查缓存版本</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei';
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+           color: white;
+        }
+        .container {
+            background: rgba(255,255,255,0.95);
+           color: #333;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 { color: #409EFF; }
+        .info {
+            background: #f0f9ff;
+            border-left: 4px solid #409EFF;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #f0f9eb;
+            border-left: 4px solid #67C23A;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #fdf6ec;
+            border-left: 4px solid #E6A23C;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        button {
+            background: #409EFF;
+           color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background: #66b1ff; }
+        button.danger { background: #F56C6C; }
+        button.danger:hover { background: #f78989; }
+        pre {
+            background: #282c34;
+           color: #abb2bf;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #dcdfe6;
+            padding: 10px;
+            text-align: left;
+        }
+        th { background: #f5f7fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 检查浏览器缓存版本</h1>
+        
+        <div class="info">
+            <strong>📋 当前页面信息：</strong>
+            <div id="pageInfo"></div>
+        </div>
+        
+        <div class="warning">
+            <strong>⚠️ 问题诊断：</strong>
+            <p>如果您看到大量的 "NavigationDuplicated" 错误，说明浏览器正在使用旧版本的前端代码。</p>
+            <p><strong>最新版本应该已经修复了所有这些错误！</strong></p>
+        </div>
+        
+        <h2>📊 缓存检查</h2>
+        <table>
+            <tr>
+                <th>检查项</th>
+                <th>状态</th>
+                <th>详情</th>
+            </tr>
+            <tr>
+                <td>LocalStorage</td>
+                <td id="localStorageStatus">检查中...</td>
+                <td id="localStorageDetail">-</td>
+            </tr>
+            <tr>
+                <td>SessionStorage</td>
+                <td id="sessionStorageStatus">检查中...</td>
+                <td id="sessionStorageDetail">-</td>
+            </tr>
+            <tr>
+                <td>Cache Storage</td>
+                <td id="cacheStorageStatus">检查中...</td>
+                <td id="cacheStorageDetail">-</td>
+            </tr>
+            <tr>
+                <td>Service Worker</td>
+                <td id="swStatus">检查中...</td>
+                <td id="swDetail">-</td>
+            </tr>
+        </table>
+        
+        <h2>🛠️ 操作按钮</h2>
+        <button onclick="clearAll()">清除所有缓存</button>
+        <button class="danger" onclick="forceReload()">强制刷新页面</button>
+        <button onclick="openApp()">打开应用首页</button>
+        
+        <h2>📝 操作日志</h2>
+        <pre id="log">等待操作...</pre>
+    </div>
+
+    <script>
+        let logMessages = [];
+        
+        function log(msg) {
+            const timestamp = new Date().toLocaleTimeString();
+            logMessages.push(`[${timestamp}] ${msg}`);
+            document.getElementById('log').textContent = logMessages.join('\n');
+        }
+        
+        // 页面信息
+        document.getElementById('pageInfo').innerHTML = `
+            <p><strong>URL:</strong> ${window.location.href}</p>
+            <p><strong>加载时间:</strong> ${new Date().toLocaleString()}</p>
+            <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+        `;
+        
+        // 检查 LocalStorage
+        try {
+            const lsCount = localStorage.length;
+            document.getElementById('localStorageStatus').innerHTML = '<span style="color:#67C23A">✅ 正常</span>';
+            document.getElementById('localStorageDetail').textContent = `${lsCount} 个项目`;
+            log(`LocalStorage: ${lsCount} 个项目`);
+        } catch (e) {
+            document.getElementById('localStorageStatus').innerHTML = '<span style="color:#F56C6C">❌ 错误</span>';
+            document.getElementById('localStorageDetail').textContent = e.message;
+        }
+        
+        // 检查 SessionStorage
+        try {
+            const ssCount = sessionStorage.length;
+            document.getElementById('sessionStorageStatus').innerHTML = '<span style="color:#67C23A">✅ 正常</span>';
+            document.getElementById('sessionStorageDetail').textContent = `${ssCount} 个项目`;
+            log(`SessionStorage: ${ssCount} 个项目`);
+        } catch (e) {
+            document.getElementById('sessionStorageStatus').innerHTML = '<span style="color:#F56C6C">❌ 错误</span>';
+            document.getElementById('sessionStorageDetail').textContent = e.message;
+        }
+        
+        // 检查 Cache Storage
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                document.getElementById('cacheStorageStatus').innerHTML = `<span style="color:#E6A23C">⚠️ ${names.length} 个缓存</span>`;
+                document.getElementById('cacheStorageDetail').textContent = names.join(', ') || '无缓存';
+                log(`Cache Storage: ${names.length} 个缓存`);
+            });
+        } else {
+            document.getElementById('cacheStorageStatus').innerHTML = '<span style="color:#67C23A">✅ 不支持</span>';
+            document.getElementById('cacheStorageDetail').textContent = '浏览器不支持';
+        }
+        
+        // 检查 Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                if (registrations.length > 0) {
+                    document.getElementById('swStatus').innerHTML = '<span style="color:#E6A23C">⚠️ 已注册</span>';
+                    document.getElementById('swDetail').textContent = `${registrations.length} 个 Service Worker`;
+                    log(`Service Worker: ${registrations.length} 个`);
+                } else {
+                    document.getElementById('swStatus').innerHTML = '<span style="color:#67C23A">✅ 干净</span>';
+                    document.getElementById('swDetail').textContent = '未注册';
+                    log('Service Worker: 未注册');
+                }
+            });
+        } else {
+            document.getElementById('swStatus').innerHTML = '<span style="color:#67C23A">✅ 不支持</span>';
+            document.getElementById('swDetail').textContent = '浏览器不支持';
+        }
+        
+        // 清除所有缓存
+        async function clearAll() {
+            log('开始清除所有缓存...');
+            
+            // 清除 LocalStorage
+            localStorage.clear();
+            log('✅ LocalStorage 已清除');
+            document.getElementById('localStorageDetail').textContent = '0 个项目';
+            
+            // 清除 SessionStorage
+            sessionStorage.clear();
+            log('✅ SessionStorage 已清除');
+            document.getElementById('sessionStorageDetail').textContent = '0 个项目';
+            
+            // 清除 Cache Storage
+            if ('caches' in window) {
+                const names = await caches.keys();
+                for (let name of names) {
+                    await caches.delete(name);
+                }
+                log(`✅ Cache Storage 已清除 (${names.length} 个)`);
+                document.getElementById('cacheStorageDetail').textContent = '无缓存';
+            }
+            
+            // 注销 Service Worker
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
+                }
+                log(`✅ Service Worker 已注销 (${registrations.length} 个)`);
+                document.getElementById('swDetail').textContent = '未注册';
+            }
+            
+            log('✅ 所有缓存已清除完成！');
+            alert('缓存已清除！请点击"强制刷新页面"按钮。');
+        }
+        
+        // 强制刷新
+        function forceReload() {
+            log('强制刷新页面...');
+            window.location.reload(true);
+        }
+        
+        // 打开应用
+        function openApp() {
+            log('打开应用首页...');
+            window.open('http://localhost:8081/', '_blank');
+        }
+        
+        log('页面加载完成，缓存检查完毕');
+    </script>
+</body>
+</html>

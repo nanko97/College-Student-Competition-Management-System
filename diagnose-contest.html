@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>竞赛新增问题诊断工具</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+           color: #409EFF;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            border-left: 4px solid #409EFF;
+        }
+        .section h2 {
+           color: #303133;
+            margin-top: 0;
+            font-size: 18px;
+        }
+        button {
+            background: #409EFF;
+           color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #66b1ff;
+        }
+        button.success {
+            background: #67C23A;
+        }
+        button.success:hover {
+            background: #85ce61;
+        }
+        button.warning {
+            background: #E6A23C;
+        }
+        button.warning:hover {
+            background: #ebb563;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dcdfe6;
+        }
+        .success-text { color: #67C23A; }
+        .error-text { color: #F56C6C; }
+        .warning-text { color: #E6A23C; }
+        .info-text { color: #909399; }
+        table {
+           width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #dcdfe6;
+            padding: 8px;
+            text-align: left;
+            font-size: 13px;
+        }
+        th {
+            background: #f5f7fa;
+            font-weight: bold;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        .status-ok {
+            background: #e1f3d8;
+           color: #67c23a;
+        }
+        .status-error {
+            background: #fef0f0;
+           color: #f56c6c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 竞赛新增问题诊断工具</h1>
+        
+        <div class="section">
+            <h2>📊 步骤 1: 检查服务状态</h2>
+            <button onclick="checkServiceStatus()">检查服务状态</button>
+            <div id="serviceStatus" class="result">点击按钮开始检查...</div>
+        </div>
+
+        <div class="section">
+            <h2>🔑 步骤 2: 测试教师登录</h2>
+            <button onclick="testTeacherLogin()">使用教师账号登录 (T2022001)</button>
+            <div id="teacherLogin" class="result">等待测试...</div>
+        </div>
+
+        <div class="section">
+            <h2>➕ 步骤 3: 测试新增竞赛</h2>
+            <button onclick="testAddContest()">新增测试竞赛</button>
+            <button class="warning" onclick="clearTestData()">清除测试数据</button>
+            <div id="addContest" class="result">等待测试...</div>
+        </div>
+
+        <div class="section">
+            <h2>📋 步骤 4: 查询竞赛列表</h2>
+            <button onclick="getContestList()">获取竞赛列表</button>
+            <div id="contestList" class="result">等待查询...</div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 步骤 5: 解决方案</h2>
+            <button class="success" onclick="openFrontend()">打开前端页面</button>
+            <button class="warning" onclick="clearBrowserCache()">清除浏览器缓存</button>
+            <p class="info-text" style="margin-top: 15px;">
+                <strong>如果以上测试都正常但前端仍不显示：</strong><br>
+                1. 按 Ctrl + Shift + Delete 清除浏览器缓存<br>
+                2. 按 Ctrl + F5 强制刷新页面<br>
+                3. 尝试使用无痕模式访问<br>
+                4. 检查 F12 控制台的错误信息
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let teacherToken = '';
+
+        // 检查服务状态
+        async function checkServiceStatus() {
+           const resultDiv = document.getElementById('serviceStatus');
+            resultDiv.innerHTML = '<span class="info-text">正在检查...</span>';
+            
+            let html = '';
+            
+            // 检查后端
+            try {
+               const backendResp = await fetch('http://localhost:8080/springbootrd362/', { method: 'GET' });
+                html += `<p>✅ 后端服务 (8080): <span class="status-badge status-ok">运行中</span></p>`;
+            } catch (error) {
+                html += `<p>❌ 后端服务 (8080): <span class="status-badge status-error">未运行</span></p>`;
+            }
+
+            // 检查前端
+            try {
+               const frontendResp = await fetch('http://localhost:8081/', { method: 'GET' });
+                html += `<p>✅ 前端服务 (8081): <span class="status-badge status-ok">运行中</span></p>`;
+            } catch (error) {
+                html += `<p>❌ 前端服务 (8081): <span class="status-badge status-error">未运行</span></p>`;
+            }
+
+            resultDiv.innerHTML = html;
+        }
+
+        // 测试教师登录
+        async function testTeacherLogin() {
+           const resultDiv = document.getElementById('teacherLogin');
+            resultDiv.innerHTML = '<span class="info-text">正在登录...</span>';
+            
+            try {
+               const response = await fetch('http://localhost:8080/springbootrd362/jiaoshi/login?username=T2022001&password=123456', {
+                   method: 'POST'
+                });
+               const data = await response.json();
+                
+                if (data.code === 0) {
+                    teacherToken = data.token;
+                    resultDiv.innerHTML = `<span class="success-text">✅ 教师登录成功！</span><br>Token: ${teacherToken}`;
+                } else {
+                    resultDiv.innerHTML = `<span class="error-text">❌ 教师登录失败：${data.msg}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error-text">❌ 请求失败：${error.message}</span>`;
+            }
+        }
+
+        // 测试新增竞赛
+        async function testAddContest() {
+           const resultDiv = document.getElementById('addContest');
+            
+            if (!teacherToken) {
+                resultDiv.innerHTML = '<span class="warning-text">⚠️ 请先执行步骤 2：教师登录</span>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<span class="info-text">正在新增竞赛...</span>';
+            
+           const contestData = {
+               jingsaimingcheng: `测试竞赛_${new Date().getTime()}`,
+               jingsaileixing: '测试',
+               jingsaididian: '测试地点',
+               jingsaiguize: '测试规则',
+               jingsaijiangli: '测试奖励',
+               jingsaishijian: '2026-12-31 09:00:00',
+                moshi: '个人赛',
+                gonghao: 'T2022001',
+               jiaoshixingming: '赵建国'
+            };
+            
+            try {
+               const response = await fetch('http://localhost:8080/springbootrd362/jingsaixinxi/save', {
+                   method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Token': teacherToken
+                    },
+                    body: JSON.stringify(contestData)
+                });
+               const data = await response.json();
+                
+                if (data.code === 0) {
+                    resultDiv.innerHTML = `<span class="success-text">✅ 竞赛新增成功！</span><br>${data.msg}`;
+                } else {
+                    resultDiv.innerHTML = `<span class="error-text">❌ 竞赛新增失败：${data.msg}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error-text">❌ 请求失败：${error.message}</span>`;
+            }
+        }
+
+        // 清除测试数据
+        async function clearTestData() {
+           const resultDiv = document.getElementById('addContest');
+            resultDiv.innerHTML = '<span class="info-text">正在清除测试数据...</span>';
+            
+            if (!teacherToken) {
+                resultDiv.innerHTML = '<span class="warning-text">⚠️ 请先执行步骤 2：教师登录</span>';
+                return;
+            }
+            
+            try {
+                // 先查询所有测试竞赛
+               const listResponse = await fetch('http://localhost:8080/springbootrd362/jingsaixinxi/page?page=1&limit=100', {
+                    headers: { 'Token': teacherToken }
+                });
+               const listData = await listResponse.json();
+                
+                if (listData.code === 0) {
+                   const testContests = listData.data.list.filter(item => 
+                        item.jingsaimingcheng && item.jingsaimingcheng.includes('测试竞赛_')
+                    );
+                    
+                    if (testContests.length > 0) {
+                       const idsToDelete = testContests.map(item => item.id);
+                        
+                       const deleteResponse = await fetch('http://localhost:8080/springbootrd362/jingsaixinxi/delete', {
+                           method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Token': teacherToken
+                            },
+                            body: JSON.stringify(idsToDelete)
+                        });
+                       const deleteData = await deleteResponse.json();
+                        
+                        if (deleteData.code === 0) {
+                            resultDiv.innerHTML = `<span class="success-text">✅ 已删除 ${idsToDelete.length} 条测试数据</span>`;
+                        } else {
+                            resultDiv.innerHTML = `<span class="error-text">❌ 删除失败：${deleteData.msg}</span>`;
+                        }
+                    } else {
+                        resultDiv.innerHTML = '<span class="info-text">ℹ️ 没有找到测试数据</span>';
+                    }
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error-text">❌ 操作失败：${error.message}</span>`;
+            }
+        }
+
+        // 获取竞赛列表
+        async function getContestList() {
+           const resultDiv = document.getElementById('contestList');
+            resultDiv.innerHTML = '<span class="info-text">正在查询...</span>';
+            
+            if (!teacherToken) {
+                resultDiv.innerHTML = '<span class="warning-text">⚠️ 请先执行步骤 2：教师登录</span>';
+                return;
+            }
+            
+            try {
+               const response = await fetch('http://localhost:8080/springbootrd362/jingsaixinxi/page?page=1&limit=10', {
+                    headers: { 'Token': teacherToken }
+                });
+               const data = await response.json();
+                
+                if (data.code === 0) {
+                    let html = `<p><strong>总数:</strong> ${data.data.total} 条</p>`;
+                    html += '<table><thead><tr><th>ID</th><th>竞赛名称</th><th>类型</th><th>工号</th><th>添加时间</th></tr></thead><tbody>';
+                    
+                    data.data.list.forEach(item => {
+                        html += `<tr>
+                            <td>${item.id}</td>
+                            <td>${item.jingsaimingcheng}</td>
+                            <td>${item.jingsaileixing}</td>
+                            <td>${item.gonghao}</td>
+                            <td>${item.addtime}</td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<span class="error-text">❌ 查询失败：${data.msg}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error-text">❌ 请求失败：${error.message}</span>`;
+            }
+        }
+
+        // 打开前端
+        function openFrontend() {
+           window.open('http://localhost:8081/', '_blank');
+        }
+
+        // 清除浏览器缓存
+        function clearBrowserCache() {
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    for (let name of names) caches.delete(name);
+                });
+            }
+            localStorage.clear();
+            sessionStorage.clear();
+            alert('缓存已清除！请按 Ctrl + F5 强制刷新页面。');
+        }
+
+        // 页面加载时自动检查服务状态
+       window.onload = checkServiceStatus;
+    </script>
+</body>
+</html>

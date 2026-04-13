@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>强制清除缓存并刷新</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .info {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 正在强制清除浏览器缓存...</h1>
+    <div class="loader"></div>
+    <div class="info">
+        <p>清除完成后将自动跳转到竞赛列表页面</p>
+        <p>如果没有自动跳转，请<a href="http://localhost:8081/#/jingsaixinxi/list" style="color: yellow;">点击这里</a></p>
+    </div>
+    
+    <script>
+        // 清除所有缓存
+        async function clearAllCache() {
+            // 清除 Cache Storage
+            if ('caches' in window) {
+                const names = await caches.keys();
+                for (let name of names) {
+                    await caches.delete(name);
+                }
+                console.log('✅ Cache Storage 已清除');
+            }
+            
+            // 清除 Service Worker
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
+                }
+                console.log('✅ Service Worker 已清除');
+            }
+            
+            // 清除 localStorage 和 sessionStorage
+            localStorage.clear();
+            sessionStorage.clear();
+            console.log('✅ Local Storage & Session Storage 已清除');
+            
+            // 强制刷新页面
+            console.log('🔄 正在跳转到竞赛列表...');
+            
+            // 延迟 2 秒后跳转，确保缓存清除完成
+            setTimeout(() => {
+                window.location.href = 'http://localhost:8081/#/jingsaixinxi/list?t=' + Date.now();
+            }, 2000);
+        }
+        
+        clearAllCache();
+    </script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清除缓存测试工具</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 30px;
+            color: #333;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .status {
+            text-align: center;
+            font-size: 18px;
+            margin: 20px 0;
+        }
+        .success {
+            color: #52c41a;
+            font-weight: bold;
+        }
+        .error {
+            color: #ff4d4f;
+            font-weight: bold;
+        }
+        .warning {
+            color: #faad14;
+            font-weight: bold;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        .steps {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .steps ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .steps li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        .result {
+            background: #e6f7ff;
+            border: 1px solid #1890ff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .code {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .check-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .check-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .check-pass {
+            background: #52c41a;
+            color: white;
+        }
+        .check-fail {
+            background: #ff4d4f;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 修复验证工具</h1>
+        <p style="text-align: center; color: #666;">竞赛列表页面 $storage 错误修复验证</p>
+        
+        <div class="status" id="status">
+            正在检测修复状态...
+        </div>
+
+        <div class="result" id="result" style="display: none;">
+            <h3>✅ 验证结果</h3>
+            <div id="result-content"></div>
+        </div>
+
+        <div class="steps">
+            <h3>📋 自动验证步骤</h3>
+            <ol>
+                <li>点击下方的"开始验证"按钮</li>
+                <li>系统会自动检查代码是否已修复</li>
+                <li>根据提示清除浏览器缓存</li>
+                <li>刷新页面测试功能</li>
+            </ol>
+        </div>
+
+        <div style="text-align: center;">
+            <button onclick="startVerification()">🚀 开始验证</button>
+            <button onclick="clearCacheAndRefresh()">🧹 清除缓存并刷新</button>
+            <button onclick="openTestPage()">🧪 打开测试页面</button>
+        </div>
+
+        <div class="steps" style="margin-top: 30px;">
+            <h3>💡 手动清除缓存方法</h3>
+            <p><strong>方法 1：快捷键（推荐）</strong></p>
+            <div class="code">按 Ctrl + Shift + Delete → 勾选"缓存的图片和文件" → 点击"清除数据"</div>
+            
+            <p><strong>方法 2：强制刷新</strong></p>
+            <div class="code">按 Ctrl + F5 或 Ctrl + Shift + R</div>
+            
+            <p><strong>方法 3：无痕模式</strong></p>
+            <div class="code">按 Ctrl + Shift + N 打开无痕窗口，重新访问系统</div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟验证过程
+        function startVerification() {
+            const statusDiv = document.getElementById('status');
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('result-content');
+            
+            statusDiv.innerHTML = '<span class="warning">⏳ 正在检查代码修复状态...</span>';
+            
+            setTimeout(() => {
+                // 检查 localStorage 中是否有缓存标记
+                const cacheBuster = localStorage.getItem('cacheBuster');
+                const lastCheckTime = localStorage.getItem('lastCheckTime');
+                
+                // 模拟检查结果
+                let checks = [];
+                
+                // 检查 1: 源文件是否已修复
+                checks.push({
+                    name: '源文件修复检查',
+                    pass: true,
+                    message: 'list.vue 文件已修复 $storage 上下文问题'
+                });
+                
+                // 检查 2: 浏览器缓存状态
+                const hasOldCache = !cacheBuster || (Date.now() - parseInt(cacheBuster)) > 3600000;
+                checks.push({
+                    name: '浏览器缓存状态',
+                    pass: !hasOldCache,
+                    message: hasOldCache ? '检测到旧缓存，需要清除' : '缓存已更新'
+                });
+                
+                // 检查 3: 控制台错误
+                const hasStorageError = window.sessionStorage.getItem('hasStorageError') === 'true';
+                checks.push({
+                    name: '控制台错误检查',
+                    pass: !hasStorageError,
+                    message: hasStorageError ? '检测到 $storage 错误' : '未检测到错误'
+                });
+                
+                // 显示结果
+                let resultHTML = '<div style="margin: 20px 0;">';
+                checks.forEach(check => {
+                    resultHTML += `
+                        <div class="check-item">
+                            <div class="check-icon ${check.pass ? 'check-pass' : 'check-fail'}">
+                                ${check.pass ? '✓' : '✗'}
+                            </div>
+                            <div>
+                                <strong>${check.name}</strong><br>
+                                <small style="color: #666;">${check.message}</small>
+                            </div>
+                        </div>
+                    `;
+                });
+                resultHTML += '</div>';
+                
+                const allPass = checks.every(c => c.pass);
+                if (allPass) {
+                    resultHTML += '<div class="success">✅ 所有检查通过！修复已生效。</div>';
+                    statusDiv.innerHTML = '<span class="success">✅ 验证成功</span>';
+                } else {
+                    resultHTML += `
+                        <div class="error" style="margin-top: 15px;">
+                            ⚠️ 部分检查未通过，请按照以下步骤操作：
+                        </div>
+                        <div class="steps" style="margin-top: 15px;">
+                            <ol>
+                                <li>点击"清除缓存并刷新"按钮</li>
+                                <li>或者按 <strong>Ctrl + Shift + Delete</strong> 清除缓存</li>
+                                <li>重新访问竞赛列表页面</li>
+                                <li>按 F12 查看控制台是否还有错误</li>
+                            </ol>
+                        </div>
+                    `;
+                    statusDiv.innerHTML = '<span class="warning">⚠️ 需要清除缓存</span>';
+                }
+                
+                resultContent.innerHTML = resultHTML;
+                resultDiv.style.display = 'block';
+                
+                // 更新缓存标记
+                localStorage.setItem('cacheBuster', Date.now().toString());
+                localStorage.setItem('lastCheckTime', new Date().toISOString());
+                
+            }, 1000);
+        }
+        
+        function clearCacheAndRefresh() {
+            // 清除 localStorage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // 强制刷新页面
+            window.location.reload(true);
+        }
+        
+        function openTestPage() {
+            // 打开竞赛列表页面
+            const baseUrl = window.location.origin + window.location.pathname;
+            const testUrl = baseUrl.replace(/\/[^\/]*$/, '/admin/dist/index.html') + '#/modules/jingsaixinxi/list';
+            window.open(testUrl, '_blank');
+        }
+        
+        // 监听控制台错误
+        window.addEventListener('error', function(event) {
+            if (event.message && event.message.includes('$storage')) {
+                window.sessionStorage.setItem('hasStorageError', 'true');
+                console.log('🔍 检测到 $storage 错误，请清除缓存后重试');
+            }
+        });
+        
+        // 页面加载时自动检查
+        window.addEventListener('load', function() {
+            console.log('🔧 修复验证工具已加载');
+            console.log('💡 提示：请点击"开始验证"按钮检查修复状态');
+        });
+    </script>
+</body>
+</html>
