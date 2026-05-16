@@ -5,16 +5,22 @@
 
     <!-- 可根据自己的需求，是否要使用 -->
     <resultMap type="com.entity.JingsaixinxiEntity" id="jingsaixinxiMap">
+        <result property="id" column="id"/>
         <result property="jingsaimingcheng" column="jingsaimingcheng"/>
         <result property="jingsaileixing" column="jingsaileixing"/>
+        <result property="jingsaiJibie" column="jingsai_jibie"/>
+        <result property="nianfen" column="nianfen"/>
         <result property="jingsaididian" column="jingsaididian"/>
         <result property="jingsaiguize" column="jingsaiguize"/>
         <result property="jingsaijiangli" column="jingsaijiangli"/>
         <result property="jingsaishijian" column="jingsaishijian"/>
         <result property="moshi" column="moshi"/>
+        <result property="shifouYouSaidao" column="shifou_you_saidao"/>
+        <result property="shifouXuyaoJinji" column="shifou_xuyao_jinji"/>
         <result property="fengmiantupian" column="fengmiantupian"/>
         <result property="gonghao" column="gonghao"/>
         <result property="jiaoshixingming" column="jiaoshixingming"/>
+        <result property="addtime" column="addtime"/>
     </resultMap>
 
     <select id="selectListVO"

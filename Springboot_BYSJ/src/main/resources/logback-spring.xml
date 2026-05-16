@@ -2,18 +2,36 @@
 <configuration scan="true" scanPeriod="60 seconds" debug="false">
     
     <!-- ==================== 属性定义 ==================== -->
-    <!-- 日志输出格式 -->
+    <!-- 日志输出格式 - 人类可读 -->
     <property name="LOG_PATTERN" 
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
     
+    <!-- JSON 格式日志（用于 ELK 等日志分析系统） -->
+    <property name="JSON_LOG_PATTERN" 
+              value='{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","thread":"%thread","level":"%-5level","logger":"%logger{36}","message":"%msg"}%n'/>
+    
     <!-- 日志文件路径 -->
     <property name="LOG_PATH" value="logs"/>
-    <property name="LOG_FILE_NAME" value="springbootrd362"/>
+    <property name="LOG_FILE_NAME" value="BYSJ_Springboot"/>
     
     <!-- ==================== 控制台输出 ==================== -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    
+    <!-- ==================== JSON 格式日志（用于日志分析） ==================== -->
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/json.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/json.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${JSON_LOG_PATTERN}</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>
@@ -24,6 +42,7 @@
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_PATH}/info.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
@@ -41,7 +60,8 @@
         <file>${LOG_PATH}/warn.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_PATH}/warn.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
@@ -60,6 +80,7 @@
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_PATH}/error.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>90</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
@@ -72,16 +93,56 @@
         </filter>
     </appender>
     
+    <!-- ==================== API 访问日志 ==================== -->
+    <appender name="API_ACCESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/api-access.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/api-access.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level API_ACCESS - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    
+    <!-- ==================== 慢查询日志 ==================== -->
+    <appender name="SLOW_QUERY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/slow-query.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/slow-query.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] SLOW_QUERY - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    
+    <!-- ==================== 性能监控日志 ==================== -->
+    <appender name="PERFORMANCE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/performance.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/performance.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] PERFORMANCE - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    
     <!-- ==================== 综合日志文件（所有级别） ==================== -->
     <appender name="ALL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/${LOG_FILE_NAME}.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>100MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxFileSize>100MB</maxFileSize>
             <maxHistory>30</maxHistory>
-            <totalSizeCap>2GB</totalSizeCap>
+            <totalSizeCap>5GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
@@ -91,56 +152,105 @@
     
     <!-- ==================== 异步日志配置（提升性能） ==================== -->
     <appender name="ASYNC_INFO" class="ch.qos.logback.classic.AsyncAppender">
-        <queueSize>512</queueSize>
+        <queueSize>1024</queueSize>
         <discardingThreshold>0</discardingThreshold>
         <includeCallerData>false</includeCallerData>
+        <neverBlock>true</neverBlock>
         <appender-ref ref="INFO_FILE"/>
     </appender>
     
     <appender name="ASYNC_WARN" class="ch.qos.logback.classic.AsyncAppender">
-        <queueSize>512</queueSize>
+        <queueSize>1024</queueSize>
         <discardingThreshold>0</discardingThreshold>
         <includeCallerData>false</includeCallerData>
+        <neverBlock>true</neverBlock>
         <appender-ref ref="WARN_FILE"/>
     </appender>
     
     <appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
-        <queueSize>512</queueSize>
+        <queueSize>1024</queueSize>
         <discardingThreshold>0</discardingThreshold>
-        <includeCallerData>false</includeCallerData>
+        <includeCallerData>true</includeCallerData>
+        <neverBlock>true</neverBlock>
         <appender-ref ref="ERROR_FILE"/>
     </appender>
     
     <appender name="ASYNC_ALL" class="ch.qos.logback.classic.AsyncAppender">
-        <queueSize>512</queueSize>
+        <queueSize>1024</queueSize>
         <discardingThreshold>0</discardingThreshold>
         <includeCallerData>false</includeCallerData>
+        <neverBlock>true</neverBlock>
         <appender-ref ref="ALL_FILE"/>
     </appender>
     
+    <appender name="ASYNC_API_ACCESS" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="API_ACCESS_FILE"/>
+    </appender>
+    
+    <appender name="ASYNC_SLOW_QUERY" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>256</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="SLOW_QUERY_FILE"/>
+    </appender>
+    
+    <appender name="ASYNC_PERFORMANCE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="PERFORMANCE_FILE"/>
+    </appender>
+    
+    <!-- ==================== 专用 Logger ==================== -->
+    
+    <!-- API 访问日志 Logger -->
+    <logger name="API_ACCESS" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_API_ACCESS"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <!-- 慢查询日志 Logger -->
+    <logger name="SLOW_QUERY" level="WARN" additivity="false">
+        <appender-ref ref="ASYNC_SLOW_QUERY"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <!-- 性能监控日志 Logger -->
+    <logger name="PERFORMANCE" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_PERFORMANCE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
     <!-- ==================== 开发环境配置 ==================== -->
     <springProfile name="dev">
-        <!-- 根日志级别：DEBUG（输出详细日志） -->
-        <root level="DEBUG">
+        <!-- 根日志级别：INFO（减少冗余日志） -->
+        <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="ALL_FILE"/>
+            <appender-ref ref="JSON_FILE"/>
         </root>
         
         <!-- 业务包日志级别 -->
-        <logger name="com" level="DEBUG"/>
-        <logger name="com.controller" level="DEBUG"/>
-        <logger name="com.service" level="DEBUG"/>
-        <logger name="com.dao" level="DEBUG"/>
+        <logger name="com" level="INFO"/>
+        <logger name="com.controller" level="INFO"/>
+        <logger name="com.service" level="INFO"/>
+        <logger name="com.dao" level="INFO"/>
         
-        <!-- MyBatis SQL 输出（便于调试） -->
-        <logger name="org.apache.ibatis" level="DEBUG"/>
-        <logger name="java.sql.Connection" level="DEBUG"/>
-        <logger name="java.sql.Statement" level="DEBUG"/>
-        <logger name="java.sql.PreparedStatement" level="DEBUG"/>
+        <!-- MyBatis SQL 输出（关闭 DEBUG，减少日志） -->
+        <logger name="org.apache.ibatis" level="INFO"/>
+        <logger name="java.sql.Connection" level="INFO"/>
+        <logger name="java.sql.Statement" level="INFO"/>
+        <logger name="java.sql.PreparedStatement" level="INFO"/>
         
-        <!-- Spring 框架日志 -->
+        <!-- Spring 框架日志（关闭 DEBUG） -->
         <logger name="org.springframework" level="INFO"/>
-        <logger name="org.springframework.web" level="DEBUG"/>
+        <logger name="org.springframework.web" level="WARN"/>
     </springProfile>
     
     <!-- ==================== 生产环境配置 ==================== -->
@@ -152,6 +262,7 @@
             <appender-ref ref="ASYNC_WARN"/>
             <appender-ref ref="ASYNC_ERROR"/>
             <appender-ref ref="ASYNC_ALL"/>
+            <appender-ref ref="JSON_FILE"/>
         </root>
         
         <!-- 业务包日志级别（精简） -->
@@ -182,5 +293,9 @@
     
     <!-- 数据库连接池 -->
     <logger name="com.zaxxer.hikari" level="INFO"/>
+    
+    <!-- Redis 日志 -->
+    <logger name="org.springframework.data.redis" level="INFO"/>
+    <logger name="io.lettuce.core" level="WARN"/>
     
 </configuration>

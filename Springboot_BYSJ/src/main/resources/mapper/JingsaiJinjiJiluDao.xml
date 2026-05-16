@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.JingsaiJinjiJiluDao">
+
+    <resultMap type="com.entity.JingsaiJinjiJiluEntity" id="jingsaiJinjiJiluMap">
+        <id property="id" column="id"/>
+        <result property="yuanBaomingId" column="yuan_baoming_id"/>
+        <result property="xinBaomingId" column="xin_baoming_id"/>
+        <result property="xuehao" column="xuehao"/>
+        <result property="xueshengxingming" column="xueshengxingming"/>
+        <result property="yuanJingsaiId" column="yuan_jingsai_id"/>
+        <result property="yuanJingsaimingcheng" column="yuan_jingsaimingcheng"/>
+        <result property="yuanJibie" column="yuan_jibie"/>
+        <result property="xinJingsaiId" column="xin_jingsai_id"/>
+        <result property="xinJingsaimingcheng" column="xin_jingsaimingcheng"/>
+        <result property="xinJibie" column="xin_jibie"/>
+        <result property="jinjiJibie" column="jinji_jibie"/>
+        <result property="yuanChengji" column="yuan_chengji"/>
+        <result property="yuanMingci" column="yuan_mingci"/>
+        <result property="jinjiYuanyin" column="jinji_yuanyin"/>
+        <result property="shenheRen" column="shenhe_ren"/>
+        <result property="shenheShijian" column="shenhe_shijian"/>
+        <result property="jinjiZhuangtai" column="jinji_zhuangtai"/>
+        <result property="addtime" column="addtime"/>
+    </resultMap>
+
+    <select id="selectListView" resultType="com.entity.JingsaiJinjiJiluEntity">
+        SELECT * FROM jingsai_jinji_jilu
+        <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+
+</mapper>

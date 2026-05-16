@@ -7,7 +7,7 @@ import java.sql.*;
  */
 public class DatabaseDiagnoseUtil {
 
-    private static final String URL = "jdbc:mysql://127.0.0.1:3306/springbootrd362?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true";
+    private static final String URL = "jdbc:mysql://127.0.0.1:3306/BYSJ_SpringBoot?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "123123";
 
@@ -108,7 +108,7 @@ public class DatabaseDiagnoseUtil {
             System.err.println("\n可能原因：");
             System.err.println("1. MySQL 服务未启动");
             System.err.println("2. 数据库配置错误（检查 application.yml）");
-            System.err.println("3. 数据库 springbootrd362 不存在");
+            System.err.println("3. 数据库 BYSJ_SpringBoot 不存在");
             e.printStackTrace();
         } finally {
             try {

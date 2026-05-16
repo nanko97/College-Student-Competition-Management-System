@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.JingsaiTuanduiChengyuanDao">
+    <resultMap type="com.entity.JingsaiTuanduiChengyuanEntity" id="jingsaiTuanduiChengyuanMap">
+        <id property="id" column="id"/>
+        <result property="tuanduiId" column="tuandui_id"/>
+        <result property="tuanduiBianhao" column="tuandui_bianhao"/>
+        <result property="xuehao" column="xuehao"/>
+        <result property="xueshengxingming" column="xueshengxingming"/>
+        <result property="juese" column="juese"/>
+        <result property="xueyuan" column="xueyuan"/>
+        <result property="zhuanye" column="zhuanye"/>
+        <result property="banji" column="banji"/>
+        <result property="shouji" column="shouji"/>
+        <result property="youxiang" column="youxiang"/>
+        <result property="ruzuiShijian" column="ruzui_shijian"/>
+        <result property="isActive" column="is_active"/>
+        <result property="addtime" column="addtime"/>
+    </resultMap>
+    <select id="selectListView" resultType="com.entity.JingsaiTuanduiChengyuanEntity">
+        SELECT * FROM jingsai_tuandui_chengyuan <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+</mapper>

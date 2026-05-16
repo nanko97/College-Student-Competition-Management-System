@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.ZuopindafenFuheDao">
+
+    <resultMap type="com.entity.ZuopindafenFuheEntity" id="zuopindafenFuheMap">
+        <id property="id" column="id"/>
+        <result property="zuopindafenId" column="zuopindafen_id"/>
+        <result property="jingsaimingcheng" column="jingsaimingcheng"/>
+        <result property="yuanChengji" column="yuan_chengji"/>
+        <result property="xuehao" column="xuehao"/>
+        <result property="xueshengxingming" column="xueshengxingming"/>
+        <result property="fuheReason" column="fuhe_reason"/>
+        <result property="fuheStatus" column="fuhe_status"/>
+        <result property="xinChengji" column="xin_chengji"/>
+        <result property="shenheYijian" column="shenhe_yijian"/>
+        <result property="shenheGonghao" column="shenhe_gonghao"/>
+        <result property="shenheJiaoshi" column="shenhe_jiaoshi"/>
+        <result property="shenqingShijian" column="shenqing_shijian"/>
+        <result property="shenheShijian" column="shenhe_shijian"/>
+    </resultMap>
+
+    <select id="selectListView" resultMap="zuopindafenFuheMap">
+        SELECT * FROM zuopindafen_fuhe
+        <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+
+    <select id="selectView" resultMap="zuopindafenFuheMap">
+        SELECT * FROM zuopindafen_fuhe
+        <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+
+</mapper>

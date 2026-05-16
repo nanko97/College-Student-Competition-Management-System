@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.JingsaiFeiyongDao">
+
+    <resultMap type="com.entity.JingsaiFeiyongEntity" id="jingsaiFeiyongMap">
+        <id property="id" column="id"/>
+        <result property="jingsaiId" column="jingsai_id"/>
+        <result property="jingsaimingcheng" column="jingsaimingcheng"/>
+        <result property="baomingfei" column="baomingfei"/>
+        <result property="shifouShoufei" column="shifou_shoufei"/>
+        <result property="jiaofeiJiezhiRiqi" column="jiaofei_jiezhi_riqi"/>
+        <result property="beizhu" column="beizhu"/>
+        <result property="addtime" column="addtime"/>
+    </resultMap>
+
+    <select id="getByJingsaiId" resultType="com.entity.JingsaiFeiyongEntity">
+        SELECT * FROM jingsai_feiyong WHERE jingsai_id = #{jingsaiId} LIMIT 1
+    </select>
+
+    <select id="selectListView" resultType="com.entity.JingsaiFeiyongEntity">
+        SELECT * FROM jingsai_feiyong
+        <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+
+</mapper>

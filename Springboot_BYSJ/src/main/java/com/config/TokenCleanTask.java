@@ -19,9 +19,9 @@ public class TokenCleanTask {
     
     /**
      * 定时清理过期 Token
-     * 每 10 分钟执行一次（600000 毫秒）
+     * 初始延迟60秒，之后每 10 分钟执行一次（600000 毫秒）
      */
-    @Scheduled(fixedRate = 600000)
+    @Scheduled(initialDelay = 60000, fixedRate = 600000)
     public void cleanExpiredTokens() {
         try {
             log.info("开始执行 Token 过期清理任务...");

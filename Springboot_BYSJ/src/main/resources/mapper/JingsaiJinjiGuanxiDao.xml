@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.JingsaiJinjiGuanxiDao">
+
+    <resultMap type="com.entity.JingsaiJinjiGuanxiEntity" id="jingsaiJinjiGuanxiMap">
+        <id property="id" column="id"/>
+        <result property="fuJingsaiId" column="fu_jingsai_id"/>
+        <result property="ziJingsaiId" column="zi_jingsai_id"/>
+        <result property="fuJibie" column="fu_jibie"/>
+        <result property="ziJibie" column="zi_jibie"/>
+        <result property="jinjiType" column="jinji_type"/>
+        <result property="jinjiRule" column="jinji_rule"/>
+        <result property="zuidiFenshu" column="zuidi_fenshu"/>
+        <result property="zuidiMingci" column="zuidi_mingci"/>
+        <result property="isActive" column="is_active"/>
+        <result property="addtime" column="addtime"/>
+    </resultMap>
+
+    <select id="getByFuZiJingsai" resultType="com.entity.JingsaiJinjiGuanxiEntity">
+        SELECT * FROM jingsai_jinji_guanxi
+        WHERE fu_jingsai_id = #{fuJingsaiId} AND zi_jingsai_id = #{ziJingsaiId}
+        LIMIT 1
+    </select>
+
+    <select id="selectListView" resultType="com.entity.JingsaiJinjiGuanxiEntity">
+        SELECT * FROM jingsai_jinji_guanxi
+        <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+
+</mapper>

@@ -1,6 +1,7 @@
 package com.controller;
 
 import com.annotation.IgnoreAuth;
+import com.annotation.OperationLog;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.entity.JingsaibaomingEntity;
 import com.entity.JingsaixinxiEntity;
@@ -74,7 +75,9 @@ public class JingsaixinxiController {
         try {
             // 1. 权限控制：如果是教师登录，只能查看自己发布的竞赛
             String tableName = (String) request.getSession().getAttribute("tableName");
-            if ("jiaoshi".equals(tableName)) {
+            String role = (String) request.getSession().getAttribute("role");
+            
+            if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
                 jingsaixinxi.setGonghao(gonghao);
                 log.debug("教师 {} 查询个人竞赛列表", gonghao);
@@ -83,13 +86,53 @@ public class JingsaixinxiController {
             // 2. 构建查询条件 (支持模糊查询、区间查询、排序)
             EntityWrapper<JingsaixinxiEntity> ew = new EntityWrapper<>();
             
-            // 3. 执行分页查询
+            // 3. 处理前端传递的模糊查询参数（带 % 的参数）
+            if (params.get("jingsaimingcheng") != null) {
+                String value = params.get("jingsaimingcheng").toString();
+                if (value.contains("%")) {
+                    // 模糊查询：移除 % 后使用 LIKE
+                    ew.like("jingsaimingcheng", value.replace("%", ""));
+                    log.debug("竞赛名称模糊查询：{}", value.replace("%", ""));
+                } else {
+                    // 精确查询
+                    ew.eq("jingsaimingcheng", value);
+                }
+            }
+            if (params.get("jingsaileixing") != null) {
+                String value = params.get("jingsaileixing").toString();
+                if (value.contains("%")) {
+                    ew.like("jingsaileixing", value.replace("%", ""));
+                    log.debug("竞赛类型模糊查询：{}", value.replace("%", ""));
+                } else {
+                    ew.eq("jingsaileixing", value);
+                }
+            }
+            if (params.get("jingsaididian") != null) {
+                String value = params.get("jingsaididian").toString();
+                if (value.contains("%")) {
+                    ew.like("jingsaididian", value.replace("%", ""));
+                } else {
+                    ew.eq("jingsaididian", value);
+                }
+            }
+            
+            // 【重要】过滤已过期的竞赛，只显示未过期的竞赛
+            // 注意：对于下拉选择框等场景，不过滤过期竞赛（因为需要显示历史数据）
+            // 只有当前端明确传了 showAll=false 参数时才过滤
+            if ("false".equals(params.get("showAll"))) {
+                ew.ge("jingsaishijian", new Date());
+                log.debug("已过滤已过期的竞赛，只显示未过期竞赛");
+            } else {
+                log.debug("显示所有竞赛（包括已过期），用于下拉选择等场景");
+            }
+            
+            // 4. 执行分页查询
             PageUtils page = jingsaixinxiService.queryPage(
                 params, 
-                MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, jingsaixinxi), params), params)
+                MPUtil.sort(MPUtil.between(ew, params), params)
             );
             
-            return R.ok().put("data", page);
+            return R.ok().put("data", page).put("page", page);
             
         } catch (Exception e) {
             log.error("竞赛分页查询异常：", e);
@@ -122,7 +165,7 @@ public class JingsaixinxiController {
                 MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, jingsaixinxi), params), params)
             );
             
-            return R.ok().put("data", page);
+            return R.ok().put("data", page).put("page", page);
             
         } catch (Exception e) {
             log.error("竞赛前端列表查询异常：", e);
@@ -269,6 +312,8 @@ public class JingsaixinxiController {
      */
     @ApiOperation("保存竞赛信息")
     @RequestMapping("/save")
+    @OperationLog("保存竞赛信息")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R save(@RequestBody JingsaixinxiEntity jingsaixinxi, HttpServletRequest request) {
         log.info("保存竞赛请求数据：{}", jingsaixinxi);
         log.info("当前会话信息 - tableName: {}, username: {}", 
@@ -333,6 +378,8 @@ public class JingsaixinxiController {
      * @return R 统一返回结果
      */
     @RequestMapping("/add")
+    @OperationLog("添加竞赛信息")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R add(@RequestBody JingsaixinxiEntity jingsaixinxi, HttpServletRequest request) {
         // 1. 基础参数校验
         if (!StringUtils.hasText(jingsaixinxi.getJingsaimingcheng())) {
@@ -378,7 +425,8 @@ public class JingsaixinxiController {
      * 业务逻辑：
      * 1. 验证必填字段
      * 2. 验证实体完整性
-     * 3. 更新到数据库
+     * 3. 教师只能修改自己创建的竞赛
+     * 4. 更新到数据库
      * 
      * @param jingsaixinxi 竞赛信息实体 (包含更新后的数据)
      * @param request HTTP 请求
@@ -386,6 +434,8 @@ public class JingsaixinxiController {
      */
     @ApiOperation("修改竞赛信息")
     @RequestMapping("/update")
+    @OperationLog("修改竞赛信息")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R update(@RequestBody JingsaixinxiEntity jingsaixinxi, HttpServletRequest request) {
         // 1. 参数校验
         if (jingsaixinxi.getId() == null || jingsaixinxi.getId() <= 0) {
@@ -399,10 +449,32 @@ public class JingsaixinxiController {
         }
         
         try {
-            // 2. 实体校验
+            // 2. 权限验证：教师只能修改自己创建的竞赛
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String role = (String) request.getSession().getAttribute("role");
+            
+            if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                
+                // 查询竞赛信息，验证归属
+                JingsaixinxiEntity existingJingsai = jingsaixinxiService.selectById(jingsaixinxi.getId());
+                if (existingJingsai == null) {
+                    return R.error("竞赛信息不存在");
+                }
+                
+                if (!gonghao.equals(existingJingsai.getGonghao())) {
+                    log.warn("教师 {} 尝试修改不属于自己的竞赛 ID: {}，竞赛创建者: {}", 
+                            gonghao, jingsaixinxi.getId(), existingJingsai.getGonghao());
+                    return R.error("只能修改自己创建的竞赛");
+                }
+                
+                log.info("教师 {} 修改自己的竞赛 ID: {}", gonghao, jingsaixinxi.getId());
+            }
+            
+            // 3. 实体校验
             ValidatorUtils.validateEntity(jingsaixinxi);
             
-            // 3. 执行更新
+            // 4. 执行更新
             jingsaixinxiService.updateById(jingsaixinxi);
             
             log.info("修改竞赛信息成功，ID: {}, 名称：{}", 
@@ -420,13 +492,17 @@ public class JingsaixinxiController {
      * 功能：批量删除竞赛记录
      * 
      * 注意：此操作不可逆，请谨慎使用
+     * 教师只能删除自己创建的竞赛
      * 
      * @param ids 竞赛 ID 数组
+     * @param request HTTP 请求
      * @return R 统一返回结果
      */
     @ApiOperation("批量删除竞赛信息")
     @RequestMapping("/delete")
-    public R delete(@RequestBody Long[] ids) {
+    @OperationLog("删除竞赛信息")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
+    public R delete(@RequestBody Long[] ids, HttpServletRequest request) {
         // 1. 参数校验
         if (ids == null || ids.length == 0) {
             log.warn("删除竞赛失败：ID 数组为空");
@@ -434,7 +510,31 @@ public class JingsaixinxiController {
         }
         
         try {
-            // 2. 批量删除
+            // 2. 权限验证：教师只能删除自己创建的竞赛
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String role = (String) request.getSession().getAttribute("role");
+            
+            if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                
+                // 验证所有竞赛都属于该教师
+                for (Long id : ids) {
+                    JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(id);
+                    if (jingsai == null) {
+                        return R.error("竞赛 ID " + id + " 不存在");
+                    }
+                    
+                    if (!gonghao.equals(jingsai.getGonghao())) {
+                        log.warn("教师 {} 尝试删除不属于自己的竞赛 ID: {}，竞赛创建者: {}", 
+                                gonghao, id, jingsai.getGonghao());
+                        return R.error("只能删除自己创建的竞赛");
+                    }
+                }
+                
+                log.info("教师 {} 删除自己的 {} 个竞赛", gonghao, ids.length);
+            }
+            
+            // 3. 批量删除
             jingsaixinxiService.deleteBatchIds(Arrays.asList(ids));
             
             log.info("删除竞赛信息成功，IDs: {}", Arrays.toString(ids));

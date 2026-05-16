@@ -1,25 +1,34 @@
+# ==================== Maven 构建输出 ====================
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**
-!**/src/test/**
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
 
-### STS ###
+# ==================== 编译类文件 ====================
+*.class
+
+# ==================== IDE 配置 ====================
 .apt_generated
 .classpath
 .factorypath
 .project
-.settings
+.settings/
 .springBeans
 .sts4-cache
-
-### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
+.vscode/
 
-### NetBeans ###
+# ==================== NetBeans ====================
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -27,27 +36,67 @@ target/
 /.nb-gradle/
 build/
 
-### VS Code ###
-.vscode/
-# 新增内容
-# 文件上传目录（仅保留目录结构，忽略实际文件）
-upload/*
-!upload/.gitkeep
+# ==================== 操作系统 ====================
+.DS_Store
+Thumbs.db
+desktop.ini
 
-# IDEA额外忽略
-*.iml
-.idea/
-out/
-target/
+# ==================== 上传文件 ====================
+src/main/resources/static/upload/*
+!src/main/resources/static/upload/.gitkeep
 
-# 日志文件
+# ==================== 日志文件 ====================
 logs/
 *.log
 
-# 临时文件
+# ==================== 临时文件 ====================
 *.tmp
 *.bak
+*.swp
+*~
 
-# 配置文件（敏感信息，如数据库密码）
-src/main/resources/application-dev.yml
-src/main/resources/application-prod.yml
+# ==================== 前端 Vue.js ====================
+src/main/resources/admin/admin/node_modules/
+src/main/resources/admin/admin/dist/
+src/main/resources/admin/admin/npm-debug.log*
+src/main/resources/admin/admin/yarn-error.log
+src/main/resources/admin/admin/yarn.lock
+src/main/resources/admin/admin/package-lock.json
+
+# ==================== 测试覆盖率 ====================
+coverage/
+*.exec
+jacoco.exec
+
+# ==================== 临时修复脚本 ====================
+*Fix*.java
+*Temp*.java
+*Test*.java
+!src/test/**
+
+# ==================== 临时 SQL 脚本 ====================
+src/main/resources/db/*fix*.sql
+src/main/resources/db/*auto*.sql
+src/main/resources/db/migration_add_*.sql
+src/main/resources/db/migration/
+
+# ==================== 脚本文件 ====================
+*.py
+!src/test/**
+*.ps1
+*.sh
+
+# ==================== 临时文档 ====================
+系统设计规格说明书.md
+密码强度提示功能说明.md
+毕业设计优化总结.md
+API_DOCUMENTATION_GUIDE.md
+CACHE_OPTIMIZATION_GUIDE.md
+COMPLETION_SUMMARY.md
+EXCEPTION_HANDLING_GUIDE.md
+IMPLEMENTATION_GUIDE.md
+LOG_OPTIMIZATION_GUIDE.md
+OPTIMIZATION_SUMMARY.md
+QUICK_START.md
+SYSTEM_VERIFICATION_REPORT.md
+TECH_THEME_*.md

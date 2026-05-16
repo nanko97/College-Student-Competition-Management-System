@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.JingsaiJiaofeiJiluDao">
+
+    <resultMap type="com.entity.JingsaiJiaofeiJiluEntity" id="jingsaiJiaofeiJiluMap">
+        <id property="id" column="id"/>
+        <result property="baomingId" column="baoming_id"/>
+        <result property="xuehao" column="xuehao"/>
+        <result property="xueshengxingming" column="xueshengxingming"/>
+        <result property="jingsaiId" column="jingsai_id"/>
+        <result property="jingsaimingcheng" column="jingsaimingcheng"/>
+        <result property="jiaofeiJine" column="jiaofei_jine"/>
+        <result property="jiaofeiZhuangtai" column="jiaofei_zhuangtai"/>
+        <result property="jiaofeiShijian" column="jiaofei_shijian"/>
+        <result property="shenheRen" column="shenhe_ren"/>
+        <result property="shenheShijian" column="shenhe_shijian"/>
+        <result property="shenheYijian" column="shenhe_yijian"/>
+        <result property="zhifufangshi" column="zhifufangshi"/>
+        <result property="jiaoyiHao" column="jiaoyi_hao"/>
+        <result property="pingzhengTupian" column="pingzheng_tupian"/>
+        <result property="baomingfei" column="baomingfei"/>
+        <result property="jiaofeiJiezhiRiqi" column="jiaofei_jiezhi_riqi"/>
+        <result property="addtime" column="addtime"/>
+    </resultMap>
+
+    <select id="selectListView" resultMap="jingsaiJiaofeiJiluMap">
+        SELECT 
+            jilu.id AS id,
+            jilu.baoming_id AS baoming_id,
+            jilu.xuehao AS xuehao,
+            jilu.xueshengxingming AS xueshengxingming,
+            jilu.jingsai_id AS jingsai_id,
+            jilu.jingsaimingcheng AS jingsaimingcheng,
+            jilu.jiaofei_jine AS jiaofei_jine,
+            jilu.jiaofei_zhuangtai AS jiaofei_zhuangtai,
+            jilu.jiaofei_shijian AS jiaofei_shijian,
+            jilu.shenhe_ren AS shenhe_ren,
+            jilu.shenhe_shijian AS shenhe_shijian,
+            jilu.shenhe_yijian AS shenhe_yijian,
+            jilu.zhifufangshi AS zhifufangshi,
+            jilu.jiaoyi_hao AS jiaoyi_hao,
+            jilu.pingzheng_tupian AS pingzheng_tupian,
+            jilu.addtime AS addtime,
+            feiyong.baomingfei AS baomingfei,
+            feiyong.jiaofei_jiezhi_riqi AS jiaofei_jiezhi_riqi
+        FROM jingsai_jiaofei_jilu jilu
+        LEFT JOIN jingsai_feiyong feiyong ON jilu.jingsai_id = feiyong.jingsai_id
+        <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+
+</mapper>

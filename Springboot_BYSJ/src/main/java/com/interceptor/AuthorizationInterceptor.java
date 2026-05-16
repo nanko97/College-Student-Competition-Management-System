@@ -52,6 +52,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
         if (requestURI.contains("/admin/") || 
             requestURI.contains("/front/") || 
             requestURI.contains("/static/") ||
+            requestURI.contains("/upload/") ||   // 放行上传文件（作品下载）
             requestURI.endsWith(".html") ||
             requestURI.endsWith(".js") ||
             requestURI.endsWith(".css") ||

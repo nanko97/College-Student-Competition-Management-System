@@ -1,8 +1,11 @@
 package com.entity;
 
+import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -41,6 +44,7 @@ public class JingsaibaomingEntity<T> implements Serializable {
      * 主键id
      */
     @TableId
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
     /**
      * 工号
@@ -61,15 +65,39 @@ public class JingsaibaomingEntity<T> implements Serializable {
     private String jingsaimingcheng;
 
     /**
-     * 竞赛类型
+     * 竞赛类型（非数据库字段，通过关联查询填充）
+     */
+    @TableField(exist = false)
+    private String jingsaileixing;
+
+    /**
+     * 赛道ID
      */
 
-    private String jingsaileixing;
+    private Long saidaoId;
+
+    /**
+     * 赛道名称（非数据库字段，通过关联查询填充）
+     */
+    @TableField(exist = false)
+    private String saidaoMingcheng;
+
+    /**
+     * 团队ID
+     */
+
+    private Long tuanduiId;
+
+    /**
+     * 团队编号
+     */
+
+    private String tuanduiBianhao;
 
     /**
      * 参赛类型
      */
-
+    
     private String cansaileixing;
 
     /**
@@ -127,6 +155,24 @@ public class JingsaibaomingEntity<T> implements Serializable {
      */
 
     private String ispay;
+
+    /**
+     * 晋级级别(校级/省级/国家级)
+     */
+
+    private String jinjiJibie;
+
+    /**
+     * 原报名ID(如果是晋级报名)
+     */
+
+    private Long yuanBaomingId;
+
+    /**
+     * 竞赛ID
+     */
+
+    private Long jingsaiId;
 
 
     @JsonFormat(locale = "zh", timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
@@ -343,6 +389,104 @@ public class JingsaibaomingEntity<T> implements Serializable {
      */
     public String getIspay() {
         return ispay;
+    }
+
+    /**
+     * 设置：赛道ID
+     */
+    public void setSaidaoId(Long saidaoId) {
+        this.saidaoId = saidaoId;
+    }
+
+    /**
+     * 获取：赛道ID
+     */
+    public Long getSaidaoId() {
+        return saidaoId;
+    }
+
+    /**
+     * 设置：赛道名称
+     */
+    public void setSaidaoMingcheng(String saidaoMingcheng) {
+        this.saidaoMingcheng = saidaoMingcheng;
+    }
+
+    /**
+     * 获取：赛道名称
+     */
+    public String getSaidaoMingcheng() {
+        return saidaoMingcheng;
+    }
+
+    /**
+     * 设置：团队ID
+     */
+    public void setTuanduiId(Long tuanduiId) {
+        this.tuanduiId = tuanduiId;
+    }
+
+    /**
+     * 获取：团队ID
+     */
+    public Long getTuanduiId() {
+        return tuanduiId;
+    }
+
+    /**
+     * 设置：团队编号
+     */
+    public void setTuanduiBianhao(String tuanduiBianhao) {
+        this.tuanduiBianhao = tuanduiBianhao;
+    }
+
+    /**
+     * 获取：团队编号
+     */
+    public String getTuanduiBianhao() {
+        return tuanduiBianhao;
+    }
+
+    /**
+     * 设置：晋级级别
+     */
+    public void setJinjiJibie(String jinjiJibie) {
+        this.jinjiJibie = jinjiJibie;
+    }
+
+    /**
+     * 获取：晋级级别
+     */
+    public String getJinjiJibie() {
+        return jinjiJibie;
+    }
+
+    /**
+     * 设置：原报名ID
+     */
+    public void setYuanBaomingId(Long yuanBaomingId) {
+        this.yuanBaomingId = yuanBaomingId;
+    }
+
+    /**
+     * 获取：原报名ID
+     */
+    public Long getYuanBaomingId() {
+        return yuanBaomingId;
+    }
+
+    /**
+     * 设置：竞赛ID
+     */
+    public void setJingsaiId(Long jingsaiId) {
+        this.jingsaiId = jingsaiId;
+    }
+
+    /**
+     * 获取：竞赛ID
+     */
+    public Long getJingsaiId() {
+        return jingsaiId;
     }
 
 }

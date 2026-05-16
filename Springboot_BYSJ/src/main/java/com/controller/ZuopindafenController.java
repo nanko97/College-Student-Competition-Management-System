@@ -1,9 +1,14 @@
 package com.controller;
 
+import com.annotation.OperationLog;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.entity.JingsaixinxiEntity;
 import com.entity.ZuopindafenEntity;
+import com.entity.ZuopindafenFuheEntity;
 import com.entity.view.ZuopindafenView;
+import com.service.JingsaixinxiService;
+import com.service.ZuopindafenFuheService;
 import com.service.ZuopindafenService;
 import com.utils.IdWorker;
 import com.utils.MPUtil;
@@ -20,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,13 +48,19 @@ public class ZuopindafenController {
     
     @Autowired
     private ZuopindafenService zuopindafenService;
+    
+    @Autowired
+    private ZuopindafenFuheService zuopindafenFuheService;
+    
+    @Autowired
+    private JingsaixinxiService jingsaixinxiService;
 
     /**
      * 后端分页列表查询
      * 功能：带权限控制的作品打分信息查询
      * 
      * 权限逻辑：
-     * - 教师角色：只能查看自己评分的作品
+     * - 教师角色：只能查看自己评分的作品，且只能看到自己创建的竞赛的作品
      * - 学生角色：只能查看自己的作品得分
      * - 管理员：可以查看所有评分信息
      * 
@@ -64,16 +76,33 @@ public class ZuopindafenController {
         try {
             // 1. 权限控制：根据用户角色过滤数据
             String tableName = (String) request.getSession().getAttribute("tableName");
+            String role = (String) request.getSession().getAttribute("role");
+            
             if ("xuesheng".equals(tableName)) {
                 // 学生只能查看自己的作品得分
                 String xuehao = (String) request.getSession().getAttribute("username");
                 zuopindafen.setXuehao(xuehao);
                 log.debug("学生 {} 查询个人作品得分", xuehao);
-            } else if ("jiaoshi".equals(tableName)) {
-                // 教师只能查看自己评分的作品
+            } else if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
+                // 教师只能查看自己评分的作品，且只能看到自己创建的竞赛的作品
                 String gonghao = (String) request.getSession().getAttribute("username");
                 zuopindafen.setGonghao(gonghao);
-                log.debug("教师 {} 查询评分记录", gonghao);
+                
+                // 进一步过滤：只能查看自己创建的竞赛的作品
+                // 通过 jingsai_id 关联查询教师创建的竞赛
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", gonghao);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    // 在查询条件中添加竞赛ID过滤
+                    params.put("jingsaiId", myJingsaiList.stream().map(JingsaixinxiEntity::getId).collect(java.util.stream.Collectors.toList()));
+                    log.debug("教师 {} 只能查看自己创建的 {} 个竞赛的作品评分", gonghao, myJingsaiList.size());
+                } else {
+                    log.debug("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+                    return R.ok().put("data", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1))
+                               .put("page", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1));
+                }
             }
             
             // 2. 构建查询条件
@@ -85,7 +114,39 @@ public class ZuopindafenController {
                 MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zuopindafen), params), params)
             );
             
-            return R.ok().put("data", page);
+            // 4. 如果是学生查询，关联复核状态和复核次数
+            if ("xuesheng".equals(tableName)) {
+                log.info("[学生查询] 开始关联复核状态，数据条数：{}", page.getList() != null ? page.getList().size() : 0);
+                List<ZuopindafenEntity> dataList = (List<ZuopindafenEntity>) page.getList();
+                if (dataList != null) {
+                    for (ZuopindafenEntity score : dataList) {
+                        // 查询该成绩的所有复核记录
+                        EntityWrapper<ZuopindafenFuheEntity> fuheEw = new EntityWrapper<>();
+                        fuheEw.eq("zuopindafen_id", score.getId());
+                        fuheEw.eq("xuehao", score.getXuehao()); // 只查询当前学生的复核记录
+                        fuheEw.orderBy("id", true);
+                        List<ZuopindafenFuheEntity> fuheList = zuopindafenFuheService.selectList(fuheEw);
+                        
+                        log.info("[学生查询] 作品ID：{}, 学号：{}, 复核记录数：{}", score.getId(), score.getXuehao(), fuheList != null ? fuheList.size() : 0);
+                        
+                        // 如果有复核记录，添加复核状态和次数
+                        if (fuheList != null && !fuheList.isEmpty()) {
+                            // 取最新的复核记录
+                            ZuopindafenFuheEntity latestFuhe = fuheList.get(fuheList.size() - 1);
+                            // 通过反射动态添加属性
+                            score.setFuheStatus(latestFuhe.getFuheStatus());
+                            // 添加复核次数
+                            score.setFuheCount(fuheList.size());
+                            log.info("[学生查询] 设置状态：{}, 次数：{}", latestFuhe.getFuheStatus(), fuheList.size());
+                        } else {
+                            // 没有复核记录，设置次数为0
+                            score.setFuheCount(0);
+                        }
+                    }
+                }
+            }
+            
+            return R.ok().put("data", page).put("page", page);
             
         } catch (Exception e) {
             log.error("作品打分分页查询异常：", e);
@@ -116,7 +177,7 @@ public class ZuopindafenController {
                 MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zuopindafen), params), params)
             );
             
-            return R.ok().put("data", page);
+            return R.ok().put("data", page).put("page", page);
             
         } catch (Exception e) {
             log.error("作品打分前端列表查询异常：", e);
@@ -182,10 +243,11 @@ public class ZuopindafenController {
      * 功能：根据 ID 查询作品评分详细信息 (后台管理使用)
      * 
      * @param id 评分 ID
+     * @param request HTTP 请求
      * @return R 统一返回结果，包含评分详情
      */
     @RequestMapping("/info/{id}")
-    public R info(@PathVariable("id") Long id) {
+    public R info(@PathVariable("id") Long id, HttpServletRequest request) {
         try {
             // 1. 参数校验
             if (id == null || id <= 0) {
@@ -199,6 +261,29 @@ public class ZuopindafenController {
             if (zuopindafen == null) {
                 log.warn("查询作品评分详情失败：ID{}不存在", id);
                 return R.error("作品评分信息不存在");
+            }
+            
+            // 3. 如果是学生查询，关联复核状态和复核次数
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            if ("xuesheng".equals(tableName) && zuopindafen.getXuehao() != null) {
+                // 查询该成绩的所有复核记录
+                EntityWrapper<ZuopindafenFuheEntity> fuheEw = new EntityWrapper<>();
+                fuheEw.eq("zuopindafen_id", zuopindafen.getId());
+                fuheEw.eq("xuehao", zuopindafen.getXuehao());
+                fuheEw.orderBy("id", true);
+                List<ZuopindafenFuheEntity> fuheList = zuopindafenFuheService.selectList(fuheEw);
+                
+                if (fuheList != null && !fuheList.isEmpty()) {
+                    // 取最新的复核记录
+                    ZuopindafenFuheEntity latestFuhe = fuheList.get(fuheList.size() - 1);
+                    zuopindafen.setFuheStatus(latestFuhe.getFuheStatus());
+                    zuopindafen.setFuheCount(fuheList.size());
+                    log.info("[详情查询] 作品ID：{}, 学号：{}, 状态：{}, 次数：{}", 
+                            zuopindafen.getId(), zuopindafen.getXuehao(), 
+                            latestFuhe.getFuheStatus(), fuheList.size());
+                } else {
+                    zuopindafen.setFuheCount(0);
+                }
             }
             
             return R.ok().put("data", zuopindafen);
@@ -214,10 +299,11 @@ public class ZuopindafenController {
      * 功能：根据 ID 查询作品评分详细信息 (前台展示使用)
      * 
      * @param id 评分 ID
+     * @param request HTTP 请求
      * @return R 统一返回结果，包含评分详情
      */
     @RequestMapping("/detail/{id}")
-    public R detail(@PathVariable("id") Long id) {
+    public R detail(@PathVariable("id") Long id, HttpServletRequest request) {
         try {
             // 1. 参数校验
             if (id == null || id <= 0) {
@@ -231,6 +317,29 @@ public class ZuopindafenController {
             if (zuopindafen == null) {
                 log.warn("查询作品评分详情失败：ID{}不存在", id);
                 return R.error("作品评分信息不存在");
+            }
+            
+            // 3. 如果是学生查询，关联复核状态和复核次数
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            if ("xuesheng".equals(tableName) && zuopindafen.getXuehao() != null) {
+                // 查询该成绩的所有复核记录
+                EntityWrapper<ZuopindafenFuheEntity> fuheEw = new EntityWrapper<>();
+                fuheEw.eq("zuopindafen_id", zuopindafen.getId());
+                fuheEw.eq("xuehao", zuopindafen.getXuehao());
+                fuheEw.orderBy("id", true);
+                List<ZuopindafenFuheEntity> fuheList = zuopindafenFuheService.selectList(fuheEw);
+                
+                if (fuheList != null && !fuheList.isEmpty()) {
+                    // 取最新的复核记录
+                    ZuopindafenFuheEntity latestFuhe = fuheList.get(fuheList.size() - 1);
+                    zuopindafen.setFuheStatus(latestFuhe.getFuheStatus());
+                    zuopindafen.setFuheCount(fuheList.size());
+                    log.info("[详情查询] 作品ID：{}, 学号：{}, 状态：{}, 次数：{}", 
+                            zuopindafen.getId(), zuopindafen.getXuehao(), 
+                            latestFuhe.getFuheStatus(), fuheList.size());
+                } else {
+                    zuopindafen.setFuheCount(0);
+                }
             }
             
             return R.ok().put("data", zuopindafen);
@@ -256,8 +365,24 @@ public class ZuopindafenController {
      * @return R 统一返回结果
      */
     @RequestMapping("/save")
+    @OperationLog("保存作品评分")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R save(@RequestBody ZuopindafenEntity zuopindafen, HttpServletRequest request) {
-        // 1. 基础参数校验
+        // 1. 权限控制：只有教师和管理员可以新增评分
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        log.debug("新增评分 - 当前用户表名：{}", tableName);
+        
+        if (tableName == null) {
+            log.warn("新增评分失败：用户未登录");
+            return R.error("请先登录");
+        }
+        
+        if ("xuesheng".equals(tableName)) {
+            log.warn("学生尝试新增评分记录，IP: {}", request.getRemoteAddr());
+            return R.error("学生无权新增评分记录，请联系教师");
+        }
+        
+        // 2. 基础参数校验
         if (!StringUtils.hasText(zuopindafen.getXuehao())) {
             log.warn("保存评分失败：学号为空");
             return R.error("学号不能为空");
@@ -273,15 +398,14 @@ public class ZuopindafenController {
             return R.error("作品分数不能为空");
         }
         
-        // 4. 分数范围校验（0-100）
+        // 5. 分数范围校验（0-100）
         if (zuopindafen.getZuopinpingfen() < 0 || zuopindafen.getZuopinpingfen() > 100) {
             log.warn("保存评分失败：分数超出范围，分数：{}", zuopindafen.getZuopinpingfen());
             return R.error("评分范围为 0-100 分");
         }
         
         try {
-            // 2. 自动填充工号 (如果是教师评分)
-            String tableName = (String) request.getSession().getAttribute("tableName");
+            // 3. 自动填充工号 (如果是教师评分)
             if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
                 zuopindafen.setGonghao(gonghao);
@@ -289,10 +413,10 @@ public class ZuopindafenController {
                          gonghao, zuopindafen.getJingsaimingcheng(), zuopindafen.getZuopinpingfen());
             }
             
-            // 3. 实体校验
+            // 4. 实体校验
             ValidatorUtils.validateEntity(zuopindafen);
             
-            // 4. 生成唯一 ID 并保存
+            // 5. 生成唯一 ID 并保存
             zuopindafen.setId(IdWorker.getId());
             zuopindafenService.insert(zuopindafen);
             
@@ -317,8 +441,24 @@ public class ZuopindafenController {
      * @return R 统一返回结果
      */
     @RequestMapping("/add")
+    @OperationLog("添加作品评分")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R add(@RequestBody ZuopindafenEntity zuopindafen, HttpServletRequest request) {
-        // 1. 基础参数校验
+        // 1. 权限控制：只有教师和管理员可以新增评分
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        log.debug("添加评分 - 当前用户表名：{}", tableName);
+        
+        if (tableName == null) {
+            log.warn("添加评分失败：用户未登录");
+            return R.error("请先登录");
+        }
+        
+        if ("xuesheng".equals(tableName)) {
+            log.warn("学生尝试添加评分记录，IP: {}", request.getRemoteAddr());
+            return R.error("学生无权添加评分记录，请联系教师");
+        }
+        
+        // 2. 基础参数校验
         if (!StringUtils.hasText(zuopindafen.getXuehao())) {
             log.warn("添加评分失败：学号为空");
             return R.error("学号不能为空");
@@ -335,18 +475,17 @@ public class ZuopindafenController {
         }
         
         try {
-            // 2. 自动填充工号 (如果是教师评分)
-            String tableName = (String) request.getSession().getAttribute("tableName");
+            // 3. 自动填充工号 (如果是教师评分)
             if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
                 zuopindafen.setGonghao(gonghao);
                 log.info("教师 {} 添加作品评分：{}", gonghao, zuopindafen.getJingsaimingcheng());
             }
             
-            // 3. 实体校验
+            // 4. 实体校验
             ValidatorUtils.validateEntity(zuopindafen);
             
-            // 4. 生成唯一 ID 并保存
+            // 5. 生成唯一 ID 并保存
             zuopindafen.setId(IdWorker.getId());
             zuopindafenService.insert(zuopindafen);
             
@@ -376,6 +515,8 @@ public class ZuopindafenController {
      * @return R 统一返回结果
      */
     @RequestMapping("/update")
+    @OperationLog("修改作品评分")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R update(@RequestBody ZuopindafenEntity zuopindafen, HttpServletRequest request) {
         // 1. 参数校验
         if (zuopindafen.getId() == null || zuopindafen.getId() <= 0) {
@@ -393,6 +534,38 @@ public class ZuopindafenController {
             return R.error("作品分数不能为空");
         }
         
+        // 2. 权限控制：只有教师和管理员可以修改评分
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        log.debug("修改评分 - 当前用户表名：{}", tableName);
+        
+        if (tableName == null) {
+            log.warn("修改评分失败：用户未登录");
+            return R.error("请先登录");
+        }
+        
+        if ("xuesheng".equals(tableName)) {
+            log.warn("学生尝试修改评分记录，IP: {}", request.getRemoteAddr());
+            return R.error("学生无权修改评分记录，请联系教师");
+        }
+        
+        // 3. 如果是教师，只能修改自己的评分
+        if ("jiaoshi".equals(tableName)) {
+            String gonghao = (String) request.getSession().getAttribute("username");
+            log.debug("当前教师工号：{}", gonghao);
+            
+            ZuopindafenEntity existingRecord = zuopindafenService.selectById(zuopindafen.getId());
+            if (existingRecord == null) {
+                log.warn("修改评分失败：评分记录不存在，ID: {}", zuopindafen.getId());
+                return R.error("评分记录不存在");
+            }
+            
+            if (!gonghao.equals(existingRecord.getGonghao())) {
+                log.warn("教师 {} 尝试修改其他教师的评分记录，ID: {}, 记录工号：{}", 
+                         gonghao, zuopindafen.getId(), existingRecord.getGonghao());
+                return R.error("只能修改自己的评分记录");
+            }
+        }
+        
         // 4. 分数范围校验（0-100）
         if (zuopindafen.getZuopinpingfen() < 0 || zuopindafen.getZuopinpingfen() > 100) {
             log.warn("修改评分失败：分数超出范围，ID: {}, 分数：{}", zuopindafen.getId(), zuopindafen.getZuopinpingfen());
@@ -400,13 +573,14 @@ public class ZuopindafenController {
         }
         
         try {
-            // 2. 实体校验
+            // 5. 实体校验
             ValidatorUtils.validateEntity(zuopindafen);
             
-            // 3. 执行更新
+            // 6. 执行更新
             zuopindafenService.updateById(zuopindafen);
             
-            log.info("修改作品评分成功，ID: {}, 学号：{}, 分数：{}", 
+            log.info("修改作品评分成功，用户：{}, ID: {}, 学号：{}, 分数：{}", 
+                     tableName,
                      zuopindafen.getId(), 
                      zuopindafen.getXuehao(), 
                      zuopindafen.getZuopinpingfen());
@@ -428,6 +602,8 @@ public class ZuopindafenController {
      * @return R 统一返回结果
      */
     @RequestMapping("/delete")
+    @OperationLog("删除作品评分")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R delete(@RequestBody Long[] ids, HttpServletRequest request) {
         log.debug("删除请求接收到的 IDs: {}", Arrays.toString(ids));
         

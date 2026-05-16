@@ -1,10 +1,13 @@
 package com.controller;
 
 import com.annotation.IgnoreAuth;
+import com.annotation.OperationLog;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.entity.TokenEntity;
 import com.entity.XueshengEntity;
 import com.entity.view.XueshengView;
+import com.service.DataSyncService;
 import com.service.TokenService;
 import com.service.XueshengService;
 import com.utils.IdWorker;
@@ -52,6 +55,9 @@ public class XueshengController {
 
     @Autowired
     private PasswordEncoder passwordEncoder; // BCrypt 密码加密器
+    
+    @Autowired
+    private DataSyncService dataSyncService; // 数据联动同步服务
 
     /**
      * 学生登录接口
@@ -97,7 +103,10 @@ public class XueshengController {
             // 4. 登录成功，生成 Token
             String token = tokenService.generateToken(user.getId(), username, "xuesheng", "学生");
             log.info("学生 {} 登录成功", username);
-            return R.ok().put("token", token);
+            // 返回token和学生姓名
+            return R.ok()
+                    .put("token", token)
+                    .put("xueshengxingming", user.getXueshengxingming());
             
         } catch (Exception e) {
             log.error("学生登录异常：", e);
@@ -185,22 +194,47 @@ public class XueshengController {
 
     /**
      * 获取当前登录学生信息
-     * 功能：从 Session 中获取用户 ID，查询详细信息
+     * 功能：从 Token 中获取用户 ID，查询详细信息
      * 
-     * @param request HTTP 请求 (包含 Session)
+     * 支持两种认证方式：
+     * 1. Token 认证（前端主要使用）
+     * 2. Session 认证（兼容旧版）
+     * 
+     * @param request HTTP 请求 (包含 Token 或 Session)
      * @return R 统一返回结果，包含学生信息
      */
     @RequestMapping("/session")
     public R getCurrUser(HttpServletRequest request) {
         try {
-            // 1. 从 Session 获取用户 ID
-            Long id = (Long) request.getSession().getAttribute("userId");
+            Long id = null;
+            
+            // 1. 优先从 Token 获取用户 ID
+            String token = request.getHeader("token");
+            if (!StringUtils.hasText(token)) {
+                token = request.getParameter("token");
+            }
+            
+            if (StringUtils.hasText(token)) {
+                TokenEntity tokenEntity = tokenService.getTokenEntity(token);
+                if (tokenEntity != null) {
+                    id = tokenEntity.getUserid();
+                    // 同步到 Session（兼容性）
+                    request.getSession().setAttribute("userId", id);
+                }
+            }
+            
+            // 2. 如果 Token 无效，尝试从 Session 获取
             if (id == null || id <= 0) {
-                log.warn("获取当前学生信息失败：Session 中无用户 ID");
+                id = (Long) request.getSession().getAttribute("userId");
+            }
+            
+            // 3. 验证用户 ID
+            if (id == null || id <= 0) {
+                log.warn("获取当前学生信息失败：无法获取用户 ID");
                 return R.error("请先登录");
             }
             
-            // 2. 查询学生信息
+            // 4. 查询学生信息
             XueshengEntity user = xueshengService.selectById(id);
             if (user == null) {
                 log.warn("获取当前学生信息失败：ID{}不存在", id);
@@ -281,7 +315,7 @@ public class XueshengController {
                 MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, xuesheng), params), params)
             );
             
-            return R.ok().put("data", page);
+            return R.ok().put("data", page).put("page", page);
             
         } catch (Exception e) {
             log.error("学生分页查询异常：", e);
@@ -312,7 +346,7 @@ public class XueshengController {
                 MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, xuesheng), params), params)
             );
             
-            return R.ok().put("data", page);
+            return R.ok().put("data", page).put("page", page);
             
         } catch (Exception e) {
             log.error("学生前端列表查询异常：", e);
@@ -445,7 +479,9 @@ public class XueshengController {
      * @param request HTTP 请求
      * @return R 统一返回结果
      */
+    @OperationLog("保存学生信息")
     @RequestMapping("/save")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R save(@RequestBody XueshengEntity xuesheng, HttpServletRequest request) {
         try {
             // 1. 基础参数校验
@@ -490,7 +526,9 @@ public class XueshengController {
      * @param request HTTP 请求
      * @return R 统一返回结果
      */
+    @OperationLog("添加学生信息")
     @RequestMapping("/add")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R add(@RequestBody XueshengEntity xuesheng, HttpServletRequest request) {
         try {
             // 1. 基础参数校验
@@ -528,6 +566,53 @@ public class XueshengController {
     }
 
     /**
+     * 验证原密码
+     * 功能：前端修改密码时验证原密码是否正确
+     * 
+     * @param request HTTP 请求
+     * @param params 包含oldPassword参数
+     * @return R 统一返回结果
+     */
+    @RequestMapping("/verifyPassword")
+    public R verifyPassword(HttpServletRequest request, @RequestBody Map<String, Object> params) {
+        try {
+            // 1. 获取当前登录用户
+            String token = request.getHeader("token");
+            if (!StringUtils.hasText(token)) {
+                token = request.getParameter("token");
+            }
+            
+            TokenEntity tokenEntity = tokenService.getTokenEntity(token);
+            if (tokenEntity == null) {
+                return R.error("未登录或登录已过期");
+            }
+            
+            // 2. 查询学生信息
+            XueshengEntity xuesheng = xueshengService.selectById(tokenEntity.getUserid());
+            if (xuesheng == null) {
+                return R.error("用户不存在");
+            }
+            
+            // 3. 验证密码
+            String oldPassword = params.get("oldPassword") != null ? params.get("oldPassword").toString() : "";
+            if (!StringUtils.hasText(oldPassword)) {
+                return R.error("原密码不能为空");
+            }
+            
+            boolean matches = passwordEncoder.matches(oldPassword, xuesheng.getMima());
+            if (!matches) {
+                return R.error("原密码错误");
+            }
+            
+            return R.ok("密码验证成功");
+            
+        } catch (Exception e) {
+            log.error("验证密码异常：", e);
+            return R.error("验证失败");
+        }
+    }
+
+    /**
      * 修改学生信息
      * 功能：更新学生信息
      * 
@@ -535,7 +620,9 @@ public class XueshengController {
      * @param request HTTP 请求
      * @return R 统一返回结果
      */
+    @OperationLog("修改学生信息")
     @RequestMapping("/update")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R update(@RequestBody XueshengEntity xuesheng, HttpServletRequest request) {
         try {
             // 1. 参数校验
@@ -544,11 +631,28 @@ public class XueshengController {
                 return R.error("学生 ID 非法");
             }
             
-            // 2. 实体校验
-            ValidatorUtils.validateEntity(xuesheng);
+            // 2. 如果密码不为空，进行加密处理
+            if (StringUtils.hasText(xuesheng.getMima())) {
+                // 判断是否是BCrypt加密过的密码（以$2a$开头）
+                if (!xuesheng.getMima().startsWith("$2a$")) {
+                    // 明文密码，需要加密
+                    xuesheng.setMima(passwordEncoder.encode(xuesheng.getMima()));
+                    log.info("检测到明文密码，已进行BCrypt加密");
+                }
+            }
             
             // 3. 执行更新
             xueshengService.updateById(xuesheng);
+            
+            // 4. 【数据联动】同步更新所有关联表中的冗余数据
+            try {
+                dataSyncService.syncXueshengInfo(xuesheng);
+                log.info("学生信息联动同步完成 - 学号: {}", xuesheng.getXuehao());
+            } catch (Exception syncError) {
+                log.error("学生信息联动同步失败，但主数据已更新 - 学号: {}", xuesheng.getXuehao(), syncError);
+                // 注意：这里不抛出异常，因为主数据已经更新成功
+                // 同步失败不影响主流程，可以通过定时任务或手动脚本修复
+            }
             
             log.info("修改学生信息成功，ID: {}, 学号：{}", 
                      xuesheng.getId(), xuesheng.getXuehao());
@@ -567,7 +671,9 @@ public class XueshengController {
      * @param ids 学生 ID 数组
      * @return R 统一返回结果
      */
+    @OperationLog("删除学生信息")
     @RequestMapping("/delete")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R delete(@RequestBody Long[] ids) {
         // 1. 参数校验
         if (ids == null || ids.length == 0) {

@@ -1,26 +1,16 @@
 package com.controller;
 
 import com.annotation.IgnoreAuth;
-import com.baidu.aip.face.AipFace;
-import com.baidu.aip.face.MatchRequest;
-import com.baidu.aip.util.Base64Util;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.entity.ConfigEntity;
 import com.service.CommonService;
 import com.service.ConfigService;
-import com.utils.BaiduUtil;
-import com.utils.FileUtil;
 import com.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -36,15 +26,11 @@ public class CommonController {
 
     @Autowired
     private ConfigService configService;
-
-    private static AipFace client = null;
-
-    private static String BAIDU_DITU_AK = null;
     
     // 允许的表名白名单（防止 SQL 注入）
     private static final Set<String> ALLOWED_TABLES = new HashSet<>(Arrays.asList(
         "xuesheng", "jiaoshi", "jingsaixinxi", "jingsaibaoming", 
-        "zuopindafen", "banjileixing", "config", "token", "users"
+        "zuopindafen", "config", "token", "users"
     ));
     
     // 允许的列名白名单
@@ -62,62 +48,6 @@ public class CommonController {
      */
     private boolean isValidColumn(String columnName) {
         return columnName != null && COLUMN_PATTERN.matcher(columnName).matches();
-    }
-
-    @RequestMapping("/location")
-    public R location(String lng, String lat) {
-        if (BAIDU_DITU_AK == null) {
-            BAIDU_DITU_AK = configService.selectOne(new EntityWrapper<ConfigEntity>().eq("name", "baidu_ditu_ak")).getValue();
-            if (BAIDU_DITU_AK == null) {
-                return R.error("请在配置管理中正确配置baidu_ditu_ak");
-            }
-        }
-        Map<String, String> map = BaiduUtil.getCityByLonLat(BAIDU_DITU_AK, lng, lat);
-        return R.ok().put("data", map);
-    }
-
-    /**
-     * 人脸比对
-     *
-     * @param face1 人脸1
-     * @param face2 人脸2
-     * @return
-     */
-    @RequestMapping("/matchFace")
-    public R matchFace(String face1, String face2) {
-        if (client == null) {
-            /*String AppID = configService.selectOne(new EntityWrapper<ConfigEntity>().eq("name", "AppID")).getValue();*/
-            String APIKey = configService.selectOne(new EntityWrapper<ConfigEntity>().eq("name", "APIKey")).getValue();
-            String SecretKey = configService.selectOne(new EntityWrapper<ConfigEntity>().eq("name", "SecretKey")).getValue();
-            String token = BaiduUtil.getAuth(APIKey, SecretKey);
-            if (token == null) {
-                return R.error("请在配置管理中正确配置APIKey和SecretKey");
-            }
-            client = new AipFace(null, APIKey, SecretKey);
-            client.setConnectionTimeoutInMillis(2000);
-            client.setSocketTimeoutInMillis(60000);
-        }
-        JSONObject res = null;
-        try {
-            File file1 = new File(ResourceUtils.getFile("classpath:static/upload").getAbsolutePath() + "/" + face1);
-            File file2 = new File(ResourceUtils.getFile("classpath:static/upload").getAbsolutePath() + "/" + face2);
-            String img1 = Base64Util.encode(FileUtil.FileToByte(file1));
-            String img2 = Base64Util.encode(FileUtil.FileToByte(file2));
-            MatchRequest req1 = new MatchRequest(img1, "BASE64");
-            MatchRequest req2 = new MatchRequest(img2, "BASE64");
-            ArrayList<MatchRequest> requests = new ArrayList<MatchRequest>();
-            requests.add(req1);
-            requests.add(req2);
-            res = client.match(requests);
-            log.info("人脸比对结果：{}", res.opt("result"));
-        } catch (FileNotFoundException e) {
-            log.error("人脸比对文件不存在：{}", face1, e);
-            return R.error("文件不存在");
-        } catch (IOException e) {
-            log.error("人脸比对 IO 异常", e);
-            return R.error("系统繁忙，请稍后再试");
-        }
-        return R.ok().put("data", com.alibaba.fastjson2.JSONObject.parse(res.get("result").toString()));
     }
 
     /**

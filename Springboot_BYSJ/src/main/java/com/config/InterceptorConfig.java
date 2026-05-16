@@ -3,6 +3,7 @@ package com.config;
 import com.interceptor.AuthorizationInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
@@ -23,11 +24,12 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
                 "/static/**",                    // 静态资源
                 "/admin/**",                     // 前端页面
                 "/front/**",                     // 前台页面
+                "/upload/**",                    // 上传文件（作品下载）
                 "/users/login",                  // 登录接口
                 "/users/register",               // 注册接口
                 "/users/resetPass",              // 重置密码
                 "/registration/**",              // 统一注册接口
-                "/file/download",                // 文件下载
+                "/file/download",                // 文件下载接口
                 "/jingsaixinxi/list",            // 竞赛列表（公开）
                 "/jingsaixinxi/page",            // 竞赛分页（公开）
                 "/jingsaixinxi/detail/**",       // 竞赛详情（公开）
@@ -55,9 +57,26 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
                 .addResourceLocations("classpath:/static/")
                 // 使用文件路径访问前端资源（实际存在的路径）
                 .addResourceLocations("file:./src/main/resources/admin/")
-                .addResourceLocations("classpath:/public/")
-                // 添加上传文件目录映射，允许访问 upload/ 目录下的文件
+                .addResourceLocations("classpath:/public/");
+        // 【重要】单独添加上传文件目录映射，避免覆盖其他静态资源路径
+        registry.addResourceHandler("/upload/**")
                 .addResourceLocations("file:./upload/");
         super.addResourceHandlers(registry);
+    }
+
+    /**
+     * 配置 CORS 跨域支持
+     * 注意：由于继承了 WebMvcConfigurationSupport，必须在这里配置，WebMvcConfig 中的配置不会生效
+     */
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                // 修改：允许所有localhost端口（开发环境）
+                .allowedOrigins("http://localhost:8081", "http://localhost:8082", "http://127.0.0.1:8081", "http://127.0.0.1:8082")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
+        super.addCorsMappings(registry);
     }
 }

@@ -21,8 +21,8 @@ import java.time.Duration;
 /**
  * Redis 配置类 - 性能优化
  */
-@Configuration
-@EnableCaching
+//@Configuration
+//@EnableCaching
 public class RedisConfig {
 
     /**

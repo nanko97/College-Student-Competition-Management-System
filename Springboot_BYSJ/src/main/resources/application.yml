@@ -20,9 +20,9 @@ server:
     compression: on                  # 启用 GZIP 压缩（提升性能）
     compressable-mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
   
-  port: 8080                         # 服务端口号，访问地址：http://localhost:8080/springbootrd362
+  port: 9090                         # 服务端口号，访问地址：http://localhost:9090/BYSJ_Springboot
   servlet:
-    context-path: /springbootrd362   # 项目访问路径
+    context-path: /BYSJ_Springboot   # 项目访问路径
 
 # --------------------------------------------
 # 2. Spring 核心配置
@@ -36,8 +36,8 @@ spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
     # 数据库连接 URL
-    # 说明：连接本地 MySQL 数据库，数据库名为 springbootrd362
-    url: jdbc:mysql://127.0.0.1:3306/springbootrd362?useUnicode=true&characterEncoding=utf-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+    # 说明：连接本地 MySQL 数据库，数据库名为 bysj_springboot
+    url: jdbc:mysql://127.0.0.1:3306/bysj_springboot?useUnicode=true&characterEncoding=utf-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
     username: root                   # 【需修改】数据库用户名，默认 root
     password: 123123                 # 【需修改】数据库密码，请根据实际情况修改
     
@@ -75,8 +75,36 @@ spring:
       max-request-size: 10MB         # 单次请求最大大小
   
   # 2.4 静态资源配置
-  resources:
-    static-locations: classpath:static/,file:static/
+  # 【注意】静态资源映射已统一在 WebMvcConfig.java 中配置
+  # 注释掉此处的 static-locations 避免与 WebMvcConfig 产生冲突
+  # resources:
+  #   static-locations:
+  #     - classpath:/static/
+  #     - file:./static/
+  #     - file:D:/BYSJ/BYSJ/Springboot_BYSJ/upload/
+
+  # 2.5 定时任务配置
+  task:
+    scheduling:
+      pool:
+        size: 5
+      thread-name-prefix: scheduling-
+    # 添加初始延迟60秒，避免启动时数据库连接未就绪
+    initial-delay: 60000
+  
+  # 2.6 Jackson JSON 序列化配置
+  jackson:
+    # 日期格式化
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    # 序列化配置
+    serialization:
+      # 不序列化 null 值
+      write-null-map-values: false
+    # 反序列化配置
+    deserialization:
+      # 允许未知属性
+      fail-on-unknown-properties: false
 
 # --------------------------------------------
 # 3. MyBatis-Plus 配置
@@ -123,15 +151,21 @@ login:
 # 【快速开始】
 # 1. 修改数据库用户名和密码（第 18-19 行）
 # 2. 确保 MySQL 服务已启动
-# 3. 运行项目，访问：http://localhost:8080/springbootrd362
+# 3. 运行项目，访问：http://localhost:9090/BYSJ_Springboot
 #
 # 【常见问题】
 # Q: 数据库连接失败？
 # A: 检查 MySQL 服务是否启动，数据库是否存在，用户名密码是否正确
 #
 # Q: 端口被占用？
-# A: 修改第 10 行的 server.port 为其他端口，如 8081
+# A: 修改第 23 行的 server.port 为其他端口，如 8081
 #
 # Q: 文件上传失败？
 # A: 检查 upload 目录是否有写权限，或修改第 75 行的路径
 # ============================================
+
+# --------------------------------------------
+# 6. Swagger API 文档配置
+# --------------------------------------------
+swagger:
+  enabled: true                    # 是否启用 Swagger（生产环境建议设为 false）

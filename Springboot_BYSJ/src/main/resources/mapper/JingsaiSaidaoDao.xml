@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.JingsaiSaidaoDao">
+    <resultMap type="com.entity.JingsaiSaidaoEntity" id="jingsaiSaidaoMap">
+        <id property="id" column="id"/>
+        <result property="jingsaiId" column="jingsai_id"/>
+        <result property="jingsaimingcheng" column="jingsaimingcheng"/>
+        <result property="saidaoMingcheng" column="saidao_mingcheng"/>
+        <result property="saidaoBianma" column="saidao_bianma"/>
+        <result property="cansaiLeixing" column="cansai_leixing"/>
+        <result property="tuanduiRenshuMin" column="tuandui_renshu_min"/>
+        <result property="tuanduiRenshuMax" column="tuandui_renshu_max"/>
+        <result property="baomingShuoming" column="baoming_shuoming"/>
+        <result property="pingshenBiaozhun" column="pingshen_biaozhun"/>
+        <result property="isActive" column="is_active"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="addtime" column="addtime"/>
+    </resultMap>
+    <select id="selectListView" resultType="com.entity.JingsaiSaidaoEntity">
+        SELECT * FROM jingsai_saidao <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+</mapper>

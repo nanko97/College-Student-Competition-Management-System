@@ -1,5 +1,6 @@
 package com.entity;
 
+import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -45,37 +46,49 @@ public class JingsaixinxiEntity<T> implements Serializable {
     /**
      * 竞赛名称
      */
-
+    @TableField("jingsaimingcheng")
     private String jingsaimingcheng;
 
     /**
      * 竞赛类型
      */
-
+    @TableField("jingsaileixing")
     private String jingsaileixing;
+
+    /**
+     * 竞赛级别(A类/B类/C类)
+     */
+    @TableField("jingsai_jibie")
+    private String jingsaiJibie;
+
+    /**
+     * 年份
+     */
+    @TableField("nianfen")
+    private Integer nianfen;
 
     /**
      * 竞赛地点
      */
-
+    @TableField("jingsaididian")
     private String jingsaididian;
 
     /**
      * 竞赛规则
      */
-
+    @TableField("jingsaiguize")
     private String jingsaiguize;
 
     /**
      * 竞赛奖励
      */
-
+    @TableField("jingsaijiangli")
     private String jingsaijiangli;
 
     /**
      * 竞赛时间
      */
-
+    @TableField("jingsaishijian")
     @JsonFormat(locale = "zh", timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat
     private Date jingsaishijian;
@@ -83,25 +96,37 @@ public class JingsaixinxiEntity<T> implements Serializable {
     /**
      * 模式
      */
-
+    @TableField("moshi")
     private String moshi;
+
+    /**
+     * 是否有赛道(是/否)
+     */
+    @TableField("shifou_you_saidao")
+    private String shifouYouSaidao;
+
+    /**
+     * 是否需要晋级(是/否)
+     */
+    @TableField("shifou_xuyao_jinji")
+    private String shifouXuyaoJinji;
 
     /**
      * 封面图片
      */
-
+    @TableField("fengmiantupian")
     private String fengmiantupian;
 
     /**
      * 工号
      */
-
+    @TableField("gonghao")
     private String gonghao;
 
     /**
      * 教师姓名
      */
-
+    @TableField("jiaoshixingming")
     private String jiaoshixingming;
 
 
@@ -221,6 +246,62 @@ public class JingsaixinxiEntity<T> implements Serializable {
      */
     public String getMoshi() {
         return moshi;
+    }
+
+    /**
+     * 设置：竞赛级别
+     */
+    public void setJingsaiJibie(String jingsaiJibie) {
+        this.jingsaiJibie = jingsaiJibie;
+    }
+
+    /**
+     * 获取：竞赛级别
+     */
+    public String getJingsaiJibie() {
+        return jingsaiJibie;
+    }
+
+    /**
+     * 设置：年份
+     */
+    public void setNianfen(Integer nianfen) {
+        this.nianfen = nianfen;
+    }
+
+    /**
+     * 获取：年份
+     */
+    public Integer getNianfen() {
+        return nianfen;
+    }
+
+    /**
+     * 设置：是否有赛道
+     */
+    public void setShifouYouSaidao(String shifouYouSaidao) {
+        this.shifouYouSaidao = shifouYouSaidao;
+    }
+
+    /**
+     * 获取：是否有赛道
+     */
+    public String getShifouYouSaidao() {
+        return shifouYouSaidao;
+    }
+
+    /**
+     * 设置：是否需要晋级
+     */
+    public void setShifouXuyaoJinji(String shifouXuyaoJinji) {
+        this.shifouXuyaoJinji = shifouXuyaoJinji;
+    }
+
+    /**
+     * 获取：是否需要晋级
+     */
+    public String getShifouXuyaoJinji() {
+        return shifouXuyaoJinji;
     }
 
     /**

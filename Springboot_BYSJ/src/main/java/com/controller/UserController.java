@@ -1,8 +1,10 @@
 package com.controller;
 
 import com.annotation.IgnoreAuth;
+import com.annotation.OperationLog;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.entity.TokenEntity;
 import com.entity.UserEntity;
 import com.service.TokenService;
 import com.service.UserService;
@@ -58,14 +60,28 @@ public class UserController {
     /**
      * 登录
      * 优化：密码加密校验、验证码校验、登录失败次数限制、日志输出
+     * 支持两种请求方式：
+     * 1. 表单参数（@RequestParam）：username=admin&password=123456
+     * 2. JSON格式（@RequestBody）：{"username":"admin","password":"123456"}
      */
     @IgnoreAuth
     @PostMapping(value = "/login")
     public R login(
-            @RequestParam String username,
-            @RequestParam String password,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String password,
             @RequestParam(required = false) String captcha,
+            @RequestBody(required = false) Map<String, Object> body,
             HttpServletRequest request) {
+        
+        // 支持JSON格式请求：如果@RequestParam获取不到，尝试从@RequestBody获取
+        if (StringUtils.hasText(username) == false && body != null && body.containsKey("username")) {
+            username = body.get("username").toString();
+            password = body.get("password") != null ? body.get("password").toString() : "";
+            if (body.containsKey("captcha")) {
+                captcha = body.get("captcha").toString();
+            }
+        }
+        
         // 1. 基础参数校验
         if (!StringUtils.hasText(username) || !StringUtils.hasText(password)) {
             log.warn("登录失败：用户名或密码为空，用户名：{}", username);
@@ -272,7 +288,56 @@ public class UserController {
     }
 
     /**
-     * 用户信息
+     * 获取当前登录用户信息（通过token）
+     * 前端期望：GET /users/info?token=xxx
+     * 优化：支持从header或query参数获取token
+     */
+    @GetMapping("/info")
+    public R getInfoByToken(@RequestParam(required = false) String token, HttpServletRequest request) {
+        try {
+            // 1. 优先从header获取token
+            if (!StringUtils.hasText(token)) {
+                token = request.getHeader("token");
+            }
+            
+            // 2. 参数校验
+            if (!StringUtils.hasText(token)) {
+                log.warn("获取用户信息失败：token为空");
+                return R.error("token不能为空");
+            }
+
+            // 3. 通过token获取用户信息
+            TokenEntity tokenEntity = tokenService.getTokenEntity(token);
+            if (tokenEntity == null) {
+                log.warn("获取用户信息失败：token无效");
+                return R.error(401, "token无效或已过期");
+            }
+
+            // 4. 查询用户信息
+            Long userId = tokenEntity.getUserid();
+            if (userId == null || userId <= 0) {
+                log.warn("获取用户信息失败：userId无效");
+                return R.error("用户ID无效");
+            }
+
+            UserEntity user = userService.selectById(userId);
+            if (user == null) {
+                log.warn("获取用户信息失败：用户{}不存在", userId);
+                return R.error("用户不存在");
+            }
+
+            // 5. 隐藏密码，避免敏感信息泄露
+            user.setPassword(null);
+            log.info("获取用户信息成功：userId={}, username={}", userId, user.getUsername());
+            return R.ok().put("data", user);
+        } catch (Exception e) {
+            log.error("获取用户信息异常：", e);
+            return R.error("获取用户信息失败");
+        }
+    }
+
+    /**
+     * 用户信息（通过ID）
      * 优化：参数校验、异常处理
      */
     @GetMapping("/info/{id}")
@@ -331,7 +396,9 @@ public class UserController {
      * 保存用户
      * 优化：密码加密、参数校验、重复用户校验
      */
+    @OperationLog("保存管理员用户")
     @PostMapping("/save")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R save(@RequestBody UserEntity user) {
         // 1. 参数校验
         if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
@@ -368,7 +435,9 @@ public class UserController {
      * 修改用户
      * 优化：适配旧版MyBatis-Plus、密码加密、重复校验逻辑
      */
+    @OperationLog("修改管理员用户")
     @PostMapping("/update")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R update(@RequestBody UserEntity user) {
         // 1. 参数校验
         if (user.getId() == null || user.getId() <= 0) {
@@ -409,7 +478,9 @@ public class UserController {
      * 删除用户
      * 优化：适配旧版MyBatis-Plus、参数校验、日志输出
      */
+    @OperationLog("删除管理员用户")
     @PostMapping("/delete")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R delete(@RequestBody Long[] ids) {
         // 1. 参数校验
         if (ids == null || ids.length == 0) {

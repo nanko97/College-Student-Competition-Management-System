@@ -1,6 +1,7 @@
 package com.controller;
 
 import com.annotation.IgnoreAuth;
+import com.annotation.OperationLog;
 import com.entity.EIException;
 import com.service.ConfigService;
 import com.utils.R;
@@ -70,7 +71,9 @@ public class FileController {
      * @param type 文件类型标识（可选）
      * @return 返回文件名
      */
+    @OperationLog("上传文件")
     @PostMapping("/upload")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R upload(
             @RequestParam("file") MultipartFile file,
             @RequestParam(required = false) String type) throws Exception {
@@ -112,8 +115,12 @@ public class FileController {
             }
         }
 
-        // 5. 生成唯一文件名（使用时间戳避免覆盖）
-        String fileName = new Date().getTime() + "." + fileExt;
+        // 5. 生成唯一文件名（时间戳 + 原始文件名，避免冲突并保留原名）
+        String timestamp = String.valueOf(new Date().getTime());
+        // 移除原始文件名中的特殊字符，保留中文和字母数字
+        String safeOriginalName = originalFilename.replaceAll("[^\\u4e00-\\u9fa5a-zA-Z0-9._-]", "_");
+        // 生成格式：时间戳_原始文件名.扩展名
+        String fileName = timestamp + "_" + safeOriginalName;
         File destFile = new File(uploadDir, fileName);
 
         try {
@@ -178,17 +185,9 @@ public class FileController {
      * @return 上传目录 File 对象
      */
     private File getUploadDir() {
-        // 优先使用配置的上传路径
-        File uploadDir = new File(uploadRootPath);
-        if (uploadDir.isAbsolute()) {
-            return uploadDir;
-        }
-
-        // 相对路径：兼容 IDE（classpath:static/upload）和jar包（运行目录/upload）
-        String realPath = servletContext.getRealPath("/static/upload/");
-        if (realPath == null) {  // jar包运行时realPath为 null
-            return new File(uploadRootPath);
-        }
-        return new File(realPath);
+        // 统一使用当前运行目录下的 upload 文件夹
+        // WebMvcConfig 也映射到了这个路径
+        String uploadPath = System.getProperty("user.dir") + "/upload/";
+        return new File(uploadPath);
     }
 }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.JingsaiTuanduiDao">
+    <resultMap type="com.entity.JingsaiTuanduiEntity" id="jingsaiTuanduiMap">
+        <id property="id" column="id"/>
+        <result property="tuanduiBianhao" column="tuandui_bianhao"/>
+        <result property="jingsaiId" column="jingsai_id"/>
+        <result property="jingsaimingcheng" column="jingsaimingcheng"/>
+        <result property="saidaoId" column="saidao_id"/>
+        <result property="saidaoMingcheng" column="saidao_mingcheng"/>
+        <result property="tuanduiMingcheng" column="tuandui_mingcheng"/>
+        <result property="fuzerenXuehao" column="fuzeren_xuehao"/>
+        <result property="fuzerenXingming" column="fuzeren_xingming"/>
+        <result property="fuzerenShouji" column="fuzeren_shouji"/>
+        <result property="chengyuanRenshu" column="chengyuan_renshu"/>
+        <result property="zuopinMingcheng" column="zuopin_mingcheng"/>
+        <result property="zuopinJieshao" column="zuopin_jieshao"/>
+        <result property="shenheZhuangtai" column="shenhe_zhuangtai"/>
+        <result property="shenheYijian" column="shenhe_yijian"/>
+        <result property="addtime" column="addtime"/>
+    </resultMap>
+    <select id="getByTuanduiBianhao" resultType="com.entity.JingsaiTuanduiEntity">
+        SELECT * FROM jingsai_tuandui WHERE tuandui_bianhao = #{tuanduiBianhao} LIMIT 1
+    </select>
+    <select id="selectListView" resultType="com.entity.JingsaiTuanduiEntity">
+        SELECT * FROM jingsai_tuandui <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+</mapper>

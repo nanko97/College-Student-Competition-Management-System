@@ -97,6 +97,18 @@ public class ZuopindafenEntity<T> implements Serializable {
      */
 
     private String jiaoshixingming;
+    
+    /**
+     * 复核状态（非数据库字段，用于关联查询）
+     */
+    @com.baomidou.mybatisplus.annotations.TableField(exist = false)
+    private String fuheStatus;
+    
+    /**
+     * 复核次数（非数据库字段，用于关联查询）
+     */
+    @com.baomidou.mybatisplus.annotations.TableField(exist = false)
+    private Integer fuheCount;
 
 
     @JsonFormat(locale = "zh", timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
@@ -243,6 +255,34 @@ public class ZuopindafenEntity<T> implements Serializable {
      */
     public String getJiaoshixingming() {
         return jiaoshixingming;
+    }
+    
+    /**
+     * 设置：复核状态
+     */
+    public void setFuheStatus(String fuheStatus) {
+        this.fuheStatus = fuheStatus;
+    }
+    
+    /**
+     * 获取：复核状态
+     */
+    public String getFuheStatus() {
+        return fuheStatus;
+    }
+    
+    /**
+     * 设置：复核次数
+     */
+    public void setFuheCount(Integer fuheCount) {
+        this.fuheCount = fuheCount;
+    }
+    
+    /**
+     * 获取：复核次数
+     */
+    public Integer getFuheCount() {
+        return fuheCount;
     }
 
 }

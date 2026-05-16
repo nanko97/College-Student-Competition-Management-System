@@ -97,9 +97,14 @@ public class JiaoshiEntity<T> implements Serializable {
     private String zhaopian;
 
     /**
+     * 头像URL
+     */
+    private String touxiang;
+
+    /**
      * 角色
      */
-    private String role = "教师";
+    private String role = "jiaoshi";
 
 
     @JsonFormat(locale = "zh", timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
@@ -246,6 +251,20 @@ public class JiaoshiEntity<T> implements Serializable {
      */
     public String getZhaopian() {
         return zhaopian;
+    }
+
+    /**
+     * 设置：头像
+     */
+    public void setTouxiang(String touxiang) {
+        this.touxiang = touxiang;
+    }
+
+    /**
+     * 获取：头像
+     */
+    public String getTouxiang() {
+        return touxiang;
     }
 
     /**

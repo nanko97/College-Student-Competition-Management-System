@@ -1,0 +1,70 @@
+# ==================== 日志文件 ====================
+logs/
+*.log
+
+# ==================== IDE 配置 ====================
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+.factorypath
+.springBeans
+.sts4-cache
+
+# ==================== 操作系统 ====================
+.DS_Store
+Thumbs.db
+desktop.ini
+nul
+
+# ==================== 临时文件 ====================
+*.tmp
+*.bak
+*.swp
+*~
+*.class
+
+# ==================== 脚本文件（开发用） ====================
+*.py
+*.ps1
+*.sh
+
+# ==================== Maven 构建输出 ====================
+target/
+*.jar
+*.war
+*.ear
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# ==================== 前端构建输出 ====================
+node_modules/
+dist/
+npm-debug.log*
+yarn-error.log
+yarn.lock
+package-lock.json
+
+# ==================== 上传文件 ====================
+upload/*
+!upload/.gitkeep
+
+# ==================== 测试覆盖率 ====================
+coverage/
+*.exec
+jacoco.exec
+
+# ==================== 临时文档 ====================
+PROJECT_*.md
+VERIFICATION_*.md
+项目状态*.md

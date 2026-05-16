@@ -63,6 +63,9 @@ public class CacheService {
     
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired(required = false)
+    private CacheMonitorService cacheMonitorService;
     
     // ==================== 竞赛信息缓存 ====================
     

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.JingsaiJibieBanbenDao">
+
+    <resultMap type="com.entity.JingsaiJibieBanbenEntity" id="jingsaiJibieBanbenMap">
+        <id property="id" column="id"/>
+        <result property="jingsaiId" column="jingsai_id"/>
+        <result property="jingsaimingcheng" column="jingsaimingcheng"/>
+        <result property="jingsaiNianfen" column="jingsai_nianfen"/>
+        <result property="jibie" column="jibie"/>
+        <result property="renzhengJigou" column="renzheng_jigou"/>
+        <result property="wenjianHao" column="wenjian_hao"/>
+        <result property="shengxiaoRiqi" column="shengxiao_riqi"/>
+        <result property="shixiaoRiqi" column="shixiao_riqi"/>
+        <result property="beizhu" column="beizhu"/>
+        <result property="caozuoRen" column="caozuo_ren"/>
+        <result property="isCurrent" column="is_current"/>
+        <result property="addtime" column="addtime"/>
+    </resultMap>
+
+    <select id="getByDate" resultType="com.entity.JingsaiJibieBanbenEntity">
+        SELECT * FROM jingsai_jibie_banben
+        WHERE jingsai_id = #{jingsaiId}
+          AND shengxiao_riqi &lt;= #{queryDate}
+          AND (shixiao_riqi IS NULL OR shixiao_riqi &gt;= #{queryDate})
+        ORDER BY shengxiao_riqi DESC
+        LIMIT 1
+    </select>
+
+    <select id="getCurrentVersion" resultType="com.entity.JingsaiJibieBanbenEntity">
+        SELECT * FROM jingsai_jibie_banben
+        WHERE jingsai_id = #{jingsaiId}
+          AND is_current = '是'
+        LIMIT 1
+    </select>
+
+    <select id="selectListView" resultType="com.entity.JingsaiJibieBanbenEntity">
+        SELECT * FROM jingsai_jibie_banben
+        <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+
+</mapper>

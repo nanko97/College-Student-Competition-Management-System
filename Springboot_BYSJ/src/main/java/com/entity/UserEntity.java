@@ -32,6 +32,11 @@ public class UserEntity implements Serializable {
      */
     private String role;
 
+    /**
+     * 头像URL
+     */
+    private String touxiang;
+
     private Date addtime;
 
     public String getUsername() {
@@ -56,6 +61,14 @@ public class UserEntity implements Serializable {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getTouxiang() {
+        return touxiang;
+    }
+
+    public void setTouxiang(String touxiang) {
+        this.touxiang = touxiang;
     }
 
     public Date getAddtime() {
