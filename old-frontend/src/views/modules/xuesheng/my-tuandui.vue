@@ -2,8 +2,10 @@
   <div class="page-container tech-theme animate-fade-in-up">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h2 class="page-title">我的团队</h2>
-      <p class="page-subtitle">查看我参与的团队及申请记录</p>
+      <div class="header-left">
+        <h2 class="page-title">我的团队</h2>
+        <p class="page-subtitle">My Team Management</p>
+      </div>
       <div class="page-actions">
         <el-button type="primary" icon="el-icon-plus" @click="createTeam" v-if="!hasTeam">
           创建团队
@@ -14,22 +16,17 @@
       </div>
     </div>
 
-    <!-- 没有团队时的提示 -->
-    <el-alert
-      v-if="!hasTeam && myTeamList.length === 0"
-      title="您还没有加入任何团队"
-      type="info"
-      :closable="false"
-      show-icon
-      style="margin-bottom: 20px;">
-      <template slot>
-        <p>您可以：</p>
-        <ul style="margin: 10px 0; padding-left: 20px;">
-          <li>点击“创建团队”按钮创建新团队</li>
-          <li>点击“申请加入”按钮加入已有团队</li>
-        </ul>
-      </template>
-    </el-alert>
+    <!-- 提示信息 -->
+    <div class="role-tip">
+      <i class="el-icon-info"></i>
+      <span>提示：查看我参与的团队及申请记录</span>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="role-tip" v-if="!hasTeam && myTeamList.length === 0">
+      <i class="el-icon-info"></i>
+      <span>提示：您还没有加入任何团队，可以点击上方按钮创建或申请加入</span>
+    </div>
 
     <!-- 团队详情对话框 -->
     <el-dialog 
@@ -179,11 +176,12 @@
           </el-form>
         </div>
 
-        <el-table 
-          class="tech-table"
-          :data="myTeamList"
-          v-loading="dataListLoading"
-          border>
+        <div class="table-wrapper">
+          <el-table 
+            class="tech-table"
+            :data="myTeamList"
+            v-loading="dataListLoading"
+            border>
           
           <el-table-column label="序号" type="index" width="60" align="center"></el-table-column>
           
@@ -228,7 +226,8 @@
               </el-button>
             </template>
           </el-table-column>
-        </el-table>
+          </el-table>
+        </div>
       </el-tab-pane>
 
       <!-- 我的申请 -->
@@ -255,11 +254,12 @@
           </el-form>
         </div>
 
-        <el-table 
-          class="tech-table"
-          :data="myApplyList"
-          v-loading="applyListLoading"
-          border>
+        <div class="table-wrapper">
+          <el-table 
+            class="tech-table"
+            :data="myApplyList"
+            v-loading="applyListLoading"
+            border>
           
           <el-table-column label="序号" type="index" width="60" align="center"></el-table-column>
           
@@ -302,7 +302,8 @@
               <span v-else style="color: #868e96;">-</span>
             </template>
           </el-table-column>
-        </el-table>
+          </el-table>
+        </div>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -691,6 +692,12 @@ export default {
   align-items: center;
   margin-bottom: 20px;
   
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
   .page-actions {
     display: flex;
     gap: 10px;
@@ -769,7 +776,11 @@ export default {
   }
   
   .search-wrapper {
-    margin-bottom: 15px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
   
   .tech-search-form {

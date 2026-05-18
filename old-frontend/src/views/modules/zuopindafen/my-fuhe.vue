@@ -351,15 +351,20 @@ export default {
       flex: 1;
       
       .stat-value {
-        font-size: 28px;
+        font-size: 32px;
         font-weight: bold;
         line-height: 1;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
+        color: #fff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       }
       
       .stat-label {
-        font-size: 14px;
-        opacity: 0.9;
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        letter-spacing: 1px;
       }
     }
   }

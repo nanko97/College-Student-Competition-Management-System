@@ -152,6 +152,12 @@ public class UserController {
             log.warn("注册失败：用户名或密码为空，用户名：{}", user.getUsername());
             return R.error("用户名和密码不能为空");
         }
+        
+        // 账号格式校验：只能是字母、数字、下划线，长度7-20位
+        if (!user.getUsername().matches("^[a-zA-Z0-9_]{7,20}$")) {
+            log.warn("管理员注册失败：账号格式不正确，{}", user.getUsername());
+            return R.error("账号格式不正确，只能包含字母、数字和下划线，长度7-20位");
+        }
 
         try {
             // 2. 检查用户是否已存在（适配旧版：EntityWrapper）

@@ -38,6 +38,8 @@ import xueshengTuanduiCreate from '@/views/modules/xuesheng/tuandui-create'
 import xueshengTuanduiJoin from '@/views/modules/xuesheng/tuandui-list'
 // 作品管理路由
 import zuopinList from '@/views/modules/zuopin/list'
+// 消息通知路由
+import xiaoxiTongzhi from '@/views/modules/xiaoxi-tongzhi/list'
 
 Vue.use(VueRouter);
 
@@ -193,6 +195,11 @@ const routes = [{
       path: '/zuopin',
       name: '作品管理',
       component: zuopinList
+    }
+    , {
+      path: '/xiaoxi-tongzhi',
+      name: '消息中心',
+      component: xiaoxiTongzhi
     }
   ]
 },

@@ -1,24 +1,38 @@
 <template>
-  <div class="main-content">
-    <el-form :inline="true" :model="searchForm" class="form-content">
-      <el-row :gutter="20" class="slt">
-        <el-form-item label="竞赛名称">
-          <el-input v-model="searchForm.jingsaimingcheng" placeholder="竞赛名称" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="缴费状态">
-          <el-select v-model="searchForm.jiaofeiZhuangtai" placeholder="请选择" clearable>
-            <el-option label="已缴费" value="已缴费"></el-option>
-            <el-option label="已通过" value="已通过"></el-option>
-            <el-option label="已驳回" value="已驳回"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="success" @click="search()">查询</el-button>
-        </el-form-item>
-      </el-row>
-    </el-form>
-    <div class="table-content">
-      <el-table :data="dataList" v-loading="dataListLoading" border stripe>
+  <div class="page-container tech-theme animate-fade-in-up">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h2 class="page-title">我的缴费</h2>
+      <p class="page-subtitle">My Payment Records</p>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="role-tip">
+      <i class="el-icon-info"></i>
+      <span>提示：此处仅显示您的个人缴费记录及审核状态</span>
+    </div>
+
+    <div class="search-wrapper">
+      <el-form :inline="true" :model="searchForm" class="tech-search-form">
+        <el-row :gutter="20" class="slt">
+          <el-form-item label="竞赛名称">
+            <el-input v-model="searchForm.jingsaimingcheng" placeholder="竞赛名称" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="缴费状态">
+            <el-select v-model="searchForm.jiaofeiZhuangtai" placeholder="请选择" clearable>
+              <el-option label="已缴费" value="已缴费"></el-option>
+              <el-option label="已通过" value="已通过"></el-option>
+              <el-option label="已驳回" value="已驳回"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="success" @click="search()">查询</el-button>
+          </el-form-item>
+        </el-row>
+      </el-form>
+    </div>
+    <div class="table-wrapper">
+      <el-table :data="dataList" v-loading="dataListLoading" border stripe class="tech-table">
         <el-table-column label="索引" type="index" width="50" />
         <el-table-column prop="jingsaimingcheng" header-align="center" align="center" label="竞赛名称" show-overflow-tooltip></el-table-column>
         <el-table-column prop="baomingfei" header-align="center" align="center" label="应缴金额(元)" width="120"></el-table-column>
@@ -45,7 +59,7 @@
         :page-size="pageSize"
         :total="totalPage"
         layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-content">
+        class="tech-pagination">
       </el-pagination>
     </div>
     <upload-dialog v-if="uploadVisible" ref="uploadDialog" @refreshDataList="getDataList" @close="uploadVisible = false"></upload-dialog>
@@ -163,17 +177,6 @@ export default {
 }
 </script>
 
-<style scoped>
-.form-content {
-  background: transparent;
-  padding: 10px;
-}
-.table-content {
-  background: transparent;
-  padding: 10px;
-}
-.pagination-content {
-  margin-top: 20px;
-  text-align: right;
-}
+<style lang="scss" scoped>
+@import '@/assets/css/tech-theme.scss';
 </style>

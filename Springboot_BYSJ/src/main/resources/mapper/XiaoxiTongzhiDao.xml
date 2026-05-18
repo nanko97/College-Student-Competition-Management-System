@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.XiaoxiTongzhiDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, biaoti, neirong, leixing, fasongren, 
+        jieshouren_xuehao, jieshouren_gonghao, jieshouren_juese,
+        guanlian_id, guanlian_leixing, is_read, read_time, addtime
+    </sql>
+
+    <select id="selectListView" resultType="com.entity.view.XiaoxiTongzhiView">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM xiaoxi_tongzhi
+        <where>
+            <if test="params.biaoti != null and params.biaoti != ''">
+                AND biaoti LIKE CONCAT('%',#{params.biaoti},'%')
+            </if>
+            <if test="params.leixing != null and params.leixing != ''">
+                AND leixing = #{params.leixing}
+            </if>
+            <if test="params.jieshourenXuehao != null and params.jieshourenXuehao != ''">
+                AND jieshouren_xuehao = #{params.jieshourenXuehao}
+            </if>
+            <if test="params.jieshourenGonghao != null and params.jieshourenGonghao != ''">
+                AND jieshouren_gonghao = #{params.jieshourenGonghao}
+            </if>
+            <if test="params.jieshourenJuese != null and params.jieshourenJuese != ''">
+                AND jieshouren_juese = #{params.jieshourenJuese}
+            </if>
+            <if test="params.isRead != null and params.isRead != ''">
+                AND is_read = #{params.isRead}
+            </if>
+        </where>
+        ORDER BY addtime DESC
+    </select>
+
+</mapper>

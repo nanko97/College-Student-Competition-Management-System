@@ -3,7 +3,13 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <h2 class="page-title">申请加入团队</h2>
-      <p class="page-subtitle">浏览所有开放团队，选择申请加入</p>
+      <p class="page-subtitle">Apply to Join Team</p>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="role-tip">
+      <i class="el-icon-info"></i>
+      <span>提示：浏览所有开放团队，选择申请加入</span>
     </div>
 
     <!-- 搜索区域 -->
@@ -33,11 +39,12 @@
     </div>
 
     <!-- 数据表格 -->
-    <el-table 
-      class="tech-table"
-      :data="dataList"
-      v-loading="dataListLoading"
-      border>
+    <div class="table-wrapper">
+      <el-table 
+        class="tech-table"
+        :data="dataList"
+        v-loading="dataListLoading"
+        border>
       
       <el-table-column label="序号" type="index" width="60" align="center"></el-table-column>
       
@@ -87,6 +94,7 @@
         </template>
       </el-table-column>
     </el-table>
+    </div>
     
     <!-- 分页 -->
     <el-pagination

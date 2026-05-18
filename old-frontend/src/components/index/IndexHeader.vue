@@ -12,15 +12,36 @@
     
     <!-- 右侧用户信息和退出 -->
     <div class="right-menu">
-      <div class="user-info">
-        <i class="el-icon-user-solid"></i>
-        <span class="role-tag">{{ $storage.get('role') }}</span>
-        <span class="username">{{ $storage.get('adminName') }}</span>
+      <!-- 消息中心 -->
+      <div class="message-center" @click="goToMessageCenter">
+        <el-badge :value="unreadCount" :hidden="unreadCount === 0" :max="99">
+          <i class="el-icon-message-solid message-icon" :class="{'blink': unreadCount > 0}"></i>
+        </el-badge>
       </div>
-      <div class="logout" @click="onLogout">
-        <i class="el-icon-switch-button"></i>
-        <span>退出登录</span>
-      </div>
+      
+      <!-- 用户下拉菜单 -->
+      <el-dropdown @command="handleCommand" trigger="click" class="user-dropdown">
+        <div class="user-info">
+          <i class="el-icon-user-solid"></i>
+          <span class="role-tag">{{ $storage.get('role') }}</span>
+          <span class="username">{{ $storage.get('adminName') }}</span>
+          <i class="el-icon-arrow-down dropdown-icon"></i>
+        </div>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item command="center">
+            <i class="el-icon-user"></i>
+            <span>个人中心</span>
+          </el-dropdown-item>
+          <el-dropdown-item command="password">
+            <i class="el-icon-lock"></i>
+            <span>修改密码</span>
+          </el-dropdown-item>
+          <el-dropdown-item divided command="logout">
+            <i class="el-icon-switch-button"></i>
+            <span>退出登录</span>
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
     </div>
   </el-header>
 </template>
@@ -28,7 +49,67 @@
 <script>
 export default {
   name: 'IndexHeader',
+  data() {
+    return {
+      unreadCount: 0,
+      timer: null
+    }
+  },
+  mounted() {
+    this.loadUnreadCount()
+    // 每30秒刷新一次未读数量
+    this.timer = setInterval(() => {
+      this.loadUnreadCount()
+    }, 30000)
+  },
+  beforeDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer)
+    }
+  },
   methods: {
+    // 加载未读消息数量
+    async loadUnreadCount() {
+      try {
+        const { data } = await this.$http.get('/xiaoxitongzhi/unread/count')
+        if (data && data.code === 0) {
+          this.unreadCount = data.count || 0
+        }
+      } catch (error) {
+        console.error('获取未读消息数量失败:', error)
+      }
+    },
+    
+    // 跳转到消息中心
+    goToMessageCenter() {
+      this.$router.push({ path: '/xiaoxi-tongzhi' })
+    },
+    
+    // 处理下拉菜单命令
+    handleCommand(command) {
+      switch (command) {
+        case 'center':
+          this.goToCenter()
+          break
+        case 'password':
+          this.goToUpdatePassword()
+          break
+        case 'logout':
+          this.onLogout()
+          break
+      }
+    },
+    
+    // 跳转到个人中心
+    goToCenter() {
+      this.$router.push({ path: '/center' })
+    },
+    
+    // 跳转到修改密码
+    goToUpdatePassword() {
+      this.$router.push({ path: '/updatePassword' })
+    },
+    
     onLogout() {
       this.$confirm('确定要退出登录吗？', '提示', {
         confirmButtonText: '确定',
@@ -37,6 +118,11 @@ export default {
       }).then(() => {
         // 清除存储的信息
         this.$storage.clear()
+        
+        // 清除定时器
+        if (this.timer) {
+          clearInterval(this.timer)
+        }
         
         // 跳转到登录页
         this.$router.replace({ name: 'login' })
@@ -96,55 +182,87 @@ export default {
     align-items: center;
     gap: 24px;
     
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #cbd5e1;
-      font-size: 14px;
-      
-      i {
-        font-size: 18px;
-        color: #667eea;
-      }
-      
-      .role-tag {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: #fff;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 500;
-      }
-      
-      .username {
-        color: #fff;
-        font-weight: 600;
-        font-size: 15px;
-      }
-    }
-    
-    .logout {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 16px;
-      color: #f87171;
-      font-size: 14px;
-      font-weight: 500;
+    .message-center {
+      position: relative;
       cursor: pointer;
+      padding: 8px;
       border-radius: 6px;
       transition: all 0.3s;
       
-      i {
-        font-size: 16px;
-      }
-      
       &:hover {
-        background: rgba(248, 113, 113, 0.15);
+        background: rgba(102, 126, 234, 0.15);
         transform: translateY(-1px);
       }
+      
+      .message-icon {
+        font-size: 22px;
+        color: #cbd5e1;
+        transition: color 0.3s;
+        
+        &.blink {
+          animation: blink-animation 1.5s ease-in-out infinite;
+          color: #fbbf24;
+        }
+      }
     }
+    
+    .user-dropdown {
+      cursor: pointer;
+      
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #cbd5e1;
+        font-size: 14px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: all 0.3s;
+        
+        &:hover {
+          background: rgba(102, 126, 234, 0.15);
+        }
+        
+        i {
+          font-size: 18px;
+          color: #667eea;
+        }
+        
+        .role-tag {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: #fff;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+        
+        .username {
+          color: #fff;
+          font-weight: 600;
+          font-size: 15px;
+        }
+        
+        .dropdown-icon {
+          font-size: 14px;
+          color: #cbd5e1;
+          margin-left: 4px;
+          transition: transform 0.3s;
+        }
+      }
+    }
+  }
+}
+
+// 消息闪烁动画
+@keyframes blink-animation {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
   }
 }
 </style>

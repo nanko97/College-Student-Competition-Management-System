@@ -369,23 +369,6 @@ export default {
   .el-button { margin-right: 10px; }
 }
 
-.role-tip {
-  margin: 15px 0;
-  padding: 12px 18px;
-  background: rgba(92, 124, 250, 0.08);
-  border-left: 4px solid #5c7cfa;
-  border-radius: 6px;
-  color: #5c7cfa;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  
-  i {
-    margin-right: 10px;
-    font-size: 18px;
-  }
-}
-
 .tech-search-form {
   ::v-deep .el-form-item {
     margin-bottom: 0;

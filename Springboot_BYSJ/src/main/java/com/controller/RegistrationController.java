@@ -47,6 +47,11 @@ public class RegistrationController {
     @GetMapping("/check-account")
     @IgnoreAuth
     public R checkAccount(@RequestParam String role, @RequestParam String account) {
+        // 账号格式校验：只能是字母、数字、下划线，长度7-20位
+        if (!account.matches("^[a-zA-Z0-9_]{7,20}$")) {
+            return R.error("账号格式不正确，只能包含字母、数字和下划线，长度7-20位");
+        }
+        
         boolean available = registrationService.validateAccountUnique(role, account);
         return R.ok().put("available", available);
     }

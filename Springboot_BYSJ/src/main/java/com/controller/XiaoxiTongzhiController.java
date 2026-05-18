@@ -1,0 +1,186 @@
+package com.controller;
+
+import com.annotation.IgnoreAuth;
+import com.annotation.OperationLog;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.entity.XiaoxiTongzhiEntity;
+import com.service.XiaoxiTongzhiService;
+import com.utils.PageUtils;
+import com.utils.R;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.Map;
+
+/**
+ * 消息通知 Controller
+ */
+@Slf4j
+@RestController
+@RequestMapping("/xiaoxitongzhi")
+public class XiaoxiTongzhiController {
+
+    @Autowired
+    private XiaoxiTongzhiService xiaoxiTongzhiService;
+
+    /**
+     * 分页查询消息列表
+     */
+    @GetMapping("/page")
+    public R page(@RequestParam Map<String, Object> params, HttpServletRequest request) {
+        try {
+            // 根据角色过滤数据
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String username = (String) request.getSession().getAttribute("username");
+            
+            if ("xuesheng".equals(tableName)) {
+                params.put("jieshourenXuehao", username);
+            } else if ("jiaoshi".equals(tableName)) {
+                params.put("jieshourenGonghao", username);
+            }
+            
+            PageUtils page = xiaoxiTongzhiService.queryPageView(params);
+            return R.ok().put("data", page);
+        } catch (Exception e) {
+            log.error("查询消息列表异常", e);
+            return R.error("查询失败，请重试");
+        }
+    }
+
+    /**
+     * 获取未读消息数量
+     */
+    @GetMapping("/unread/count")
+    public R getUnreadCount(HttpServletRequest request) {
+        try {
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String username = (String) request.getSession().getAttribute("username");
+            
+            EntityWrapper<XiaoxiTongzhiEntity> ew = new EntityWrapper<>();
+            ew.eq("is_read", "未读");
+            
+            if ("xuesheng".equals(tableName)) {
+                ew.eq("jieshouren_xuehao", username);
+            } else if ("jiaoshi".equals(tableName)) {
+                ew.eq("jieshouren_gonghao", username);
+            }
+            
+            int count = xiaoxiTongzhiService.selectCount(ew);
+            return R.ok().put("count", count);
+        } catch (Exception e) {
+            log.error("获取未读消息数量异常", e);
+            return R.error("查询失败");
+        }
+    }
+
+    /**
+     * 标记消息为已读
+     */
+    @OperationLog("标记消息为已读")
+    @PostMapping("/markRead/{id}")
+    @Transactional(rollbackFor = Exception.class)
+    public R markRead(@PathVariable Long id) {
+        try {
+            XiaoxiTongzhiEntity entity = xiaoxiTongzhiService.selectById(id);
+            if (entity == null) {
+                return R.error("消息不存在");
+            }
+            
+            entity.setIsRead("已读");
+            entity.setReadTime(new Date());
+            xiaoxiTongzhiService.updateById(entity);
+            
+            log.info("✓ 消息已标记为已读，ID: {}", id);
+            return R.ok("操作成功");
+        } catch (Exception e) {
+            log.error("✗ 标记消息已读异常，ID: {}", id, e);
+            return R.error("操作失败");
+        }
+    }
+
+    /**
+     * 批量标记所有消息为已读
+     */
+    @OperationLog("批量标记消息为已读")
+    @PostMapping("/markAllRead")
+    @Transactional(rollbackFor = Exception.class)
+    public R markAllRead(HttpServletRequest request) {
+        try {
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String username = (String) request.getSession().getAttribute("username");
+            
+            EntityWrapper<XiaoxiTongzhiEntity> ew = new EntityWrapper<>();
+            ew.eq("is_read", "未读");
+            
+            if ("xuesheng".equals(tableName)) {
+                ew.eq("jieshouren_xuehao", username);
+            } else if ("jiaoshi".equals(tableName)) {
+                ew.eq("jieshouren_gonghao", username);
+            }
+            
+            java.util.List<XiaoxiTongzhiEntity> list = xiaoxiTongzhiService.selectList(ew);
+            for (XiaoxiTongzhiEntity entity : list) {
+                entity.setIsRead("已读");
+                entity.setReadTime(new Date());
+                xiaoxiTongzhiService.updateById(entity);
+            }
+            
+            log.info("✓ 批量标记消息已读成功，数量: {}", list.size());
+            return R.ok("操作成功");
+        } catch (Exception e) {
+            log.error("✗ 批量标记消息已读异常", e);
+            return R.error("操作失败");
+        }
+    }
+
+    /**
+     * 删除消息
+     */
+    @OperationLog("删除消息")
+    @PostMapping("/delete")
+    @Transactional(rollbackFor = Exception.class)
+    public R delete(@RequestBody Long[] ids) {
+        try {
+            for (Long id : ids) {
+                xiaoxiTongzhiService.deleteById(id);
+            }
+            log.info("✓ 删除消息成功，数量: {}", ids.length);
+            return R.ok("删除成功");
+        } catch (Exception e) {
+            log.error("✗ 删除消息异常", e);
+            return R.error("删除失败");
+        }
+    }
+
+    /**
+     * 发送消息通知（内部调用或管理员使用）
+     */
+    @OperationLog("发送消息通知")
+    @PostMapping("/send")
+    @Transactional(rollbackFor = Exception.class)
+    public R sendTongzhi(@RequestBody Map<String, Object> params) {
+        try {
+            String biaoti = (String) params.get("biaoti");
+            String neirong = (String) params.get("neirong");
+            String leixing = (String) params.get("leixing");
+            String fasongren = (String) params.get("fasongren");
+            String jieshourenXuehao = (String) params.get("jieshourenXuehao");
+            String jieshourenGonghao = (String) params.get("jieshourenGonghao");
+            String jieshourenJuese = (String) params.get("jieshourenJuese");
+            Long guanlianId = params.get("guanlianId") != null ? Long.valueOf(params.get("guanlianId").toString()) : null;
+            String guanlianLeixing = (String) params.get("guanlianLeixing");
+            
+            xiaoxiTongzhiService.sendTongzhi(biaoti, neirong, leixing, fasongren,
+                    jieshourenXuehao, jieshourenGonghao, jieshourenJuese, guanlianId, guanlianLeixing);
+            
+            return R.ok("发送成功");
+        } catch (Exception e) {
+            log.error("发送消息异常", e);
+            return R.error("发送失败");
+        }
+    }
+}

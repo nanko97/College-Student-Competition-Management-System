@@ -138,6 +138,12 @@ public class JiaoshiController {
                 return R.error("工号和密码不能为空");
             }
             
+            // 账号格式校验：只能是字母、数字、下划线，长度7-20位
+            if (!jiaoshi.getGonghao().matches("^[a-zA-Z0-9_]{7,20}$")) {
+                log.warn("教师注册失败：账号格式不正确，{}", jiaoshi.getGonghao());
+                return R.error("账号格式不正确，只能包含字母、数字和下划线，长度7-20位");
+            }
+            
             // 2. 密码强度校验
             String passwordError = PasswordValidator.validateAndGetError(jiaoshi.getMima());
             if (passwordError != null) {
@@ -247,6 +253,34 @@ public class JiaoshiController {
         } catch (Exception e) {
             log.error("获取当前教师信息异常：", e);
             return R.error("获取信息失败");
+        }
+    }
+
+    /**
+     * 检查账号是否可用
+     * 功能：注册时检查工号是否已被使用
+     */
+    @IgnoreAuth
+    @RequestMapping("/check-account")
+    public R checkAccount(@RequestParam String account) {
+        try {
+            if (!StringUtils.hasText(account)) {
+                return R.error("账号不能为空");
+            }
+            
+            // 账号格式校验：只能是字母、数字、下划线，长度7-20位
+            if (!account.matches("^[a-zA-Z0-9_]{7,20}$")) {
+                return R.error("账号格式不正确，只能包含字母、数字和下划线，长度7-20位");
+            }
+            
+            EntityWrapper<JiaoshiEntity> queryWrapper = new EntityWrapper<>();
+            queryWrapper.eq("gonghao", account);
+            JiaoshiEntity user = jiaoshiService.selectOne(queryWrapper);
+            
+            return R.ok().put("available", user == null);
+        } catch (Exception e) {
+            log.error("检查账号异常：", e);
+            return R.error("检查失败，请重试");
         }
     }
 

@@ -1,18 +1,32 @@
 <template>
-  <div class="main-content">
-    <el-form :inline="true" :model="searchForm" class="form-content">
-      <el-row :gutter="20" class="slt">
-        <el-form-item label="竞赛名称">
-          <el-input v-model="searchForm.jingsaimingcheng" placeholder="竞赛名称" clearable></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="success" @click="search()">查询</el-button>
-        </el-form-item>
-      </el-row>
-    </el-form>
+  <div class="page-container tech-theme animate-fade-in-up">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h2 class="page-title">我的作品</h2>
+      <p class="page-subtitle">My Competition Works</p>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="role-tip">
+      <i class="el-icon-info"></i>
+      <span>提示：请确保您的作品文件格式正确，且在截止日期前提交</span>
+    </div>
+
+    <div class="search-wrapper">
+      <el-form :inline="true" :model="searchForm" class="tech-search-form">
+        <el-row :gutter="20" class="slt">
+          <el-form-item label="竞赛名称">
+            <el-input v-model="searchForm.jingsaimingcheng" placeholder="竞赛名称" clearable></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="success" @click="search()">查询</el-button>
+          </el-form-item>
+        </el-row>
+      </el-form>
+    </div>
 
     <!-- 统计信息 -->
-    <el-row :gutter="20" style="margin-bottom: 20px">
+    <el-row :gutter="20" class="stats-row">
       <el-col :span="8">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
@@ -54,8 +68,8 @@
       </el-col>
     </el-row>
 
-    <div class="table-content">
-      <el-table :data="dataList" v-loading="dataListLoading" border stripe style="width: 100%">
+    <div class="table-wrapper">
+      <el-table :data="dataList" v-loading="dataListLoading" border stripe class="tech-table" style="width: 100%">
         <el-table-column label="序号" type="index" width="60" align="center" />
         <el-table-column prop="jingsaimingcheng" header-align="center" align="center" label="竞赛名称" min-width="200" show-overflow-tooltip></el-table-column>
         <el-table-column prop="jingsaileixing" header-align="center" align="center" label="竞赛类型" width="130"></el-table-column>
@@ -92,7 +106,7 @@
         :page-size="pageSize"
         :total="totalPage"
         layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-content">
+        class="tech-pagination">
       </el-pagination>
     </div>
 
@@ -300,85 +314,85 @@ export default {
 }
 </script>
 
-<style scoped>
-.main-content {
-  width: 100%;
-  min-height: calc(100vh - 60px);
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.form-content {
-  background: transparent;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-.table-content {
-  background: #fff;
-  padding: 15px;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-  overflow-x: auto;
-}
-
-.pagination-content {
-  margin-top: 20px;
-  text-align: right;
-}
+<style lang="scss" scoped>
+@import '@/assets/css/tech-theme.scss';
 
 /* 统计卡片样式优化 */
+.stats-row {
+  margin-bottom: 20px;
+  
+  .stat-card {
+    margin-bottom: 0;
+  }
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.role-tip {
+  margin-bottom: 20px;
+}
+
+.search-wrapper {
+  margin-bottom: 20px;
+}
+
+.table-wrapper {
+  margin-top: 0;
+}
+
 .stat-card {
   transition: all 0.3s;
   height: 100%;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-}
-
-.stat-content {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-}
-
-.stat-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 15px;
-  flex-shrink: 0;
-}
-
-.stat-icon i {
-  font-size: 28px;
-  color: #fff;
-}
-
-.stat-info {
-  flex: 1;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #909399;
-  margin-bottom: 8px;
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: bold;
-  color: #303133;
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
+  
+  .stat-content {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+  }
+  
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+    
+    i {
+      font-size: 28px;
+      color: #fff;
+    }
+  }
+  
+  .stat-info {
+    flex: 1;
+    
+    .stat-label {
+      font-size: 14px;
+      color: #909399;
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #303133;
+    }
+  }
 }
 
 /* 响应式设计 - 平板设备 */
 @media screen and (max-width: 1200px) {
-  .main-content {
-    padding: 15px;
+  .stats-row {
+    margin-bottom: 15px;
   }
   
   .stat-card {
@@ -388,10 +402,10 @@ export default {
   .stat-icon {
     width: 50px;
     height: 50px;
-  }
-  
-  .stat-icon i {
-    font-size: 24px;
+    
+    i {
+      font-size: 24px;
+    }
   }
   
   .stat-value {
@@ -401,19 +415,10 @@ export default {
 
 /* 响应式设计 - 手机设备 */
 @media screen and (max-width: 768px) {
-  .main-content {
-    padding: 10px;
+  .stats-row {
+    margin-bottom: 10px;
   }
   
-  .form-content {
-    padding: 5px;
-  }
-  
-  .table-content {
-    padding: 10px;
-  }
-  
-  /* 统计卡片在手机上的布局 */
   .el-row {
     margin-left: 0 !important;
     margin-right: 0 !important;
@@ -449,7 +454,6 @@ export default {
     font-size: 20px;
   }
   
-  /* 表格在小屏幕上的优化 */
   .el-table {
     font-size: 12px;
   }
@@ -459,14 +463,12 @@ export default {
     padding-right: 5px;
   }
   
-  /* 操作按钮在小屏幕上的优化 */
   .el-button--mini {
     padding: 5px 8px;
     font-size: 11px;
   }
   
-  /* 分页器在小屏幕上的优化 */
-  .pagination-content {
+  .tech-pagination {
     text-align: center;
   }
   
@@ -474,7 +476,6 @@ export default {
     justify-content: center;
   }
   
-  /* 对话框在小屏幕上的优化 */
   ::v-deep .el-dialog {
     width: 95% !important;
     margin-top: 5vh !important;
@@ -484,7 +485,6 @@ export default {
     padding: 15px;
   }
   
-  /* 上传组件在小屏幕上的优化 */
   .upload-demo {
     width: 100%;
   }
@@ -492,10 +492,6 @@ export default {
 
 /* 响应式设计 - 超小屏幕设备 */
 @media screen and (max-width: 480px) {
-  .main-content {
-    padding: 5px;
-  }
-  
   .stat-value {
     font-size: 18px;
   }
@@ -517,7 +513,7 @@ export default {
 
 /* 横向滚动优化 */
 @media screen and (max-width: 768px) {
-  .table-content {
+  .table-wrapper {
     -webkit-overflow-scrolling: touch;
   }
 }

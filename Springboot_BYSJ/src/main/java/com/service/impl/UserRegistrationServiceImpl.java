@@ -10,6 +10,7 @@ import com.service.JiaoshiService;
 import com.service.UserRegistrationService;
 import com.service.UserService;
 import com.service.XueshengService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.Date;
 /**
  * 用户注册服务实现
  */
+@Slf4j
 @Service
 public class UserRegistrationServiceImpl implements UserRegistrationService {
     
@@ -147,6 +149,8 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
     
     @Override
     public boolean validateAccountUnique(String role, String account) {
+        log.info("检查账号唯一性：role={}, account={}", role, account);
+        
         // 统一角色名称（支持中文和拼音）
         if ("xuesheng".equals(role)) role = "学生";
         else if ("jiaoshi".equals(role)) role = "教师";
@@ -157,22 +161,29 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
                 XueshengEntity student = xueshengService.selectOne(
                     new EntityWrapper<XueshengEntity>().eq("xuehao", account)
                 );
-                return student == null;
+                boolean studentAvailable = student == null;
+                log.info("检查学生账号：{} -> {}", account, studentAvailable ? "可用" : "已存在");
+                return studentAvailable;
                 
             case "教师":
                 JiaoshiEntity teacher = jiaoshiService.selectOne(
                     new EntityWrapper<JiaoshiEntity>().eq("gonghao", account)
                 );
-                return teacher == null;
+                boolean teacherAvailable = teacher == null;
+                log.info("检查教师账号：{} -> {}", account, teacherAvailable ? "可用" : "已存在");
+                return teacherAvailable;
                 
             case "管理员":
                 UserEntity user = userService.selectOne(
                     new EntityWrapper<UserEntity>().eq("username", account)
                 );
-                return user == null;
+                boolean userAvailable = user == null;
+                log.info("检查管理员账号：{} -> {}", account, userAvailable ? "可用" : "已存在");
+                return userAvailable;
                 
             default:
-                return false;
+                log.warn("未知的角色类型：{}，默认账号可用", role);
+                return true;  // 未知角色默认返回可用
         }
     }
 }

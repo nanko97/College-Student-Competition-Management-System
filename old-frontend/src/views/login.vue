@@ -2,6 +2,21 @@
   <div class="login-container">
     <!-- 左侧Banner区域 -->
     <div class="left-banner">
+      <!-- 背景轮播图 -->
+      <div class="banner-slideshow">
+        <transition-group name="slide-fade" tag="div" class="slides-wrapper">
+          <div
+            v-for="(slide, index) in slides"
+            :key="index"
+            class="slide-item"
+            :class="{ active: currentSlide === index }"
+            :style="{ backgroundImage: `url(${slide.image})` }"
+          >
+            <div class="slide-overlay"></div>
+          </div>
+        </transition-group>
+      </div>
+
       <div class="banner-content">
         <!-- 系统Logo区域 -->
         <div class="logo-area">
@@ -159,7 +174,28 @@ export default {
         ]
       },
       rememberMe: false,
-      loading: false
+      loading: false,
+      // 轮播图数据
+      currentSlide: 0,
+      slides: [
+        {
+          image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1920&q=80',
+          title: '竞赛舞台'
+        },
+        {
+          image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1920&q=80',
+          title: '团队协作'
+        },
+        {
+          image: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1920&q=80',
+          title: '学术交流'
+        },
+        {
+          image: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1920&q=80',
+          title: '校园风光'
+        }
+      ],
+      slideInterval: null
     };
   },
   computed: {
@@ -180,8 +216,24 @@ export default {
       this.form.role = savedRole;
       this.rememberMe = true;
     }
+    
+    // 启动轮播图
+    this.startSlideshow();
+  },
+  beforeDestroy() {
+    // 清除定时器
+    if (this.slideInterval) {
+      clearInterval(this.slideInterval);
+    }
   },
   methods: {
+    // 启动轮播图
+    startSlideshow() {
+      this.slideInterval = setInterval(() => {
+        this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+      }, 3000); // 每3秒切换一次
+    },
+    
     getTableNameByRole(role) {
       const map = { '学生': 'xuesheng', '教师': 'jiaoshi', '管理员': 'users' };
       return map[role] || 'users';
@@ -228,7 +280,17 @@ export default {
       }
     },
     goToRegister() {
-      this.$router.push({ path: '/register' });
+      // 添加过渡动画效果
+      const container = document.querySelector('.login-container')
+      if (container) {
+        container.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+        container.style.opacity = '0'
+        container.style.transform = 'translateX(-50px) scale(0.95)'
+      }
+          
+      setTimeout(() => {
+        this.$router.push({ path: '/register' })
+      }, 300)
     }
   }
 };
@@ -247,14 +309,64 @@ $white: #ffffff;
 
 /* 左侧Banner区域 */
 .left-banner {
+  position: relative;
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 60px;
   color: $white;
+  overflow: hidden;
+  
+  /* 背景轮播图 */
+  .banner-slideshow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    
+    .slides-wrapper {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      
+      .slide-item {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0;
+        transition: opacity 0.8s ease-in-out;
+        
+        &.active {
+          opacity: 1;
+        }
+        
+        .slide-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            135deg,
+            rgba(102, 126, 234, 0.85) 0%,
+            rgba(118, 75, 162, 0.85) 100%
+          );
+        }
+      }
+    }
+  }
   
   .banner-content {
+    position: relative;
+    z-index: 1;
     max-width: 500px;
     
     .logo-area {

@@ -3,11 +3,17 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <h2 class="page-title">创建团队</h2>
-      <p class="page-subtitle">创建新团队，招募成员参加比赛</p>
+      <p class="page-subtitle">Create Team</p>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="role-tip">
+      <i class="el-icon-info"></i>
+      <span>提示：创建新团队，招募成员参加比赛</span>
     </div>
 
     <!-- 创建团队表单 -->
-    <el-card class="create-card">
+    <div class="search-wrapper">
       <el-form :model="dataForm" :rules="dataRule" ref="dataForm" label-width="120px">
         <el-row :gutter="20">
           <el-col :span="12">
@@ -88,22 +94,8 @@
           </el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </div>
 
-    <!-- 提示信息 -->
-    <el-card class="tip-card" shadow="hover">
-      <div slot="header">
-        <span><i class="el-icon-info"></i> 创建须知</span>
-      </div>
-      <ul class="tip-list">
-        <li>1. 创建团队后，您将成为团队负责人</li>
-        <li>2. 负责人负责审核团队成员的加入申请</li>
-        <li>3. 负责人可以管理团队信息</li>
-        <li>4. 团队创建后需要经过教师审核</li>
-        <li>5. 一个学生只能担任一个团队的负责人</li>
-        <li>6. 一个学生只能加入一个团队</li>
-      </ul>
-    </el-card>
   </div>
 </template>
 
@@ -255,25 +247,4 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/css/tech-theme.scss';
-
-.create-card {
-  margin-bottom: 20px;
-}
-
-.tip-card {
-  ::v-deep .el-card__header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-  }
-}
-
-.tip-list {
-  line-height: 2;
-  padding-left: 20px;
-  color: #666;
-  
-  li {
-    margin-bottom: 8px;
-  }
-}
 </style>

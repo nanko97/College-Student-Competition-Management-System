@@ -138,6 +138,12 @@ public class XueshengController {
                 return R.error("学号和密码不能为空");
             }
             
+            // 账号格式校验：只能是字母、数字、下划线，长度7-20位
+            if (!xuesheng.getXuehao().matches("^[a-zA-Z0-9_]{7,20}$")) {
+                log.warn("学生注册失败：账号格式不正确，{}", xuesheng.getXuehao());
+                return R.error("账号格式不正确，只能包含字母、数字和下划线，长度7-20位");
+            }
+            
             // 2. 密码强度校验（毕业设计模式，仅检查长度）
             if (!PasswordValidator.isValidSimple(xuesheng.getMima())) {
                 log.warn("学生注册失败：密码长度不能少于 6 位");
@@ -246,6 +252,34 @@ public class XueshengController {
         } catch (Exception e) {
             log.error("获取当前学生信息异常：", e);
             return R.error("获取信息失败");
+        }
+    }
+
+    /**
+     * 检查账号是否可用
+     * 功能：注册时检查学号是否已被使用
+     */
+    @IgnoreAuth
+    @RequestMapping("/check-account")
+    public R checkAccount(@RequestParam String account) {
+        try {
+            if (!StringUtils.hasText(account)) {
+                return R.error("账号不能为空");
+            }
+            
+            // 账号格式校验：只能是字母、数字、下划线，长度7-20位
+            if (!account.matches("^[a-zA-Z0-9_]{7,20}$")) {
+                return R.error("账号格式不正确，只能包含字母、数字和下划线，长度7-20位");
+            }
+            
+            EntityWrapper<XueshengEntity> queryWrapper = new EntityWrapper<>();
+            queryWrapper.eq("xuehao", account);
+            XueshengEntity user = xueshengService.selectOne(queryWrapper);
+            
+            return R.ok().put("available", user == null);
+        } catch (Exception e) {
+            log.error("检查账号异常：", e);
+            return R.error("检查失败，请重试");
         }
     }
 

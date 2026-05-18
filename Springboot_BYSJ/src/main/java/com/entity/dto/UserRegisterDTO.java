@@ -12,7 +12,7 @@ public class UserRegisterDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     
     @NotBlank(message = "账号不能为空")
-    @Pattern(regexp = "^[a-zA-Z0-9_]{4,20}$", message = "账号格式不正确 (4-20 位字母数字下划线)")
+    @Pattern(regexp = "^[a-zA-Z0-9_]{7,20}$", message = "账号格式不正确 (7-20 位字母数字下划线)")
     private String account;  // 学号/工号/管理员账号
     
     @NotBlank(message = "密码不能为空")

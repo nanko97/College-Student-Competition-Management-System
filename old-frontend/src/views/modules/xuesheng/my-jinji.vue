@@ -1,17 +1,18 @@
 <template>
-  <div class="main-content">
+  <div class="page-container tech-theme animate-fade-in-up">
+    <!-- 页面标题 -->
     <div class="page-header">
       <h2 class="page-title">我的晋级信息</h2>
-      <el-alert
-        title="提示：晋级由系统根据竞赛成绩和排名自动触发，或由教师审核后通过"
-        type="info"
-        :closable="false"
-        show-icon
-        style="margin-bottom: 20px;">
-      </el-alert>
+      <p class="page-subtitle">My Promotion Records</p>
     </div>
     
-    <el-form :inline="true" :model="searchForm" class="form-content">
+    <!-- 提示信息 -->
+    <div class="role-tip">
+      <i class="el-icon-info"></i>
+      <span>提示：晋级由系统根据竞赛成绩和排名自动触发，或由教师审核后通过</span>
+    </div>
+    
+    <el-form :inline="true" :model="searchForm" class="search-wrapper tech-search-form">
       <el-row :gutter="20" class="slt">
         <el-form-item label="竞赛名称">
           <el-input v-model="searchForm.jingsaimingcheng" placeholder="竞赛名称" clearable></el-input>
@@ -28,8 +29,8 @@
         </el-form-item>
       </el-row>
     </el-form>
-    <div class="table-content">
-      <el-table :data="dataList" v-loading="dataListLoading" border stripe>
+    <div class="table-wrapper">
+      <el-table class="tech-table" :data="dataList" v-loading="dataListLoading" border stripe>
         <el-table-column label="索引" type="index" width="50" />
         <el-table-column prop="yuanJingsaimingcheng" header-align="center" align="center" label="原竞赛" show-overflow-tooltip></el-table-column>
         <el-table-column prop="xinJingsaimingcheng" header-align="center" align="center" label="目标竞赛" show-overflow-tooltip></el-table-column>
@@ -52,14 +53,14 @@
         </el-table-column>
       </el-table>
       <el-pagination
+        class="tech-pagination"
         @size-change="sizeChangeHandle"
         @current-change="currentChangeHandle"
         :current-page="pageIndex"
         :page-sizes="[10, 20, 50, 100]"
         :page-size="pageSize"
         :total="totalPage"
-        layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-content">
+        layout="total, sizes, prev, pager, next, jumper">
       </el-pagination>
     </div>
   </div>
@@ -158,17 +159,7 @@ export default {
 }
 </script>
 
-<style scoped>
-.form-content {
-  background: transparent;
-  padding: 10px;
-}
-.table-content {
-  background: transparent;
-  padding: 10px;
-}
-.pagination-content {
-  margin-top: 20px;
-  text-align: right;
-}
-</style>
+<style lang="scss" scoped>
+@import '@/assets/css/tech-theme.scss';
+
+.role-tip {
