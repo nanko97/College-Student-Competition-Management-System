@@ -1,0 +1,443 @@
+/* ============================================
+   全局响应式设计 - 电脑端窗口缩放比例适配
+   适用设备：桌面浏览器（窗口缩小/放大场景）
+   注意：移动端专属适配已移至 mobile.css
+   ============================================ */
+
+/* -----------------
+   1. 基础响应式设置
+   ----------------- */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* -----------------
+   2. 容器响应式
+   ----------------- */
+.el-container {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.el-main {
+  width: 100%;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* -----------------
+   3. 表格响应式优化
+   ----------------- */
+.el-table {
+  width: 100% !important;
+}
+
+.el-table__body-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 表格在小屏幕上的优化 */
+@media screen and (max-width: 768px) {
+  .el-table {
+    font-size: 12px;
+  }
+  
+  .el-table .cell {
+    padding-left: 5px;
+    padding-right: 5px;
+    word-break: break-word;
+  }
+  
+  .el-table th.el-table__cell,
+  .el-table td.el-table__cell {
+    padding: 8px 0;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .el-table {
+    font-size: 11px;
+  }
+  
+  .el-table .cell {
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+}
+
+/* -----------------
+   4. 表单响应式优化
+   ----------------- */
+.el-form--inline .el-form-item {
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+@media screen and (max-width: 768px) {
+  .el-form--inline .el-form-item {
+    width: 100%;
+    margin-right: 0;
+  }
+  
+  .el-form--inline .el-input__inner {
+    width: 100% !important;
+  }
+}
+
+/* -----------------
+   5. 按钮响应式优化
+   ----------------- */
+.el-button {
+  white-space: nowrap;
+}
+
+@media screen and (max-width: 768px) {
+  .el-button--mini {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  
+  .el-button--small {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+/* -----------------
+   6. 分页器响应式优化
+   ----------------- */
+.el-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+}
+
+@media screen and (max-width: 768px) {
+  .el-pagination {
+    justify-content: center;
+  }
+  
+  .el-pagination__total,
+  .el-pagination__sizes,
+  .el-pagination__jump {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .el-pagination .el-pager li {
+    min-width: 28px;
+    height: 28px;
+    line-height: 28px;
+    font-size: 12px;
+  }
+}
+
+/* -----------------
+   7. 对话框响应式优化
+   ----------------- */
+.el-dialog {
+  max-width: 90vw;
+  margin: 5vh auto !important;
+}
+
+@media screen and (max-width: 768px) {
+  .el-dialog {
+    width: 95% !important;
+    margin: 2vh auto !important;
+  }
+  
+  .el-dialog__body {
+    padding: 15px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  .el-dialog__header {
+    padding: 12px 15px;
+  }
+  
+  .el-dialog__footer {
+    padding: 10px 15px;
+  }
+}
+
+/* -----------------
+   8. 卡片响应式优化
+   ----------------- */
+.el-card {
+  width: 100%;
+}
+
+.el-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.el-col {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+@media screen and (max-width: 768px) {
+  .el-col {
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-bottom: 10px;
+  }
+}
+
+/* -----------------
+   9. 图片响应式优化
+   ----------------- */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.image-preview img {
+  transition: transform 0.3s;
+}
+
+.image-preview img:hover {
+  transform: scale(1.1);
+}
+
+/* -----------------
+   10. 文本溢出处理
+   ----------------- */
+.el-table .cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.show-overflow-tooltip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* -----------------
+   11. 导航栏响应式
+   ----------------- */
+.el-header {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* -----------------
+   12. 侧边栏响应式
+   ----------------- */
+.el-aside {
+  transition: width 0.3s;
+}
+
+@media screen and (max-width: 768px) {
+  .el-aside {
+    width: 64px !important;
+  }
+  
+  .el-menu--collapse {
+    width: 64px;
+  }
+}
+
+/* -----------------
+   13. 工具提示响应式
+   ----------------- */
+.el-tooltip__popper {
+  max-width: 80vw;
+}
+
+/* -----------------
+   14. 加载动画响应式
+   ----------------- */
+.el-loading-mask {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* -----------------
+   15. 消息提示响应式
+   ----------------- */
+.el-message {
+  max-width: 90vw;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* -----------------
+   16. 下拉菜单响应式
+   ----------------- */
+.el-select-dropdown {
+  max-width: 90vw;
+}
+
+/* -----------------
+   17. 日期选择器响应式
+   ----------------- */
+.el-picker-panel {
+  max-width: 90vw;
+}
+
+/* -----------------
+   18. 特殊页面布局优化
+   ----------------- */
+.main-content {
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  padding: 20px;
+  overflow-x: hidden;
+}
+
+@media screen and (max-width: 1200px) {
+  .main-content {
+    padding: 15px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .main-content {
+    padding: 10px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .main-content {
+    padding: 5px;
+  }
+}
+
+/* -----------------
+   19. 统计卡片响应式
+   ----------------- */
+.stat-card {
+  width: 100%;
+  height: 100%;
+}
+
+/* -----------------
+   20. 上传组件响应式
+   ----------------- */
+.el-upload-dragger {
+  width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+  .el-upload-list {
+    max-width: 100%;
+  }
+}
+
+/* -----------------
+   21. 描述列表响应式
+   ----------------- */
+.el-descriptions {
+  width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+  .el-descriptions__label {
+    width: 80px !important;
+    min-width: 80px;
+  }
+}
+
+/* -----------------
+   22. 步骤条响应式
+   ----------------- */
+.el-steps {
+  width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+  .el-step__title {
+    font-size: 12px;
+  }
+  
+  .el-step__description {
+    font-size: 11px;
+  }
+}
+
+/* -----------------
+   23. 时间线响应式
+   ----------------- */
+.el-timeline {
+  width: 100%;
+}
+
+/* -----------------
+   24. 徽章响应式
+   ----------------- */
+.el-badge {
+  display: inline-block;
+}
+
+/* -----------------
+   25. 进度条响应式
+   ----------------- */
+.el-progress {
+  width: 100%;
+}
+
+/* -----------------
+   26. 评分组件响应式
+   ----------------- */
+.el-rate {
+  display: inline-block;
+}
+
+/* -----------------
+   27. 开关组件响应式
+   ----------------- */
+.el-switch {
+  display: inline-block;
+}
+
+/* -----------------
+   28. 滑块组件响应式
+   ----------------- */
+.el-slider {
+  width: 100%;
+}
+
+/* -----------------
+   29. 颜色选择器响应式
+   ----------------- */
+.el-color-picker {
+  display: inline-block;
+}
+
+/* -----------------
+   30. 级联选择器响应式
+   ----------------- */
+.el-cascader {
+  width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+  .el-cascader-panel {
+    max-width: 90vw;
+  }
+}

@@ -1,0 +1,650 @@
+/* ============================================
+   全局通用响应式 Mixin - 适用于所有页面
+   使用方法：在页面的 <style> 中 @import 此文件
+   ============================================ */
+
+// 导入科技风主题变量
+@import './tech-theme.scss';
+
+/* -----------------
+   1. 页面容器通用响应式
+   ----------------- */
+.page-container {
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  padding: 20px;
+  box-sizing: border-box;
+  
+  // 平板设备
+  @media screen and (max-width: 1200px) {
+    padding: 15px;
+  }
+  
+  // 手机设备
+  @media screen and (max-width: 768px) {
+    padding: 10px;
+  }
+  
+  // 超小屏幕
+  @media screen and (max-width: 480px) {
+    padding: 5px;
+  }
+}
+
+/* -----------------
+   2. 页面标题响应式
+   ----------------- */
+.page-header {
+  margin-bottom: 24px;
+  
+  .page-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    
+    @media screen and (max-width: 768px) {
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+    
+    @media screen and (max-width: 480px) {
+      font-size: 16px;
+    }
+  }
+  
+  .page-subtitle {
+    font-size: 14px;
+    color: #909399;
+    margin: 0;
+    
+    @media screen and (max-width: 768px) {
+      font-size: 12px;
+    }
+    
+    @media screen and (max-width: 480px) {
+      font-size: 11px;
+    }
+  }
+  
+  .page-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    
+    @media screen and (max-width: 768px) {
+      flex-direction: column;
+      width: 100%;
+      
+      .el-button {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+    }
+  }
+}
+
+/* -----------------
+   3. 搜索区域响应式
+   ----------------- */
+.search-wrapper {
+  margin-bottom: 20px;
+  
+  @media screen and (max-width: 768px) {
+    margin-bottom: 15px;
+  }
+}
+
+.tech-search-form {
+  ::v-deep .el-form-item {
+    margin-bottom: 0;
+    margin-right: 20px;
+    
+    @media screen and (max-width: 768px) {
+      width: 100%;
+      margin-right: 0;
+      margin-bottom: 10px;
+    }
+  }
+  
+  ::v-deep .el-input__inner {
+    @media screen and (max-width: 768px) {
+      width: 100% !important;
+    }
+  }
+  
+  .search-row {
+    @media screen and (max-width: 768px) {
+      display: block;
+    }
+  }
+}
+
+/* -----------------
+   4. 操作按钮区域响应式
+   ----------------- */
+.action-wrapper {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+    margin-bottom: 15px;
+    
+    .el-button {
+      width: 100%;
+    }
+  }
+  
+  .el-button {
+    margin-right: 10px;
+    
+    @media screen and (max-width: 768px) {
+      margin-right: 0;
+      margin-bottom: 8px;
+    }
+  }
+}
+
+/* -----------------
+   5. 表格区域响应式
+   ----------------- */
+.table-wrapper {
+  padding: 20px;
+  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  
+  @media screen and (max-width: 768px) {
+    padding: 10px;
+  }
+  
+  @media screen and (max-width: 480px) {
+    padding: 5px;
+  }
+}
+
+.tech-table {
+  width: 100% !important;
+  
+  // 表格字体大小响应式
+  @media screen and (max-width: 768px) {
+    font-size: 12px;
+  }
+  
+  @media screen and (max-width: 480px) {
+    font-size: 11px;
+  }
+  
+  // 单元格内边距响应式
+  ::v-deep .el-table__cell {
+    padding: 12px 0;
+    
+    @media screen and (max-width: 768px) {
+      padding: 8px 0;
+    }
+  }
+  
+  // 单元格内容响应式
+  ::v-deep .cell {
+    padding-left: 10px;
+    padding-right: 10px;
+    
+    @media screen and (max-width: 768px) {
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+  }
+  
+  // 表格行悬停效果
+  ::v-deep .el-table__body tr:hover > td {
+    background: rgba(#5c7cfa, 0.08) !important;
+  }
+  
+  // 按钮大小响应式
+  ::v-deep .el-button--mini {
+    padding: 7px 12px;
+    margin: 2px;
+    
+    @media screen and (max-width: 768px) {
+      padding: 5px 8px;
+      font-size: 11px;
+    }
+  }
+  
+  // 图片预览响应式
+  .image-preview img {
+    transition: transform 0.3s;
+    
+    &:hover {
+      transform: scale(1.5);
+    }
+    
+    @media screen and (max-width: 768px) {
+      width: 40px !important;
+      height: 40px !important;
+    }
+  }
+  
+  .no-image {
+    color: #909399;
+    font-size: 12px;
+    
+    @media screen and (max-width: 768px) {
+      font-size: 10px;
+    }
+  }
+}
+
+/* -----------------
+   6. 分页器响应式
+   ----------------- */
+.tech-pagination {
+  margin-top: 20px;
+  
+  @media screen and (max-width: 768px) {
+    margin-top: 15px;
+  }
+  
+  ::v-deep .el-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    
+    @media screen and (max-width: 768px) {
+      justify-content: center;
+      
+      // 隐藏部分元素以节省空间
+      .el-pagination__total,
+      .el-pagination__sizes,
+      .el-pagination__jump {
+        display: none;
+      }
+    }
+    
+    // 分页按钮大小响应式
+    .el-pager li {
+      min-width: 32px;
+      height: 32px;
+      line-height: 32px;
+      
+      @media screen and (max-width: 768px) {
+        min-width: 28px;
+        height: 28px;
+        line-height: 28px;
+        font-size: 12px;
+      }
+      
+      @media screen and (max-width: 480px) {
+        min-width: 26px;
+        height: 26px;
+        line-height: 26px;
+        font-size: 11px;
+      }
+    }
+    
+    button {
+      @media screen and (max-width: 768px) {
+        padding: 0 8px;
+      }
+    }
+  }
+}
+
+/* -----------------
+   7. 对话框通用响应式
+   ----------------- */
+::v-deep .el-dialog {
+  max-width: 90vw;
+  margin: 5vh auto !important;
+  
+  @media screen and (max-width: 768px) {
+    width: 95% !important;
+    margin: 2vh auto !important;
+  }
+  
+  .el-dialog__header {
+    padding: 20px 24px;
+    
+    @media screen and (max-width: 768px) {
+      padding: 12px 15px;
+    }
+    
+    .el-dialog__title {
+      font-size: 18px;
+      
+      @media screen and (max-width: 768px) {
+        font-size: 16px;
+      }
+    }
+  }
+  
+  .el-dialog__body {
+    padding: 24px;
+    max-height: 70vh;
+    overflow-y: auto;
+    
+    @media screen and (max-width: 768px) {
+      padding: 15px;
+      max-height: 65vh;
+    }
+  }
+  
+  .el-dialog__footer {
+    padding: 16px 24px;
+    
+    @media screen and (max-width: 768px) {
+      padding: 10px 15px;
+    }
+    
+    .el-button {
+      @media screen and (max-width: 768px) {
+        padding: 8px 15px;
+        font-size: 13px;
+      }
+    }
+  }
+}
+
+/* -----------------
+   8. 表单响应式
+   ----------------- */
+::v-deep .el-form {
+  .el-form-item {
+    margin-bottom: 20px;
+    
+    @media screen and (max-width: 768px) {
+      margin-bottom: 15px;
+    }
+  }
+  
+  .el-form-item__label {
+    font-size: 14px;
+    
+    @media screen and (max-width: 768px) {
+      font-size: 13px;
+      padding: 0 8px 0 0;
+    }
+  }
+  
+  .el-input__inner,
+  .el-textarea__inner {
+    @media screen and (max-width: 768px) {
+      font-size: 14px;
+    }
+  }
+}
+
+/* -----------------
+   9. 描述列表响应式
+   ----------------- */
+::v-deep .el-descriptions {
+  @media screen and (max-width: 768px) {
+    font-size: 12px;
+    
+    .el-descriptions__label {
+      width: 80px !important;
+      min-width: 80px;
+      font-size: 12px;
+    }
+    
+    .el-descriptions__content {
+      word-break: break-word;
+    }
+  }
+  
+  @media screen and (max-width: 480px) {
+    font-size: 11px;
+    
+    .el-descriptions__label {
+      width: 70px !important;
+      min-width: 70px;
+      font-size: 11px;
+    }
+  }
+}
+
+/* -----------------
+   10. 卡片响应式
+   ----------------- */
+::v-deep .el-card {
+  width: 100%;
+  margin-bottom: 15px;
+  
+  @media screen and (max-width: 768px) {
+    margin-bottom: 10px;
+  }
+}
+
+.el-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.el-col {
+  padding-left: 10px;
+  padding-right: 10px;
+  
+  @media screen and (max-width: 768px) {
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-bottom: 10px;
+  }
+}
+
+/* -----------------
+   11. 统计卡片响应式
+   ----------------- */
+.stat-card {
+  width: 100%;
+  height: 100%;
+  transition: all 0.3s;
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
+  
+  @media screen and (max-width: 768px) {
+    margin-bottom: 10px;
+  }
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px 10px;
+  }
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  flex-shrink: 0;
+  
+  @media screen and (max-width: 768px) {
+    margin-right: 0;
+    margin-bottom: 10px;
+    width: 50px;
+    height: 50px;
+  }
+  
+  i {
+    font-size: 28px;
+    color: #fff;
+    
+    @media screen and (max-width: 768px) {
+      font-size: 24px;
+    }
+  }
+}
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #909399;
+  margin-bottom: 8px;
+  
+  @media screen and (max-width: 768px) {
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #303133;
+  
+  @media screen and (max-width: 768px) {
+    font-size: 20px;
+  }
+  
+  @media screen and (max-width: 480px) {
+    font-size: 18px;
+  }
+}
+
+/* -----------------
+   12. 标签响应式
+   ----------------- */
+::v-deep .el-tag {
+  @media screen and (max-width: 768px) {
+    padding: 2px 6px;
+    font-size: 11px;
+  }
+}
+
+/* -----------------
+   13. 警告提示响应式
+   ----------------- */
+::v-deep .el-alert {
+  margin-bottom: 20px;
+  
+  @media screen and (max-width: 768px) {
+    margin-bottom: 15px;
+    padding: 10px;
+    
+    .el-alert__title {
+      font-size: 13px;
+    }
+    
+    .el-alert__description {
+      font-size: 12px;
+    }
+  }
+}
+
+/* -----------------
+   14. 选项卡响应式
+   ----------------- */
+::v-deep .el-tabs {
+  @media screen and (max-width: 768px) {
+    .el-tabs__item {
+      padding: 0 15px;
+      font-size: 13px;
+    }
+  }
+}
+
+/* -----------------
+   15. 上传组件响应式
+   ----------------- */
+::v-deep .el-upload-dragger {
+  width: 100%;
+  
+  @media screen and (max-width: 768px) {
+    padding: 20px;
+  }
+}
+
+::v-deep .el-upload-list {
+  max-width: 100%;
+}
+
+/* -----------------
+   16. 步骤条响应式
+   ----------------- */
+::v-deep .el-steps {
+  @media screen and (max-width: 768px) {
+    .el-step__title {
+      font-size: 12px;
+    }
+    
+    .el-step__description {
+      font-size: 11px;
+    }
+  }
+}
+
+/* -----------------
+   17. 时间线响应式
+   ----------------- */
+::v-deep .el-timeline {
+  @media screen and (max-width: 768px) {
+    .el-timeline-item__content {
+      font-size: 12px;
+    }
+  }
+}
+
+/* -----------------
+   18. 加载动画响应式
+   ----------------- */
+::v-deep .el-loading-mask {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* -----------------
+   19. 消息提示响应式
+   ----------------- */
+::v-deep .el-message {
+  max-width: 90vw;
+  left: 50%;
+  transform: translateX(-50%);
+  
+  @media screen and (max-width: 768px) {
+    max-width: 95vw;
+  }
+}
+
+/* -----------------
+   20. 工具类
+   ----------------- */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.mt-10 { margin-top: 10px; }
+.mt-20 { margin-top: 20px; }
+.mb-10 { margin-bottom: 10px; }
+.mb-20 { margin-bottom: 20px; }
+.ml-10 { margin-left: 10px; }
+.mr-10 { margin-right: 10px; }
+
+@media screen and (max-width: 768px) {
+  .mt-10 { margin-top: 5px; }
+  .mt-20 { margin-top: 10px; }
+  .mb-10 { margin-bottom: 5px; }
+  .mb-20 { margin-bottom: 10px; }
+}

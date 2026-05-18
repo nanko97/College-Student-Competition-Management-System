@@ -1,0 +1,389 @@
+/**
+ * 全局样式规范 - 统一深色赛博朋克主题
+ * 基于 BYSJ_02 设计风格
+ */
+
+@import '@/styles/variables';
+
+// ========== 通用过渡动画 ==========
+
+// ========== 全局重置 ==========
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: $font-size-md;
+  color: $text-primary;
+  line-height: 1.5715;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// ========== 通用卡片样式 ==========
+.naive-card {
+  @include card;
+}
+
+// ========== 全局毛玻璃与透明背景适配 ==========
+::v-deep .el-card,
+::v-deep .search-form,
+::v-deep .pagination-container,
+::v-deep .el-table,
+::v-deep .el-dialog {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+::v-deep .el-table {
+  background-color: transparent !important;
+  
+  .el-table__header-wrapper,
+  .el-table__body-wrapper,
+  .el-table__footer-wrapper {
+    background-color: transparent !important;
+  }
+  
+  th.el-table__cell {
+    background: rgba(102, 126, 234, 0.05) !important;
+    color: $text-primary;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+  }
+  
+  td.el-table__cell {
+    background-color: transparent !important;
+    color: $text-secondary;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  tr:hover > td {
+    background: rgba(102, 126, 234, 0.1) !important;
+  }
+  
+  .el-table__row--striped td {
+    background: rgba(255, 255, 255, 0.02) !important;
+  }
+}
+
+::v-deep .el-form-item__label {
+  color: $text-primary !important;
+}
+
+::v-deep .el-input__inner,
+::v-deep .el-textarea__inner {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: $text-primary !important;
+  
+  &::placeholder {
+    color: $text-muted !important;
+  }
+  
+  &:focus {
+    border-color: $brand-primary !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+}
+
+::v-deep .el-select .el-input__inner {
+  background-color: transparent !important;
+}
+
+::v-deep .el-pager li {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: $text-secondary !important;
+  
+  &:hover {
+    color: $brand-primary !important;
+  }
+  
+  &.active {
+    background: $brand-gradient !important;
+    color: #fff !important;
+  }
+}
+
+::v-deep .el-pagination .btn-prev,
+::v-deep .el-pagination .btn-next,
+::v-deep .el-pagination .el-pager li {
+  background: transparent !important;
+  color: $text-secondary;
+}
+
+// ========== 通用按钮增强 ==========
+.el-button {
+  transition: all $transition-fast !important;
+  border-radius: $radius-md !important;
+  font-weight: $font-weight-medium;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: $shadow-brand;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+.el-button--primary {
+  background: $brand-gradient;
+  border: none !important;
+  
+  &:hover:not(:disabled) {
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  }
+}
+
+// ========== 通用输入框增强 ==========
+.el-input__inner,
+.el-textarea__inner {
+  @include input;
+}
+
+// ========== 通用表格样式 ==========
+.el-table {
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-md;
+
+  th.el-table__cell {
+    background: $bg-light !important;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+  }
+
+  tr:hover > td {
+    background: rgba(102, 126, 234, 0.05) !important;
+    transition: background $transition-fast;
+  }
+}
+
+// ========== 通用分页样式 ==========
+.el-pagination {
+  .el-pager li {
+    border-radius: $radius-sm;
+    transition: all $transition-fast;
+
+    &:hover {
+      color: $brand-primary;
+    }
+
+    &.active {
+      background: $brand-gradient;
+      color: #fff;
+    }
+  }
+}
+
+// ========== 通用对话框样式 ==========
+.el-dialog {
+  @include tech-dialog;
+}
+
+// ========== 通用消息提示 ==========
+.el-message {
+  border-radius: $radius-md;
+  box-shadow: $shadow-xl;
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ========== 加载动画 ==========
+.loading-spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid $border-light;
+  border-top-color: $brand-primary;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ========== 淡入动画 ==========
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// ========== 滑入动画 ==========
+.slide-up {
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-down {
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ========== 缩放动画 ==========
+.scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// ========== 响应式工具类 ==========
+.hidden-mobile {
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+}
+
+.hidden-desktop {
+  @media (min-width: 769px) {
+    display: none !important;
+  }
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// ========== 滚动条美化 ==========
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $bg-secondary;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $primary-accent;
+  border-radius: 4px;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $border-light;
+  }
+}
+
+// ========== Element UI 组件全局优化 ==========
+::v-deep {
+  // 表单标签
+  .el-form-item__label {
+    font-weight: $font-weight-medium;
+    color: $text-secondary;
+  }
+
+  // 下拉菜单
+  .el-select-dropdown__item {
+    transition: all $transition-fast;
+
+    &.hover {
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    &.selected {
+      color: $brand-primary;
+      font-weight: $font-weight-medium;
+    }
+  }
+
+  // 标签页
+  .el-tabs__item {
+    transition: all $transition-fast;
+
+    &:hover {
+      color: $brand-primary;
+    }
+
+    &.is-active {
+      color: $brand-primary;
+      font-weight: $font-weight-medium;
+    }
+  }
+
+  // 徽章
+  .el-badge__content {
+    border-radius: $radius-round;
+    font-weight: $font-weight-medium;
+  }
+
+  // 开关
+  .el-switch {
+    .el-switch__core {
+      border-radius: $radius-round;
+      transition: all $transition-fast;
+    }
+  }
+}

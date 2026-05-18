@@ -1,0 +1,272 @@
+<template>
+  <div class="page-container tech-theme animate-fade-in-up">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h2 class="page-title">缴费审核</h2>
+      <p class="page-subtitle">Payment Review Management</p>
+    </div>
+
+    <!-- 列表页 -->
+    <div v-if="showFlag">
+      <!-- 搜索区域 -->
+      <div class="search-wrapper">
+        <el-form :inline="true" :model="searchForm" class="tech-search-form">
+          <el-row :gutter="20" class="search-row">
+            <el-form-item label="学生姓名">
+              <el-input 
+                v-model="searchForm.xueshengxingming" 
+                placeholder="请输入学生姓名" 
+                clearable
+                prefix-icon="el-icon-user"
+              ></el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" icon="el-icon-search" @click="search()">查询</el-button>
+            </el-form-item>
+          </el-row>
+        </el-form>
+      </div>
+
+      <!-- 数据表格 -->
+      <div class="table-wrapper">
+        <el-table 
+          class="tech-table"
+          :data="dataList" 
+          v-loading="dataListLoading" 
+          border 
+          stripe>
+          <el-table-column label="索引" header-align="center" align="center" width="60">
+            <template slot-scope="scope">
+              {{ (pageIndex - 1) * pageSize + scope.$index + 1 }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="xuehao" header-align="center" align="center" label="学号">
+            <template slot-scope="scope">
+              <span style="font-weight: 500;">{{ scope.row.xuehao }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="xueshengxingming" header-align="center" align="center" label="学生姓名">
+            <template slot-scope="scope">
+              <span style="color: #5c7cfa;">{{ scope.row.xueshengxingming }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="jingsaimingcheng" header-align="center" align="center" label="竞赛名称" show-overflow-tooltip></el-table-column>
+          <el-table-column prop="jiaofeiJine" header-align="center" align="center" label="缴费金额(元)">
+            <template slot-scope="scope">
+              <span style="font-weight: 700; color: #ff5252; font-size: 18px;">¥{{ scope.row.jiaofeiJine }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="jiaofeiShijian" header-align="center" align="center" label="缴费时间">
+            <template slot-scope="scope">{{ scope.row.jiaofeiShijian }}</template>
+          </el-table-column>
+          <el-table-column prop="pingzhengTupian" header-align="center" align="center" label="缴费凭证">
+            <template slot-scope="scope">
+              <div v-if="scope.row.pingzhengTupian" class="image-preview">
+                <el-image 
+                  :src="$imageUrl(scope.row.pingzhengTupian)" 
+                  :preview-src-list="[$imageUrl(scope.row.pingzhengTupian)]" 
+                  style="width: 60px; height: 60px; border-radius: 8px;"
+                  fit="cover">
+                </el-image>
+              </div>
+              <span v-else style="color: #909399;">无</span>
+            </template>
+          </el-table-column>
+          <el-table-column fixed="right" header-align="center" align="center" width="200" label="操作">
+            <template slot-scope="scope">
+              <el-button type="success" icon="el-icon-check" size="mini" @click="approveHandler(scope.row)">通过</el-button>
+              <el-button type="danger" icon="el-icon-close" size="mini" @click="rejectHandler(scope.row)">驳回</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-pagination
+          class="tech-pagination"
+          @size-change="sizeChangeHandle"
+          @current-change="currentChangeHandle"
+          :current-page="pageIndex"
+          :page-sizes="[10, 20, 50, 100]"
+          :page-size="pageSize"
+          :total="totalPage"
+          layout="total, sizes, prev, pager, next, jumper"
+        ></el-pagination>
+      </div>
+    </div>
+
+    <!-- 审核对话框 -->
+    <el-dialog :title="auditTitle" :visible.sync="auditVisible" width="500px" class="tech-dialog">
+      <el-form :model="auditForm" label-width="100px">
+        <el-form-item label="审核意见">
+          <el-input v-model="auditForm.yijian" type="textarea" :rows="4" placeholder="请输入审核意见"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="auditVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitAudit()">确定</el-button>
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      showFlag: true,
+      searchForm: {
+        xueshengxingming: ''
+      },
+      dataList: [],
+      pageIndex: 1,
+      pageSize: 10,
+      totalPage: 0,
+      dataListLoading: false,
+      auditVisible: false,
+      auditTitle: '',
+      auditForm: {
+        jiaofeiId: null,
+        yijian: ''
+      },
+      auditAction: '' // 'approve' or 'reject'
+    }
+  },
+  created() {
+    this.getDataList()
+  },
+  activated() {
+    this.getDataList()
+  },
+  methods: {
+    getDataList() {
+      this.dataListLoading = true
+      this.$http({
+        url: 'jingsai/jiaofei/shenhe/page',
+        method: 'get',
+        params: {
+          'page': this.pageIndex,
+          'limit': this.pageSize,
+          'xueshengxingming': this.searchForm.xueshengxingming,
+          'jiaofeiZhuangtai': '已缴费'
+        }
+      }).then(({data}) => {
+        console.log('缴费审核API响应:', data)
+        if (data && data.code === 0) {
+          if (data.page && data.page.list) {
+            this.dataList = data.page.list
+            this.totalPage = data.page.totalCount || data.page.total || 0
+          } else {
+            this.dataList = []
+            this.totalPage = 0
+          }
+          console.log('缴费审核数据:', this.dataList, '总数:', this.totalPage)
+        } else {
+          console.error('查询失败:', data.msg)
+          this.dataList = []
+          this.totalPage = 0
+          this.$message.error(data.msg || '查询失败')
+        }
+        this.dataListLoading = false
+      }).catch(err => {
+        console.error('缴费审核查询异常:', err)
+        this.dataList = []
+        this.totalPage = 0
+        this.dataListLoading = false
+        this.$message.error('查询失败：' + (err.message || '请检查后端服务'))
+      })
+    },
+    search() {
+      this.pageIndex = 1
+      this.getDataList()
+    },
+    sizeChangeHandle(val) {
+      this.pageSize = val
+      this.pageIndex = 1
+      this.getDataList()
+    },
+    currentChangeHandle(val) {
+      this.pageIndex = val
+      this.getDataList()
+    },
+    approveHandler(row) {
+      this.auditAction = 'approve'
+      this.auditTitle = '审核通过'
+      this.auditForm.jiaofeiId = row.id
+      this.auditForm.yijian = ''
+      this.auditVisible = true
+    },
+    rejectHandler(row) {
+      this.auditAction = 'reject'
+      this.auditTitle = '审核驳回'
+      this.auditForm.jiaofeiId = row.id
+      this.auditForm.yijian = ''
+      this.auditVisible = true
+    },
+    submitAudit() {
+      const url = this.auditAction === 'approve' ? 'jingsai/jiaofei/shenhe/approve' : 'jingsai/jiaofei/shenhe/reject'
+      this.$http({
+        url: url,
+        method: 'post',
+        data: {
+          'jiaofeiId': this.auditForm.jiaofeiId,
+          'yijian': this.auditForm.yijian
+        }
+      }).then(({data}) => {
+        if (data && data.code === 0) {
+          this.$message({
+            message: '操作成功',
+            type: 'success',
+            duration: 1500,
+            onClose: () => {
+              this.auditVisible = false
+              this.getDataList()
+            }
+          })
+        } else {
+          this.$message.error(data.msg)
+        }
+      }).catch(err => {
+        console.error('审核操作失败:', err)
+        this.$message.error('操作失败：' + (err.message || '请重试'))
+      })
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+@import '@/assets/css/tech-theme.scss';
+
+.tech-search-form {
+  ::v-deep .el-form-item {
+    margin-bottom: 0;
+    margin-right: 20px;
+  }
+  ::v-deep .el-input__inner { width: 200px; }
+}
+
+.image-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  ::v-deep .el-image {
+    transition: transform 0.3s;
+    
+    &:hover {
+      transform: scale(1.5);
+    }
+  }
+}
+
+.tech-table {
+  ::v-deep .el-table__body tr:hover > td {
+    background: rgba(#5c7cfa, 0.08) !important;
+  }
+  
+  ::v-deep .el-button--mini {
+    padding: 7px 12px;
+    margin: 2px;
+  }
+}
+
+.tech-pagination { margin-top: 20px; }
+</style>

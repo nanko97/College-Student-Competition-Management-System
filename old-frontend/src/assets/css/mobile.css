@@ -1,0 +1,259 @@
+/* ============================================
+   移动端专属样式 - 完全重构版
+   适用设备：手机、小屏幕平板 (<= 768px)
+   ============================================ */
+
+/* 全局移动端重置 */
+@media screen and (max-width: 768px) {
+  
+  /* ===== 1. 核心容器重置 ===== */
+  .el-container {
+    flex-direction: column !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  .el-main {
+    display: block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    background: #f5f7fa !important;
+  }
+
+  /* ===== 2. 首页内容完美居中 ===== */
+  .el-main .content {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    padding: 16px 12px !important;
+    margin: 0 !important;
+    position: relative !important;
+    background: #f5f7fa !important;
+    background-image: none !important;
+    animation: none !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 隐藏动态背景 */
+  .el-main .content .background-animation {
+    display: none !important;
+  }
+
+  /* 欢迎卡片 - 完美居中 */
+  .el-main .content .welcome-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 420px !important;
+    margin: 0 auto !important;
+    padding: 28px 20px !important;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1) !important;
+    animation: none !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 欢迎卡片 - 图标 */
+  .el-main .content .welcome-card .icon-wrapper {
+    width: 68px !important;
+    height: 68px !important;
+    margin: 0 auto 18px !important;
+  }
+
+  .el-main .content .welcome-card .icon-wrapper i {
+    font-size: 32px !important;
+  }
+
+  /* 欢迎卡片 - 标题 */
+  .el-main .content .welcome-card .welcome-title {
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    margin: 0 0 10px 0 !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  /* 欢迎卡片 - 副标题 */
+  .el-main .content .welcome-card .welcome-subtitle {
+    font-size: 14px !important;
+    color: #909399 !important;
+    margin: 0 0 24px 0 !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  /* 欢迎卡片 - 功能网格 */
+  .el-main .content .welcome-card .features-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .el-main .content .welcome-card .features-grid .feature-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 18px 10px !important;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.06) 0%, rgba(118, 75, 162, 0.06) 100%) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(102, 126, 234, 0.12) !important;
+    cursor: pointer !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .el-main .content .welcome-card .features-grid .feature-item:active {
+    transform: scale(0.96) !important;
+  }
+
+  .el-main .content .welcome-card .features-grid .feature-item .feature-icon {
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 auto 10px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .el-main .content .welcome-card .features-grid .feature-item .feature-icon i {
+    font-size: 24px !important;
+  }
+
+  .el-main .content .welcome-card .features-grid .feature-item .feature-text {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+    text-align: center !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    width: 100% !important;
+  }
+
+  /* ===== 3. 其他页面容器统一居中 ===== */
+  .el-main .page-container,
+  .el-main .main-content {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px 12px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ===== 4. 表单响应式 ===== */
+  .el-form--inline {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .el-form--inline .el-form-item {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .el-form--inline .el-input,
+  .el-form--inline .el-select {
+    width: 100% !important;
+  }
+
+  .el-form-item__label {
+    width: 100% !important;
+    text-align: left !important;
+    padding-bottom: 5px !important;
+  }
+
+  /* ===== 5. 表格横向滚动 ===== */
+  .el-table {
+    min-width: 600px !important;
+  }
+
+  .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+  }
+
+  /* ===== 6. 按钮适配 ===== */
+  .action-wrapper,
+  .page-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .action-wrapper .el-button,
+  .page-actions .el-button {
+    width: 100% !important;
+    margin: 0 !important;
+    height: 44px !important;
+    font-size: 15px !important;
+  }
+
+  /* ===== 7. 对话框适配 ===== */
+  .el-dialog {
+    width: 95% !important;
+    margin: 5vh auto !important;
+    max-width: 500px !important;
+  }
+
+  .el-dialog__body {
+    padding: 15px !important;
+    max-height: 60vh !important;
+    overflow-y: auto !important;
+  }
+
+  /* ===== 8. 分页器简化 ===== */
+  .el-pagination {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px !important;
+  }
+
+  .el-pagination__total,
+  .el-pagination__sizes,
+  .el-pagination__jump {
+    display: none !important;
+  }
+
+  /* ===== 9. 卡片列表适配 ===== */
+  .el-row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .el-col {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* ===== 10. 统计卡片纵向排列 ===== */
+  .stats-cards,
+  .stat-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .stat-card {
+    margin-bottom: 0 !important;
+  }
+}
