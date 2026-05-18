@@ -3,7 +3,13 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <h2 class="page-title">晋级审核管理</h2>
-      <p class="page-subtitle">Promotion Review Management - 教师审核晋级申请</p>
+      <p class="page-subtitle">Promotion Review Management</p>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="role-tip">
+      <i class="el-icon-info"></i>
+      <span>提示：请仔细审核学生的晋级申请，确保符合竞赛晋级规则</span>
     </div>
 
     <!-- 统计卡片 -->

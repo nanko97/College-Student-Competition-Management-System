@@ -6,6 +6,55 @@
       <p class="page-subtitle">Competition Level Version Management</p>
     </div>
 
+    <!-- 提示信息 -->
+    <div class="role-tip">
+      <i class="el-icon-info"></i>
+      <span>提示：管理竞赛级别版本信息，包括国家级、省级、校级等不同级别的认定标准</span>
+    </div>
+
+    <!-- 统计信息 -->
+    <el-row :gutter="20" class="stats-row">
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+              <i class="el-icon-document"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">级别版本总数</div>
+              <div class="stat-value">{{ statistics.totalBanben || 0 }}</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+              <i class="el-icon-star-on"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">国家级</div>
+              <div class="stat-value">{{ statistics.guojiajiCount || 0 }}</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
+              <i class="el-icon-success"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">当前版本</div>
+              <div class="stat-value">{{ statistics.currentBanben || 0 }}</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <!-- 列表页 -->
     <div v-if="showFlag">
       <!-- 搜索区域 -->
@@ -135,14 +184,21 @@ export default {
       dataListLoading: false,
       dataListSelections: [],
       addOrUpdateVisible: false,
-      showFlag: true
+      showFlag: true,
+      // 统计信息
+      statistics: {
+        totalBanben: 0,
+        guojiajiCount: 0,
+        currentBanben: 0
+      }
     }
   },
   components: {
     AddOrUpdate
   },
   created() {
-    this.getDataList()
+    this.getDataList();
+    this.getStatistics();
   },
   activated() {
     this.getDataList()
@@ -234,7 +290,8 @@ export default {
               type: 'success',
               duration: 1500,
               onClose: () => {
-                this.getDataList()
+                this.getDataList();
+                this.getStatistics();
               }
             })
           } else {
@@ -245,6 +302,19 @@ export default {
           this.$message.error('操作失败：' + (err.message || '请重试'))
         })
       })
+    },
+    // 获取统计信息
+    getStatistics() {
+      this.$http({
+        url: 'jingsai/jibiebanben/statistics',
+        method: 'get'
+      }).then(({data}) => {
+        if (data && data.code === 0) {
+          this.statistics = data.data || {}
+        }
+      }).catch((error) => {
+        console.error('获取统计数据失败:', error)
+      })
     }
   }
 }
@@ -252,6 +322,84 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/css/tech-theme.scss';
+@import '@/assets/css/global-responsive-mixin.scss';
+
+/* 统计卡片样式优化 */
+.stats-row {
+  margin-bottom: 20px;
+  
+  .stat-card {
+    margin-bottom: 0;
+  }
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.role-tip {
+  margin-bottom: 20px;
+}
+
+.search-wrapper {
+  margin-bottom: 20px;
+}
+
+.action-wrapper {
+  margin-bottom: 20px;
+  .el-button { margin-right: 10px; }
+}
+
+.table-wrapper {
+  margin-top: 0;
+}
+
+.stat-card {
+  transition: all 0.3s;
+  height: 100%;
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
+  
+  .stat-content {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+  }
+  
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+    
+    i {
+      font-size: 28px;
+      color: #fff;
+    }
+  }
+  
+  .stat-info {
+    flex: 1;
+    
+    .stat-label {
+      font-size: 14px;
+      color: #909399;
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #303133;
+    }
+  }
+}
 
 .action-wrapper {
   margin-bottom: 20px;
@@ -278,4 +426,123 @@ export default {
 }
 
 .tech-pagination { margin-top: 20px; }
+
+/* 响应式设计 - 平板设备 */
+@media screen and (max-width: 1200px) {
+  .stats-row {
+    margin-bottom: 15px;
+  }
+  
+  .stat-card {
+    margin-bottom: 15px;
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    
+    i {
+      font-size: 24px;
+    }
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+}
+
+/* 响应式设计 - 手机设备 */
+@media screen and (max-width: 768px) {
+  .stats-row {
+    margin-bottom: 10px;
+  }
+  
+  .el-row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  .el-col {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  .stat-card {
+    margin-bottom: 10px;
+  }
+  
+  .stat-content {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px 10px;
+  }
+  
+  .stat-icon {
+    margin-right: 0;
+    margin-bottom: 10px;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .stat-label {
+    font-size: 12px;
+  }
+  
+  .stat-value {
+    font-size: 20px;
+  }
+  
+  .el-table {
+    font-size: 12px;
+  }
+  
+  .el-table .cell {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  
+  .el-button--mini {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  
+  .tech-pagination {
+    text-align: center;
+  }
+  
+  .el-pagination {
+    justify-content: center;
+  }
+  
+  ::v-deep .el-dialog {
+    width: 95% !important;
+    margin-top: 5vh !important;
+  }
+  
+  ::v-deep .el-dialog__body {
+    padding: 15px;
+  }
+}
+
+/* 响应式设计 - 超小屏幕设备 */
+@media screen and (max-width: 480px) {
+  .stat-value {
+    font-size: 18px;
+  }
+  
+  .stat-label {
+    font-size: 11px;
+  }
+  
+  .el-table {
+    font-size: 11px;
+  }
+}
+
+/* 横向滚动优化 */
+@media screen and (max-width: 768px) {
+  .table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+}
 </style>

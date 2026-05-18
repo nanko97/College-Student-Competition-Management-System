@@ -6,6 +6,61 @@
       <p class="page-subtitle">{{ pageSubtitle }}</p>
     </div>
 
+    <!-- 教师提示信息 -->
+    <div class="role-tip" v-if="isTeacher">
+      <i class="el-icon-info"></i>
+      <span>提示：为学生作品进行评分，请确保评分公正合理</span>
+    </div>
+
+    <!-- 学生提示信息 -->
+    <div class="role-tip" v-if="!isTeacher">
+      <i class="el-icon-info"></i>
+      <span>提示：成绩由教师评定，如对成绩有异议，可发起成绩复核申请</span>
+    </div>
+
+    <!-- 统计信息 -->
+    <el-row :gutter="20" class="stats-row">
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+              <i class="el-icon-document"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">评分总数</div>
+              <div class="stat-value">{{ statistics.totalPingfen || 0 }}</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+              <i class="el-icon-star-on"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">平均分数</div>
+              <div class="stat-value">{{ statistics.avgScore || 0 }}</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
+              <i class="el-icon-refresh"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">复核申请</div>
+              <div class="stat-value">{{ statistics.fuheCount || 0 }}</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <!-- 列表页 -->
     <div v-if="showFlag">
       <!-- 搜索区域 -->
@@ -34,29 +89,6 @@
             </el-form-item>
           </el-row>
         </el-form>
-      </div>
-
-      <!-- 操作按钮区域（仅教师可见） -->
-      <div class="action-wrapper" v-if="isTeacher">
-        <el-button
-          v-if="isAuth('zuopindafen','新增')"
-          type="success"
-          icon="el-icon-plus"
-          @click="addOrUpdateHandler()"
-        >新增评分</el-button>
-        <el-button
-          v-if="isAuth('zuopindafen','删除') && contents.tableSelection"
-          :disabled="dataListSelections.length <= 0"
-          type="danger"
-          icon="el-icon-delete"
-          @click="deleteHandler()"
-        >批量删除</el-button>
-      </div>
-
-      <!-- 学生提示 -->
-      <div class="student-tip" v-if="!isTeacher">
-        <i class="el-icon-info"></i>
-        <span>提示：成绩由教师评定，如对成绩有异议，可发起成绩复核申请</span>
       </div>
 
       <!-- 数据表格 -->
@@ -282,6 +314,12 @@ export default {
       headerCellStyle: {},
       rowStyle: {},
       cellStyle: {},
+      // 统计信息
+      statistics: {
+        totalPingfen: 0,
+        avgScore: 0,
+        fuheCount: 0
+      },
       // 成绩复核相关
       reviewDialogVisible: false,
       reviewForm: {
@@ -301,6 +339,7 @@ export default {
   created() {
     this.init();
     this.getDataList();
+    this.getStatistics();
     this.contentPageStyleChange()
   },
   components: { AddOrUpdate },
@@ -396,12 +435,28 @@ export default {
       }).then(() => {
         this.$http({ url: "zuopindafen/delete", method: "post", data: ids }).then(({ data }) => {
           if (data && data.code === 0) {
-            this.$message({ message: "操作成功", type: "success", duration: 1500, onClose: () => { this.search(); }});
+            this.$message({ message: "操作成功", type: "success", duration: 1500, onClose: () => { 
+              this.search();
+              this.getStatistics();
+            }});
           } else {
             this.$message.error(data.msg);
           }
         });
       });
+    },
+    // 获取统计信息
+    getStatistics() {
+      this.$http({
+        url: 'zuopindafen/statistics',
+        method: 'get'
+      }).then(({data}) => {
+        if (data && data.code === 0) {
+          this.statistics = data.data || {}
+        }
+      }).catch((error) => {
+        console.error('获取统计数据失败:', error)
+      })
     },
     // 空方法，避免子组件调用时报错
     contentStyleChange() {
@@ -521,25 +576,80 @@ export default {
 @import '@/assets/css/tech-theme.scss';
 @import '@/assets/css/global-responsive-mixin.scss';
 
+/* 统计卡片样式优化 */
+.stats-row {
+  margin-bottom: 20px;
+  
+  .stat-card {
+    margin-bottom: 0;
+  }
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.role-tip {
+  margin-bottom: 20px;
+}
+
+.search-wrapper {
+  margin-bottom: 20px;
+}
+
 .action-wrapper {
   margin-bottom: 20px;
   .el-button { margin-right: 10px; }
 }
 
-.student-tip {
-  margin: 15px 0;
-  padding: 12px 18px;
-  background: rgba(92, 124, 250, 0.08);
-  border-left: 4px solid #5c7cfa;
-  border-radius: 6px;
-  color: #5c7cfa;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
+.table-wrapper {
+  margin-top: 0;
+}
+
+.stat-card {
+  transition: all 0.3s;
+  height: 100%;
   
-  i {
-    margin-right: 10px;
-    font-size: 18px;
+  &:hover {
+    transform: translateY(-5px);
+  }
+  
+  .stat-content {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+  }
+  
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+    
+    i {
+      font-size: 28px;
+      color: #fff;
+    }
+  }
+  
+  .stat-info {
+    flex: 1;
+    
+    .stat-label {
+      font-size: 14px;
+      color: #909399;
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #303133;
+    }
   }
 }
 
@@ -562,4 +672,123 @@ export default {
 }
 
 .tech-pagination { margin-top: 20px; }
+
+/* 响应式设计 - 平板设备 */
+@media screen and (max-width: 1200px) {
+  .stats-row {
+    margin-bottom: 15px;
+  }
+  
+  .stat-card {
+    margin-bottom: 15px;
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    
+    i {
+      font-size: 24px;
+    }
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+}
+
+/* 响应式设计 - 手机设备 */
+@media screen and (max-width: 768px) {
+  .stats-row {
+    margin-bottom: 10px;
+  }
+  
+  .el-row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  .el-col {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  .stat-card {
+    margin-bottom: 10px;
+  }
+  
+  .stat-content {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px 10px;
+  }
+  
+  .stat-icon {
+    margin-right: 0;
+    margin-bottom: 10px;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .stat-label {
+    font-size: 12px;
+  }
+  
+  .stat-value {
+    font-size: 20px;
+  }
+  
+  .el-table {
+    font-size: 12px;
+  }
+  
+  .el-table .cell {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  
+  .el-button--mini {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  
+  .tech-pagination {
+    text-align: center;
+  }
+  
+  .el-pagination {
+    justify-content: center;
+  }
+  
+  ::v-deep .el-dialog {
+    width: 95% !important;
+    margin-top: 5vh !important;
+  }
+  
+  ::v-deep .el-dialog__body {
+    padding: 15px;
+  }
+}
+
+/* 响应式设计 - 超小屏幕设备 */
+@media screen and (max-width: 480px) {
+  .stat-value {
+    font-size: 18px;
+  }
+  
+  .stat-label {
+    font-size: 11px;
+  }
+  
+  .el-table {
+    font-size: 11px;
+  }
+}
+
+/* 横向滚动优化 */
+@media screen and (max-width: 768px) {
+  .table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+}
 </style>

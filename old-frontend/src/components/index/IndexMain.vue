@@ -1,5 +1,5 @@
 <template>
-	<el-main class="main-container">
+	<el-main class="main-container" :class="{ collapsed: isSidebarCollapsed }">
 		<div class="content-wrapper">
 			<router-view class="router-view" />
 		</div>
@@ -13,13 +13,23 @@
 				menuList: [],
 				role: "",
 				currentIndex: -2,
-				itemMenu: []
+				itemMenu: [],
+				isSidebarCollapsed: false
 			};
 		},
 		mounted() {
 			let menus = menu.list();
 			this.menuList = menus;
 			this.role = this.$storage.get("role");
+			
+			// 监听侧边栏折叠事件
+			this.$root.$on('sidebar-collapse', (isCollapsed) => {
+				this.isSidebarCollapsed = isCollapsed
+			})
+		},
+		beforeDestroy() {
+			// 移除事件监听
+			this.$root.$off('sidebar-collapse')
 		},
 		methods: {
 			menuHandler(menu) {
@@ -117,6 +127,11 @@
 		background: $bg-primary;
 		min-height: 100vh;
 		overflow-y: auto;
+		transition: padding-left 0.3s ease;
+		
+		&.collapsed {
+			padding-left: 48px;
+		}
 		
 		.content-wrapper {
 			min-height: calc(100vh - 60px);

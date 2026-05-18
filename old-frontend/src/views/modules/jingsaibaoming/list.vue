@@ -12,6 +12,55 @@
       <span>提示：此处仅显示您的个人报名记录</span>
     </div>
 
+    <!-- 教师/管理员提示信息 -->
+    <div class="role-tip" v-if="!isStudent">
+      <i class="el-icon-info"></i>
+      <span>提示：管理所有学生的竞赛报名信息，可进行审核和操作</span>
+    </div>
+
+    <!-- 统计信息 -->
+    <el-row :gutter="20" class="stats-row">
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+              <i class="el-icon-document"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">报名总数</div>
+              <div class="stat-value">{{ statistics.totalBaoming || 0 }}</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+              <i class="el-icon-success"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">已通过</div>
+              <div class="stat-value">{{ statistics.passedCount || 0 }}</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
+              <i class="el-icon-time"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">待审核</div>
+              <div class="stat-value">{{ statistics.pendingCount || 0 }}</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <!-- 列表页 -->
     <div v-if="showFlag">
       <!-- 搜索区域 -->
@@ -204,6 +253,12 @@ export default {
       headerCellStyle: {},
       rowStyle: {},
       cellStyle: {},
+      // 统计信息
+      statistics: {
+        totalBaoming: 0,
+        passedCount: 0,
+        pendingCount: 0
+      },
     };
   },
   computed: {
@@ -231,6 +286,7 @@ export default {
   created() {
     this.init();
     this.getDataList();
+    this.getStatistics();
     this.contentPageStyleChange()
   },
   components: { AddOrUpdate },
@@ -349,7 +405,10 @@ export default {
       }).then(() => {
         this.$http({ url: "jingsaibaoming/delete", method: "post", data: ids }).then(({ data }) => {
           if (data && data.code === 0) {
-            this.$message({ message: "操作成功", type: "success", duration: 1500, onClose: () => { this.search(); }});
+            this.$message({ message: "操作成功", type: "success", duration: 1500, onClose: () => { 
+              this.search();
+              this.getStatistics();
+            }});
           } else {
             this.$message.error(data.msg);
           }
@@ -364,9 +423,81 @@ export default {
 @import '@/assets/css/tech-theme.scss';
 @import '@/assets/css/global-responsive-mixin.scss';
 
+/* 统计卡片样式优化 */
+.stats-row {
+  margin-bottom: 20px;
+  
+  .stat-card {
+    margin-bottom: 0;
+  }
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.role-tip {
+  margin-bottom: 20px;
+}
+
+.search-wrapper {
+  margin-bottom: 20px;
+}
+
 .action-wrapper {
   margin-bottom: 20px;
   .el-button { margin-right: 10px; }
+}
+
+.table-wrapper {
+  margin-top: 0;
+}
+
+.stat-card {
+  transition: all 0.3s;
+  height: 100%;
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
+  
+  .stat-content {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+  }
+  
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+    
+    i {
+      font-size: 28px;
+      color: #fff;
+    }
+  }
+  
+  .stat-info {
+    flex: 1;
+    
+    .stat-label {
+      font-size: 14px;
+      color: #909399;
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #303133;
+    }
+  }
 }
 
 .tech-search-form {
@@ -394,4 +525,123 @@ export default {
 }
 
 .tech-pagination { margin-top: 20px; }
+
+/* 响应式设计 - 平板设备 */
+@media screen and (max-width: 1200px) {
+  .stats-row {
+    margin-bottom: 15px;
+  }
+  
+  .stat-card {
+    margin-bottom: 15px;
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    
+    i {
+      font-size: 24px;
+    }
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+}
+
+/* 响应式设计 - 手机设备 */
+@media screen and (max-width: 768px) {
+  .stats-row {
+    margin-bottom: 10px;
+  }
+  
+  .el-row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  .el-col {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  .stat-card {
+    margin-bottom: 10px;
+  }
+  
+  .stat-content {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px 10px;
+  }
+  
+  .stat-icon {
+    margin-right: 0;
+    margin-bottom: 10px;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .stat-label {
+    font-size: 12px;
+  }
+  
+  .stat-value {
+    font-size: 20px;
+  }
+  
+  .el-table {
+    font-size: 12px;
+  }
+  
+  .el-table .cell {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  
+  .el-button--mini {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  
+  .tech-pagination {
+    text-align: center;
+  }
+  
+  .el-pagination {
+    justify-content: center;
+  }
+  
+  ::v-deep .el-dialog {
+    width: 95% !important;
+    margin-top: 5vh !important;
+  }
+  
+  ::v-deep .el-dialog__body {
+    padding: 15px;
+  }
+}
+
+/* 响应式设计 - 超小屏幕设备 */
+@media screen and (max-width: 480px) {
+  .stat-value {
+    font-size: 18px;
+  }
+  
+  .stat-label {
+    font-size: 11px;
+  }
+  
+  .el-table {
+    font-size: 11px;
+  }
+}
+
+/* 横向滚动优化 */
+@media screen and (max-width: 768px) {
+  .table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+}
 </style>

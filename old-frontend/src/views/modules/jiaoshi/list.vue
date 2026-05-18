@@ -289,35 +289,179 @@ export default {
 @import '@/assets/css/tech-theme.scss';
 @import '@/assets/css/global-responsive-mixin.scss';
 
-.action-wrapper {
-  margin-bottom: 20px;
-  .el-button { margin-right: 10px; }
+/* 页面头部样式 */
+.page-header {
+  margin-bottom: 24px;
 }
 
+/* 搜索区域样式 */
+.search-wrapper {
+  margin-bottom: 20px;
+}
+
+/* 操作按钮区域样式 */
+.action-wrapper {
+  margin-bottom: 20px;
+  
+  .el-button {
+    margin-right: 10px;
+    
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+/* 表格区域样式 */
+.table-wrapper {
+  margin-top: 0;
+}
+
+/* 搜索表单样式 */
 .tech-search-form {
   ::v-deep .el-form-item {
     margin-bottom: 0;
     margin-right: 20px;
   }
-  ::v-deep .el-input__inner { width: 200px; }
+  ::v-deep .el-input__inner {
+    width: 200px;
+  }
 }
 
-.image-preview img {
-  transition: transform 0.3s;
-  &:hover { transform: scale(1.5); }
+/* 图片预览样式 */
+.image-preview {
+  img {
+    transition: transform 0.3s;
+    
+    &:hover {
+      transform: scale(1.5);
+    }
+  }
 }
 
-.no-image { color: #909399; font-size: 12px; }
+.no-image {
+  color: #909399;
+  font-size: 12px;
+}
 
+/* 表格样式 */
 .tech-table {
   ::v-deep .el-table__body tr:hover > td {
     background: rgba(#5c7cfa, 0.08) !important;
   }
+  
   ::v-deep .el-button--mini {
     padding: 7px 12px;
     margin: 2px;
   }
 }
 
-.tech-pagination { margin-top: 20px; }
+/* 分页样式 */
+.tech-pagination {
+  margin-top: 20px;
+}
+
+/* 响应式设计 - 平板设备 */
+@media screen and (max-width: 1200px) {
+  .search-wrapper {
+    margin-bottom: 15px;
+  }
+  
+  .action-wrapper {
+    margin-bottom: 15px;
+  }
+  
+  .tech-search-form {
+    ::v-deep .el-input__inner {
+      width: 150px;
+    }
+  }
+}
+
+/* 响应式设计 - 手机设备 */
+@media screen and (max-width: 768px) {
+  .page-header {
+    margin-bottom: 16px;
+  }
+  
+  .search-wrapper {
+    margin-bottom: 10px;
+  }
+  
+  .action-wrapper {
+    margin-bottom: 10px;
+    
+    .el-button {
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+  }
+  
+  .tech-search-form {
+    ::v-deep .el-form-item {
+      margin-right: 10px;
+    }
+    
+    ::v-deep .el-input__inner {
+      width: 120px;
+    }
+  }
+  
+  .el-table {
+    font-size: 12px;
+  }
+  
+  .el-table .cell {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  
+  .el-button--mini {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  
+  .tech-pagination {
+    text-align: center;
+  }
+  
+  .el-pagination {
+    justify-content: center;
+  }
+  
+  ::v-deep .el-dialog {
+    width: 95% !important;
+    margin-top: 5vh !important;
+  }
+  
+  ::v-deep .el-dialog__body {
+    padding: 15px;
+  }
+}
+
+/* 响应式设计 - 超小屏幕设备 */
+@media screen and (max-width: 480px) {
+  .tech-search-form {
+    ::v-deep .el-input__inner {
+      width: 100px;
+    }
+  }
+  
+  .el-table {
+    font-size: 11px;
+  }
+  
+  /* 隐藏部分列以节省空间 */
+  .el-table th.el-table__cell:nth-child(8),
+  .el-table td.el-table__cell:nth-child(8) {
+    display: none;
+  }
+}
+
+/* 横向滚动优化 */
+@media screen and (max-width: 768px) {
+  .table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+}
 </style>

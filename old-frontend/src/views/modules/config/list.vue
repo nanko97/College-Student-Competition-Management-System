@@ -5,72 +5,47 @@
       <h2 class="page-title">管理页面</h2>
       <p class="page-subtitle">Management Page</p>
     </div>
+
+    <!-- 提示信息 -->
+    <div class="role-tip">
+      <i class="el-icon-info"></i>
+      <span>提示：管理系统配置信息，包括轮播图、公告等基础配置</span>
+    </div>
+
     <!-- 列表页 -->
     <div v-if="showFlag">
       <!-- 搜索区域 -->
       <div class="search-wrapper">
         <el-form :inline="true" :model="searchForm" class="tech-search-form">
-        <el-row :gutter="20" class="slt" :style="{justifyContent:contents.searchBoxPosition=='1'?'flex-start':contents.searchBoxPosition=='2'?'center':'flex-end'}">
-                <el-form-item :label="contents.inputTitle == 1 ? '名称' : ''">
-                  <el-input v-if="contents.inputIcon == 1 && contents.inputIconPosition == 1" prefix-icon="el-icon-search" v-model="searchForm.name" placeholder="名称" clearable></el-input>
-                  <el-input v-if="contents.inputIcon == 1 && contents.inputIconPosition == 2" suffix-icon="el-icon-search" v-model="searchForm.name" placeholder="名称" clearable></el-input>
-                  <el-input v-if="contents.inputIcon == 0" v-model="searchForm.name" placeholder="名称" clearable></el-input>
-                </el-form-item>
-          <el-form-item>
-            <el-button v-if="contents.searchBtnIcon == 1 && contents.searchBtnIconPosition == 1" icon="el-icon-search" type="success" @click="search()">查询</el-button>
-            <el-button v-if="contents.searchBtnIcon == 1 && contents.searchBtnIconPosition == 2" type="success" @click="search()">查询<i class="el-icon-search el-icon--right"/></el-button>
-            <el-button v-if="contents.searchBtnIcon == 0" type="success" @click="search()">查询</el-button>
+          <el-form-item label="名称">
+            <el-input 
+              v-model="searchForm.name" 
+              placeholder="请输入名称" 
+              clearable
+              prefix-icon="el-icon-document"
+            ></el-input>
           </el-form-item>
-        </el-row>
-        <el-row class="ad" :style="{justifyContent:contents.btnAdAllBoxPosition=='1'?'flex-start':contents.btnAdAllBoxPosition=='2'?'center':'flex-end'}">
           <el-form-item>
-            <el-button
-              v-if="isAuth('config','新增') && contents.btnAdAllIcon == 1 && contents.btnAdAllIconPosition == 1"
-              type="success"
-              icon="el-icon-plus"
-              @click="addOrUpdateHandler()"
-            >新增</el-button>
-            <el-button
-              v-if="isAuth('config','新增') && contents.btnAdAllIcon == 1 && contents.btnAdAllIconPosition == 2"
-              type="success"
-              @click="addOrUpdateHandler()"
-            >新增<i class="el-icon-plus el-icon--right" /></el-button>
-            <el-button
-              v-if="isAuth('config','新增') && contents.btnAdAllIcon == 0"
-              type="success"
-              @click="addOrUpdateHandler()"
-            >新增</el-button>
-            <el-button
-              v-if="isAuth('config','删除') && contents.btnAdAllIcon == 1 && contents.btnAdAllIconPosition == 1 && contents.tableSelection"
-              :disabled="dataListSelections.length <= 0"
-              type="danger"
-              icon="el-icon-delete"
-              @click="deleteHandler()"
-            >删除</el-button>
-            <el-button
-              v-if="isAuth('config','删除') && contents.btnAdAllIcon == 1 && contents.btnAdAllIconPosition == 2 && contents.tableSelection"
-              :disabled="dataListSelections.length <= 0"
-              type="danger"
-              @click="deleteHandler()"
-            >删除<i class="el-icon-delete el-icon--right" /></el-button>
-            <el-button
-              v-if="isAuth('config','删除') && contents.btnAdAllIcon == 0 && contents.tableSelection"
-              :disabled="dataListSelections.length <= 0"
-              type="danger"
-              @click="deleteHandler()"
-            >删除</el-button>
-
-
+            <el-button type="primary" icon="el-icon-search" @click="search()">查询</el-button>
           </el-form-item>
-        </el-row>
-      </el-form>
-      </div>
+        </el-form>
       </div>
 
       <!-- 操作按钮区域 -->
       <div class="action-wrapper">
-        <el-button v-if="isAuth('PLACEHOLDER','新增')" type="success" icon="el-icon-plus" @click="addOrUpdateHandler()">新增</el-button>
-        <el-button v-if="isAuth('PLACEHOLDER','删除') && contents.tableSelection" :disabled="dataListSelections.length <= 0" type="danger" icon="el-icon-delete" @click="deleteHandler()">批量删除</el-button>
+        <el-button
+          v-if="isAuth('config','新增')"
+          type="success"
+          icon="el-icon-plus"
+          @click="addOrUpdateHandler()"
+        >新增配置</el-button>
+        <el-button
+          v-if="isAuth('config','删除') && contents.tableSelection"
+          :disabled="dataListSelections.length <= 0"
+          type="danger"
+          icon="el-icon-delete"
+          @click="deleteHandler()"
+        >批量删除</el-button>
       </div>
 
       <!-- 数据表格 -->
@@ -483,102 +458,182 @@ export default {
 @import '@/assets/css/tech-theme.scss';
 @import '@/assets/css/global-responsive-mixin.scss';
 
-  .slt {
-    margin: 0 !important;
-    display: flex;
-  }
+/* 页面头部样式 */
+.page-header {
+  margin-bottom: 24px;
+}
 
-  .ad {
-    margin: 0 !important;
-    display: flex;
-  }
+/* 提示信息样式 */
+.role-tip {
+  margin-bottom: 20px;
+}
 
-  .pages {
-    &::v-deep el-pagination__sizes{
-      &::v-deep el-input__inner {
-        height: 22px;
-        line-height: 22px;
-      }
-    }
-  }
-  
+/* 搜索区域样式 */
+.search-wrapper {
+  margin-bottom: 20px;
+}
 
-  .el-button+.el-button {
-    margin:0;
-  } 
-
-  .tables {
-	&::v-deep .el-button--success {
-		height: 40px;
-		color: #333;
-		font-size: 14px;
-		border-width: 1px;
-		border-style: solid;
-		border-color: #DCDFE6;
-		border-radius: 16px;
-		background-color: rgba(255, 140, 0, 1);
-	}
-	
-	&::v-deep .el-button--primary {
-		height: 40px;
-		color: #333;
-		font-size: 14px;
-		border-width: 1px;
-		border-style: solid;
-		border-color: #DCDFE6;
-		border-radius: 16px;
-		background-color: rgba(255, 140, 0, 1);
-	}
-	
-	&::v-deep .el-button--danger {
-		height: 40px;
-		color: #333;
-		font-size: 14px;
-		border-width: 1px;
-		border-style: solid;
-		border-color: #DCDFE6;
-		border-radius: 16px;
-		background-color: rgba(255, 140, 0, 1);
-	}
-
-    &::v-deep .el-button {
-      margin: 4px;
-    }
-  }
-
-
+/* 操作按钮区域样式 */
 .action-wrapper {
   margin-bottom: 20px;
-
+  
   .el-button {
     margin-right: 10px;
+    
+    &:last-child {
+      margin-right: 0;
+    }
   }
 }
 
+/* 表格区域样式 */
+.table-wrapper {
+  margin-top: 0;
+}
+
+/* 搜索表单样式 */
 .tech-search-form {
   ::v-deep .el-form-item {
     margin-bottom: 0;
     margin-right: 20px;
   }
-
   ::v-deep .el-input__inner {
     width: 200px;
   }
 }
 
+/* 图片预览样式 */
+.image-preview {
+  img {
+    transition: transform 0.3s;
+    
+    &:hover {
+      transform: scale(1.5);
+    }
+  }
+}
+
+.no-image {
+  color: #909399;
+  font-size: 12px;
+}
+
+/* 表格样式 */
 .tech-table {
   ::v-deep .el-table__body tr:hover > td {
     background: rgba(#5c7cfa, 0.08) !important;
   }
-
+  
   ::v-deep .el-button--mini {
     padding: 7px 12px;
     margin: 2px;
   }
 }
 
+/* 分页样式 */
 .tech-pagination {
   margin-top: 20px;
 }
 
+/* 响应式设计 - 平板设备 */
+@media screen and (max-width: 1200px) {
+  .search-wrapper {
+    margin-bottom: 15px;
+  }
+  
+  .action-wrapper {
+    margin-bottom: 15px;
+  }
+  
+  .tech-search-form {
+    ::v-deep .el-input__inner {
+      width: 150px;
+    }
+  }
+}
+
+/* 响应式设计 - 手机设备 */
+@media screen and (max-width: 768px) {
+  .page-header {
+    margin-bottom: 16px;
+  }
+  
+  .role-tip {
+    margin-bottom: 15px;
+  }
+  
+  .search-wrapper {
+    margin-bottom: 10px;
+  }
+  
+  .action-wrapper {
+    margin-bottom: 10px;
+    
+    .el-button {
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+  }
+  
+  .tech-search-form {
+    ::v-deep .el-form-item {
+      margin-right: 10px;
+    }
+    
+    ::v-deep .el-input__inner {
+      width: 120px;
+    }
+  }
+  
+  .el-table {
+    font-size: 12px;
+  }
+  
+  .el-table .cell {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  
+  .el-button--mini {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  
+  .tech-pagination {
+    text-align: center;
+  }
+  
+  .el-pagination {
+    justify-content: center;
+  }
+  
+  ::v-deep .el-dialog {
+    width: 95% !important;
+    margin-top: 5vh !important;
+  }
+  
+  ::v-deep .el-dialog__body {
+    padding: 15px;
+  }
+}
+
+/* 响应式设计 - 超小屏幕设备 */
+@media screen and (max-width: 480px) {
+  .tech-search-form {
+    ::v-deep .el-input__inner {
+      width: 100px;
+    }
+  }
+  
+  .el-table {
+    font-size: 11px;
+  }
+}
+
+/* 横向滚动优化 */
+@media screen and (max-width: 768px) {
+  .table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+}
 </style>

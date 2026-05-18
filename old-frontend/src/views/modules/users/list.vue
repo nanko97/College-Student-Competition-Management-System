@@ -1,147 +1,96 @@
 <template>
-  <div class="main-content">
+  <div class="page-container tech-theme animate-fade-in-up">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h2 class="page-title">用户管理</h2>
+      <p class="page-subtitle">User Management</p>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="role-tip">
+      <i class="el-icon-info"></i>
+      <span>提示：管理系统用户账号，包括管理员、教师和学生的账号信息</span>
+    </div>
+
     <!-- 列表页 -->
     <div v-if="showFlag">
-      <el-form :inline="true" :model="searchForm" class="form-content">
-        <el-row :gutter="20" class="slt" :style="{justifyContent:contents.searchBoxPosition=='1'?'flex-start':contents.searchBoxPosition=='2'?'center':'flex-end'}">
-                <el-form-item :label="contents.inputTitle == 1 ? '用户名' : ''">
-                  <el-input v-if="contents.inputIcon == 1 && contents.inputIconPosition == 1" prefix-icon="el-icon-search" v-model="searchForm.username" placeholder="用户名" clearable></el-input>
-                  <el-input v-if="contents.inputIcon == 1 && contents.inputIconPosition == 2" suffix-icon="el-icon-search" v-model="searchForm.username" placeholder="用户名" clearable></el-input>
-                  <el-input v-if="contents.inputIcon == 0" v-model="searchForm.username" placeholder="用户名" clearable></el-input>
-                </el-form-item>
-          <el-form-item>
-            <el-button v-if="contents.searchBtnIcon == 1 && contents.searchBtnIconPosition == 1" icon="el-icon-search" type="success" @click="search()">{{ contents.searchBtnFont == 1?'查询':'' }}</el-button>
-            <el-button v-if="contents.searchBtnIcon == 1 && contents.searchBtnIconPosition == 2" type="success" @click="search()">{{ contents.searchBtnFont == 1?'查询':'' }}<i class="el-icon-search el-icon--right"/></el-button>
-            <el-button v-if="contents.searchBtnIcon == 0" type="success" @click="search()">{{ contents.searchBtnFont == 1?'查询':'' }}</el-button>
+      <!-- 搜索区域 -->
+      <div class="search-wrapper">
+        <el-form :inline="true" :model="searchForm" class="tech-search-form">
+          <el-form-item label="用户名">
+            <el-input 
+              v-model="searchForm.username" 
+              placeholder="请输入用户名" 
+              clearable
+              prefix-icon="el-icon-user"
+            ></el-input>
           </el-form-item>
-        </el-row>
-        <el-row class="ad" :style="{justifyContent:contents.btnAdAllBoxPosition=='1'?'flex-start':contents.btnAdAllBoxPosition=='2'?'center':'flex-end'}">
           <el-form-item>
-            <el-button
-              v-if="isAuth('users','新增') && contents.btnAdAllIcon == 1 && contents.btnAdAllIconPosition == 1"
-              type="success"
-              icon="el-icon-plus"
-              @click="addOrUpdateHandler()"
-            >{{ contents.btnAdAllFont == 1?'新增':'' }}</el-button>
-            <el-button
-              v-if="isAuth('users','新增') && contents.btnAdAllIcon == 1 && contents.btnAdAllIconPosition == 2"
-              type="success"
-              @click="addOrUpdateHandler()"
-            >{{ contents.btnAdAllFont == 1?'新增':'' }}<i class="el-icon-plus el-icon--right" /></el-button>
-            <el-button
-              v-if="isAuth('users','新增') && contents.btnAdAllIcon == 0"
-              type="success"
-              @click="addOrUpdateHandler()"
-            >{{ contents.btnAdAllFont == 1?'新增':'' }}</el-button>
-            <el-button
-              v-if="isAuth('users','删除') && contents.btnAdAllIcon == 1 && contents.btnAdAllIconPosition == 1 && contents.tableSelection"
-              :disabled="dataListSelections.length <= 0"
-              type="danger"
-              icon="el-icon-delete"
-              @click="deleteHandler()"
-            >{{ contents.btnAdAllFont == 1?'删除':'' }}</el-button>
-            <el-button
-              v-if="isAuth('users','删除') && contents.btnAdAllIcon == 1 && contents.btnAdAllIconPosition == 2 && contents.tableSelection"
-              :disabled="dataListSelections.length <= 0"
-              type="danger"
-              @click="deleteHandler()"
-            >{{ contents.btnAdAllFont == 1?'删除':'' }}<i class="el-icon-delete el-icon--right" /></el-button>
-            <el-button
-              v-if="isAuth('users','删除') && contents.btnAdAllIcon == 0 && contents.tableSelection"
-              :disabled="dataListSelections.length <= 0"
-              type="danger"
-              @click="deleteHandler()"
-            >{{ contents.btnAdAllFont == 1?'删除':'' }}</el-button>
-
-
+            <el-button type="primary" icon="el-icon-search" @click="search()">查询</el-button>
           </el-form-item>
-        </el-row>
-      </el-form>
-      <div class="table-content">
-        <el-table class="tables" :size="contents.tableSize" :show-header="contents.tableShowHeader"
-            :header-row-style="headerRowStyle" :header-cell-style="headerCellStyle"
-            :border="contents.tableBorder"
-            :fit="contents.tableFit"
-            :stripe="contents.tableStripe"
-            :row-style="rowStyle"
-            :cell-style="cellStyle"
-            :style="{width: '100%',fontSize:contents.tableContentFontSize,color:contents.tableContentFontColor}"
-            v-if="isAuth('users','查看')"
-            :data="dataList"
-            v-loading="dataListLoading"
-            @selection-change="selectionChangeHandler">
-            <el-table-column  v-if="contents.tableSelection"
-                type="selection"
-                header-align="center"
-                align="center"
-                width="50">
-            </el-table-column>
-            <el-table-column label="索引" v-if="contents.tableIndex" type="index" width="50" />
-                <el-table-column  :sortable="contents.tableSortable" :align="contents.tableAlign"
-                    prop="username"
-                    header-align="center"
-		    label="用户名">
-		     <template slot-scope="scope">
-                       {{scope.row.username}}
-                     </template>
-                </el-table-column>
-                <el-table-column  :sortable="contents.tableSortable" :align="contents.tableAlign"
-                    prop="password"
-                    header-align="center"
-		    label="密码">
-		     <template slot-scope="scope">
-                       {{scope.row.password}}
-                     </template>
-                </el-table-column>
-                <el-table-column  :sortable="contents.tableSortable" :align="contents.tableAlign"
-                    prop="role"
-                    header-align="center"
-		    label="角色">
-		     <template slot-scope="scope">
-                       {{scope.row.role}}
-                     </template>
-                </el-table-column>
-            <el-table-column width="300" :align="contents.tableAlign"
-                header-align="center"
-                label="操作">
-                <template slot-scope="scope">
-                <el-button v-if="isAuth('users','查看') && contents.tableBtnIcon == 1 && contents.tableBtnIconPosition == 1" type="success" icon="el-icon-tickets" size="mini" @click="addOrUpdateHandler(scope.row.id,'info')">{{ contents.tableBtnFont == 1?'详情':'' }}</el-button>
-                <el-button v-if="isAuth('users','查看') && contents.tableBtnIcon == 1 && contents.tableBtnIconPosition == 2" type="success" size="mini" @click="addOrUpdateHandler(scope.row.id,'info')">{{ contents.tableBtnFont == 1?'详情':'' }}<i class="el-icon-tickets el-icon--right" /></el-button>
-                <el-button v-if="isAuth('users','查看') && contents.tableBtnIcon == 0" type="success" size="mini" @click="addOrUpdateHandler(scope.row.id,'info')">{{ contents.tableBtnFont == 1?'详情':'' }}</el-button>
-                <el-button v-if="isAuth('users','修改') && contents.tableBtnIcon == 1 && contents.tableBtnIconPosition == 1" type="primary" icon="el-icon-edit" size="mini" @click="addOrUpdateHandler(scope.row.id)">{{ contents.tableBtnFont == 1?'修改':'' }}</el-button>
-                <el-button v-if="isAuth('users','修改') && contents.tableBtnIcon == 1 && contents.tableBtnIconPosition == 2" type="primary" size="mini" @click="addOrUpdateHandler(scope.row.id)">{{ contents.tableBtnFont == 1?'修改':'' }}<i class="el-icon-edit el-icon--right" /></el-button>
-                <el-button v-if="isAuth('users','修改') && contents.tableBtnIcon == 0" type="primary" size="mini" @click="addOrUpdateHandler(scope.row.id)">{{ contents.tableBtnFont == 1?'修改':'' }}</el-button>
+        </el-form>
+      </div>
 
+      <!-- 操作按钮区域 -->
+      <div class="action-wrapper">
+        <el-button
+          v-if="isAuth('users','新增')"
+          type="success"
+          icon="el-icon-plus"
+          @click="addOrUpdateHandler()"
+        >新增用户</el-button>
+        <el-button
+          v-if="isAuth('users','删除') && contents.tableSelection"
+          :disabled="dataListSelections.length <= 0"
+          type="danger"
+          icon="el-icon-delete"
+          @click="deleteHandler()"
+        >批量删除</el-button>
+      </div>
 
-
-
-                <el-button v-if="isAuth('users','删除') && contents.tableBtnIcon == 1 && contents.tableBtnIconPosition == 1" type="danger" icon="el-icon-delete" size="mini" @click="deleteHandler(scope.row.id)">{{ contents.tableBtnFont == 1?'删除':'' }}</el-button>
-                <el-button v-if="isAuth('users','删除') && contents.tableBtnIcon == 1 && contents.tableBtnIconPosition == 2" type="danger" size="mini" @click="deleteHandler(scope.row.id)">{{ contents.tableBtnFont == 1?'删除':'' }}<i class="el-icon-delete el-icon--right" /></el-button>
-                <el-button v-if="isAuth('users','删除') && contents.tableBtnIcon == 0" type="danger" size="mini" @click="deleteHandler(scope.row.id)">{{ contents.tableBtnFont == 1?'删除':'' }}</el-button>
-                </template>
-            </el-table-column>
+      <!-- 数据表格 -->
+      <div class="table-wrapper">
+        <el-table 
+          class="tech-table"
+          :data="dataList"
+          v-loading="dataListLoading"
+          border
+          stripe
+          style="width: 100%"
+          @selection-change="selectionChangeHandler"
+          v-if="isAuth('users','查看')">
+          <el-table-column v-if="contents.tableSelection" type="selection" width="50" align="center" />
+          <el-table-column label="索引" v-if="contents.tableIndex" type="index" width="60" align="center" />
+          <el-table-column prop="username" header-align="center" align="center" label="用户名" min-width="150" />
+          <el-table-column prop="role" header-align="center" align="center" label="角色" width="120">
+            <template slot-scope="scope">
+              <el-tag :type="scope.row.role === '管理员' ? 'danger' : scope.row.role === '教师' ? 'primary' : 'success'" size="small">
+                {{ scope.row.role }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column fixed="right" header-align="center" align="center" width="250" label="操作">
+            <template slot-scope="scope">
+              <el-button v-if="isAuth('users','查看')" type="primary" icon="el-icon-view" size="mini" @click="addOrUpdateHandler(scope.row.id,'info')">详情</el-button>
+              <el-button v-if="isAuth('users','修改')" type="success" icon="el-icon-edit" size="mini" @click="addOrUpdateHandler(scope.row.id)">修改</el-button>
+              <el-button v-if="isAuth('users','删除')" type="danger" icon="el-icon-delete" size="mini" @click="deleteHandler(scope.row.id)">删除</el-button>
+            </template>
+          </el-table-column>
         </el-table>
         <el-pagination
-          clsss="pages"
-          :layout="layouts"
           @size-change="sizeChangeHandle"
           @current-change="currentChangeHandle"
           :current-page="pageIndex"
           :page-sizes="[10, 20, 50, 100]"
-          :page-size="Number(contents.pageEachNum)"
+          :page-size="pageSize"
           :total="totalPage"
-          :small="contents.pageStyle"
-          class="pagination-content"
-          :background="contents.pageBtnBG"
-          :style="{textAlign:contents.pagePosition==1?'left':contents.pagePosition==2?'center':'right'}"
-        ></el-pagination>
+          layout="total, sizes, prev, pager, next, jumper"
+          class="tech-pagination">
+        </el-pagination>
       </div>
     </div>
-    <!-- 添加/修改页面  将父组件的search方法传递给子组件-->
+    <!-- 添加/修改页面 -->
     <add-or-update v-if="addOrUpdateFlag" :parent="this" ref="addOrUpdate"></add-or-update>
-
-
-
   </div>
 </template>
 <script>
@@ -464,68 +413,169 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+@import '@/assets/css/tech-theme.scss';
 @import '@/assets/css/global-responsive-mixin.scss';
-  .slt {
-    margin: 0 !important;
-    display: flex;
-  }
 
-  .ad {
-    margin: 0 !important;
-    display: flex;
-  }
+/* 页面头部样式 */
+.page-header {
+  margin-bottom: 24px;
+}
 
-  .pages {
-    &::v-deep el-pagination__sizes{
-      &::v-deep el-input__inner {
-        height: 22px;
-        line-height: 22px;
-      }
+/* 提示信息样式 */
+.role-tip {
+  margin-bottom: 20px;
+}
+
+/* 搜索区域样式 */
+.search-wrapper {
+  margin-bottom: 20px;
+}
+
+/* 操作按钮区域样式 */
+.action-wrapper {
+  margin-bottom: 20px;
+  
+  .el-button {
+    margin-right: 10px;
+    
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+/* 表格区域样式 */
+.table-wrapper {
+  margin-top: 0;
+}
+
+/* 搜索表单样式 */
+.tech-search-form {
+  ::v-deep .el-form-item {
+    margin-bottom: 0;
+    margin-right: 20px;
+  }
+  ::v-deep .el-input__inner {
+    width: 200px;
+  }
+}
+
+/* 表格样式 */
+.tech-table {
+  ::v-deep .el-table__body tr:hover > td {
+    background: rgba(#5c7cfa, 0.08) !important;
+  }
+  
+  ::v-deep .el-button--mini {
+    padding: 7px 12px;
+    margin: 2px;
+  }
+}
+
+/* 分页样式 */
+.tech-pagination {
+  margin-top: 20px;
+}
+
+/* 响应式设计 - 平板设备 */
+@media screen and (max-width: 1200px) {
+  .search-wrapper {
+    margin-bottom: 15px;
+  }
+  
+  .action-wrapper {
+    margin-bottom: 15px;
+  }
+  
+  .tech-search-form {
+    ::v-deep .el-input__inner {
+      width: 150px;
+    }
+  }
+}
+
+/* 响应式设计 - 手机设备 */
+@media screen and (max-width: 768px) {
+  .page-header {
+    margin-bottom: 16px;
+  }
+  
+  .role-tip {
+    margin-bottom: 15px;
+  }
+  
+  .search-wrapper {
+    margin-bottom: 10px;
+  }
+  
+  .action-wrapper {
+    margin-bottom: 10px;
+    
+    .el-button {
+      margin-right: 5px;
+      margin-bottom: 5px;
     }
   }
   
-
-  .el-button+.el-button {
-    margin:0;
-  } 
-
-  .tables {
-	&::v-deep .el-button--success {
-		height: 40px;
-		color: #333;
-		font-size: 14px;
-		border-width: 1px;
-		border-style: solid;
-		border-color: #DCDFE6;
-		border-radius: 16px;
-		background-color: rgba(255, 140, 0, 1);
-	}
-	
-	&::v-deep .el-button--primary {
-		height: 40px;
-		color: #333;
-		font-size: 14px;
-		border-width: 1px;
-		border-style: solid;
-		border-color: #DCDFE6;
-		border-radius: 16px;
-		background-color: rgba(255, 140, 0, 1);
-	}
-	
-	&::v-deep .el-button--danger {
-		height: 40px;
-		color: #333;
-		font-size: 14px;
-		border-width: 1px;
-		border-style: solid;
-		border-color: #DCDFE6;
-		border-radius: 16px;
-		background-color: rgba(255, 140, 0, 1);
-	}
-
-    &::v-deep .el-button {
-      margin: 4px;
+  .tech-search-form {
+    ::v-deep .el-form-item {
+      margin-right: 10px;
+    }
+    
+    ::v-deep .el-input__inner {
+      width: 120px;
     }
   }
+  
+  .el-table {
+    font-size: 12px;
+  }
+  
+  .el-table .cell {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  
+  .el-button--mini {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  
+  .tech-pagination {
+    text-align: center;
+  }
+  
+  .el-pagination {
+    justify-content: center;
+  }
+  
+  ::v-deep .el-dialog {
+    width: 95% !important;
+    margin-top: 5vh !important;
+  }
+  
+  ::v-deep .el-dialog__body {
+    padding: 15px;
+  }
+}
 
+/* 响应式设计 - 超小屏幕设备 */
+@media screen and (max-width: 480px) {
+  .tech-search-form {
+    ::v-deep .el-input__inner {
+      width: 100px;
+    }
+  }
+  
+  .el-table {
+    font-size: 11px;
+  }
+}
+
+/* 横向滚动优化 */
+@media screen and (max-width: 768px) {
+  .table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+}
 </style>

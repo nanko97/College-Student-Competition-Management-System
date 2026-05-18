@@ -1,67 +1,96 @@
 <template>
-  <div class="main-content">
-    <el-form :inline="true" :model="searchForm" class="form-content">
-      <el-row :gutter="20" class="slt">
+  <div class="page-container tech-theme animate-fade-in-up">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h2 class="page-title">作品管理</h2>
+      <p class="page-subtitle">Competition Works Management</p>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="role-tip">
+      <i class="el-icon-info"></i>
+      <span>提示：管理所有学生提交的竞赛作品，可进行评分和审核操作</span>
+    </div>
+
+    <!-- 搜索区域 -->
+    <div class="search-wrapper">
+      <el-form :inline="true" :model="searchForm" class="tech-search-form">
         <el-form-item label="竞赛名称">
-          <el-input v-model="searchForm.jingsaimingcheng" placeholder="竞赛名称" clearable></el-input>
+          <el-input v-model="searchForm.jingsaimingcheng" placeholder="请输入竞赛名称" clearable></el-input>
         </el-form-item>
         <el-form-item label="学生姓名">
-          <el-input v-model="searchForm.xueshengxingming" placeholder="学生姓名" clearable></el-input>
+          <el-input v-model="searchForm.xueshengxingming" placeholder="请输入学生姓名" clearable></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="success" @click="search()">查询</el-button>
+          <el-button type="primary" icon="el-icon-search" @click="search()">查询</el-button>
         </el-form-item>
-      </el-row>
-    </el-form>
+      </el-form>
+    </div>
 
     <!-- 统计信息 -->
-    <el-row :gutter="20" style="margin-bottom: 20px">
+    <el-row :gutter="20" class="stats-row">
       <el-col :span="8">
-        <el-card shadow="hover">
-          <div style="text-align: center">
-            <div style="font-size: 16px; color: #909399">已审核报名数</div>
-            <div style="font-size: 32px; font-weight: bold; color: #409EFF; margin-top: 10px">{{ statistics.totalBaoming || 0 }}</div>
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+              <i class="el-icon-document"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">已审核报名数</div>
+              <div class="stat-value">{{ statistics.totalBaoming || 0 }}</div>
+            </div>
           </div>
         </el-card>
       </el-col>
       <el-col :span="8">
-        <el-card shadow="hover">
-          <div style="text-align: center">
-            <div style="font-size: 16px; color: #909399">已提交作品</div>
-            <div style="font-size: 32px; font-weight: bold; color: #67C23A; margin-top: 10px">{{ statistics.submittedCount || 0 }}</div>
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+              <i class="el-icon-upload"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">已提交作品</div>
+              <div class="stat-value">{{ statistics.submittedCount || 0 }}</div>
+            </div>
           </div>
         </el-card>
       </el-col>
       <el-col :span="8">
-        <el-card shadow="hover">
-          <div style="text-align: center">
-            <div style="font-size: 16px; color: #909399">未提交作品</div>
-            <div style="font-size: 32px; font-weight: bold; color: #F56C6C; margin-top: 10px">{{ statistics.unsubmittedCount || 0 }}</div>
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-content">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
+              <i class="el-icon-warning-outline"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">未提交作品</div>
+              <div class="stat-value">{{ statistics.unsubmittedCount || 0 }}</div>
+            </div>
           </div>
         </el-card>
       </el-col>
     </el-row>
 
-    <div class="table-content">
-      <el-table :data="dataList" v-loading="dataListLoading" border stripe>
-        <el-table-column label="索引" type="index" width="50" />
+    <!-- 数据表格 -->
+    <div class="table-wrapper">
+      <el-table :data="dataList" v-loading="dataListLoading" border stripe class="tech-table" style="width: 100%">
+        <el-table-column label="索引" type="index" width="60" align="center" />
         <el-table-column prop="xueshengxingming" header-align="center" align="center" label="学生姓名" width="100"></el-table-column>
         <el-table-column prop="xuehao" header-align="center" align="center" label="学号" width="120"></el-table-column>
-        <el-table-column prop="jingsaimingcheng" header-align="center" align="center" label="竞赛名称" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="jingsaileixing" header-align="center" align="center" label="竞赛类型" width="120"></el-table-column>
+        <el-table-column prop="jingsaimingcheng" header-align="center" align="center" label="竞赛名称" min-width="200" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="jingsaileixing" header-align="center" align="center" label="竞赛类型" width="130"></el-table-column>
         <el-table-column prop="cansaileixing" header-align="center" align="center" label="参赛类型" width="100"></el-table-column>
-        <el-table-column prop="cansaizuopin" header-align="center" align="center" label="作品状态" width="120">
+        <el-table-column prop="cansaizuopin" header-align="center" align="center" label="作品状态" width="100">
           <template slot-scope="scope">
-            <el-tag v-if="scope.row.cansaizuopin" type="success">已提交</el-tag>
+            <el-tag v-if="scope.row.cansaizuopin" type="success" effect="dark">已提交</el-tag>
             <el-tag v-else type="warning">未提交</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="shenqingriqi" header-align="center" align="center" label="报名日期" width="110"></el-table-column>
         <el-table-column fixed="right" header-align="center" align="center" width="250" label="操作">
           <template slot-scope="scope">
-            <el-button v-if="scope.row.cansaizuopin" type="text" size="small" @click="downloadHandler(scope.row)">下载作品</el-button>
-            <el-button v-if="scope.row.cansaizuopin" type="text" size="small" @click="scoreHandler(scope.row)">评分</el-button>
-            <el-button v-if="scope.row.cansaizuopin" type="text" size="small" @click="viewScoreHandler(scope.row)">查看评分</el-button>
+            <el-button v-if="scope.row.cansaizuopin" type="info" size="mini" icon="el-icon-download" @click="downloadHandler(scope.row)">下载</el-button>
+            <el-button v-if="scope.row.cansaizuopin" type="primary" size="mini" icon="el-icon-edit" @click="scoreHandler(scope.row)">评分</el-button>
+            <el-button v-if="scope.row.cansaizuopin" type="success" size="mini" icon="el-icon-view" @click="viewScoreHandler(scope.row)">查看评分</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -73,7 +102,7 @@
         :page-size="pageSize"
         :total="totalPage"
         layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-content">
+        class="tech-pagination">
       </el-pagination>
     </div>
 
@@ -320,67 +349,162 @@ export default {
 }
 </script>
 
-<style scoped>
-.main-content {
-  width: 100%;
-  min-height: calc(100vh - 60px);
-  padding: 20px;
-  box-sizing: border-box;
+<style lang="scss" scoped>
+@import '@/assets/css/tech-theme.scss';
+@import '@/assets/css/global-responsive-mixin.scss';
+
+/* 页面头部样式 */
+.page-header {
+  margin-bottom: 24px;
 }
 
-.form-content {
-  background: transparent;
-  padding: 10px;
+/* 提示信息样式 */
+.role-tip {
+  margin-bottom: 20px;
 }
 
-.table-content {
-  background: transparent;
-  padding: 10px;
-  overflow-x: auto;
+/* 搜索区域样式 */
+.search-wrapper {
+  margin-bottom: 20px;
 }
 
-.pagination-content {
-  margin-top: 20px;
-  text-align: right;
+/* 表格区域样式 */
+.table-wrapper {
+  margin-top: 0;
+}
+
+/* 搜索表单样式 */
+.tech-search-form {
+  ::v-deep .el-form-item {
+    margin-bottom: 0;
+    margin-right: 20px;
+  }
+  ::v-deep .el-input__inner {
+    width: 200px;
+  }
 }
 
 /* 统计卡片样式 */
-.el-card {
-  transition: all 0.3s;
-  height: 100%;
+.stats-row {
+  margin-bottom: 20px;
+  
+  .stat-card {
+    margin-bottom: 0;
+  }
 }
 
-.el-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+.stat-card {
+  transition: all 0.3s;
+  height: 100%;
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
+  
+  .stat-content {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+  }
+  
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+    
+    i {
+      font-size: 28px;
+      color: #fff;
+    }
+  }
+  
+  .stat-info {
+    flex: 1;
+    
+    .stat-label {
+      font-size: 14px;
+      color: #909399;
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #303133;
+    }
+  }
+}
+
+/* 表格样式 */
+.tech-table {
+  ::v-deep .el-table__body tr:hover > td {
+    background: rgba(#5c7cfa, 0.08) !important;
+  }
+  
+  ::v-deep .el-button--mini {
+    padding: 7px 12px;
+    margin: 2px;
+  }
+}
+
+/* 分页样式 */
+.tech-pagination {
+  margin-top: 20px;
 }
 
 /* 响应式设计 - 平板设备 */
 @media screen and (max-width: 1200px) {
-  .main-content {
-    padding: 15px;
+  .stats-row {
+    margin-bottom: 15px;
   }
   
-  .el-card {
+  .stat-card {
     margin-bottom: 15px;
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    
+    i {
+      font-size: 24px;
+    }
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+  
+  .search-wrapper {
+    margin-bottom: 15px;
+  }
+  
+  .tech-search-form {
+    ::v-deep .el-input__inner {
+      width: 150px;
+    }
   }
 }
 
 /* 响应式设计 - 手机设备 */
 @media screen and (max-width: 768px) {
-  .main-content {
-    padding: 10px;
+  .page-header {
+    margin-bottom: 16px;
   }
   
-  .form-content {
-    padding: 5px;
+  .role-tip {
+    margin-bottom: 15px;
   }
   
-  .table-content {
-    padding: 10px;
+  .stats-row {
+    margin-bottom: 10px;
   }
   
-  /* 统计卡片在手机上的布局 */
   .el-row {
     margin-left: 0 !important;
     margin-right: 0 !important;
@@ -391,11 +515,45 @@ export default {
     padding-right: 0 !important;
   }
   
-  .el-card {
+  .stat-card {
     margin-bottom: 10px;
   }
   
-  /* 表格在小屏幕上的优化 */
+  .stat-content {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px 10px;
+  }
+  
+  .stat-icon {
+    margin-right: 0;
+    margin-bottom: 10px;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .stat-label {
+    font-size: 12px;
+  }
+  
+  .stat-value {
+    font-size: 20px;
+  }
+  
+  .search-wrapper {
+    margin-bottom: 10px;
+  }
+  
+  .tech-search-form {
+    ::v-deep .el-form-item {
+      margin-right: 10px;
+    }
+    
+    ::v-deep .el-input__inner {
+      width: 120px;
+    }
+  }
+  
   .el-table {
     font-size: 12px;
   }
@@ -405,14 +563,12 @@ export default {
     padding-right: 5px;
   }
   
-  /* 操作按钮在小屏幕上的优化 */
-  .el-button--text {
+  .el-button--mini {
+    padding: 5px 8px;
     font-size: 11px;
-    padding: 2px 4px;
   }
   
-  /* 分页器在小屏幕上的优化 */
-  .pagination-content {
+  .tech-pagination {
     text-align: center;
   }
   
@@ -420,7 +576,6 @@ export default {
     justify-content: center;
   }
   
-  /* 对话框在小屏幕上的优化 */
   ::v-deep .el-dialog {
     width: 95% !important;
     margin-top: 5vh !important;
@@ -437,8 +592,18 @@ export default {
 
 /* 响应式设计 - 超小屏幕设备 */
 @media screen and (max-width: 480px) {
-  .main-content {
-    padding: 5px;
+  .tech-search-form {
+    ::v-deep .el-input__inner {
+      width: 100px;
+    }
+  }
+  
+  .stat-value {
+    font-size: 18px;
+  }
+  
+  .stat-label {
+    font-size: 11px;
   }
   
   .el-table {
@@ -456,7 +621,7 @@ export default {
 
 /* 横向滚动优化 */
 @media screen and (max-width: 768px) {
-  .table-content {
+  .table-wrapper {
     -webkit-overflow-scrolling: touch;
   }
 }
