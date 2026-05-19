@@ -144,11 +144,10 @@ public class JiaoshiController {
                 return R.error("账号格式不正确，只能包含字母、数字和下划线，长度7-20位");
             }
             
-            // 2. 密码强度校验
-            String passwordError = PasswordValidator.validateAndGetError(jiaoshi.getMima());
-            if (passwordError != null) {
-                log.warn("教师注册失败：{}", passwordError);
-                return R.error(passwordError);
+            // 2. 密码强度校验（毕业设计模式：仅检查长度6位）
+            if (!PasswordValidator.isValidSimple(jiaoshi.getMima())) {
+                log.warn("教师注册失败：密码长度不能少于 6 位");
+                return R.error("密码长度不能少于 6 位");
             }
             
             // 3. 检查账号是否存在

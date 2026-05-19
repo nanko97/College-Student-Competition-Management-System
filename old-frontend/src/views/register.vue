@@ -356,7 +356,8 @@ export default {
       }).then(res => {
         console.log('检查返回:', res.data)
         if (res.data.code === 0) {
-          const available = res.data.data.available
+          // 后端直接返回 { code: 0, available: true/false }
+          const available = res.data.available
           console.log('账号可用:', available)
           if (available === true) {
             this.usernameCheckStatus = 'success'
@@ -369,7 +370,10 @@ export default {
         }
       }).catch(err => {
         console.error('检查账号错误:', err)
-        this.$message.error('网络错误，请重试')
+        // 只在真正的网络错误时显示提示，忽略取消等操作
+        if (err.message && err.message !== 'cancel') {
+          this.$message.error('检查账号失败：' + (err.message || '网络错误'))
+        }
         this.usernameCheckStatus = ''
       })
     },

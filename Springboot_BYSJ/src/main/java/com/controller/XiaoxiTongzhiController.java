@@ -34,17 +34,25 @@ public class XiaoxiTongzhiController {
     @GetMapping("/page")
     public R page(@RequestParam Map<String, Object> params, HttpServletRequest request) {
         try {
+            log.info("========== 消息列表查询开始，参数：{} ==========");
+            
             // 根据角色过滤数据
             String tableName = (String) request.getSession().getAttribute("tableName");
             String username = (String) request.getSession().getAttribute("username");
             
+            // 设置角色过滤参数
             if ("xuesheng".equals(tableName)) {
                 params.put("jieshourenXuehao", username);
+                log.info("学生角色，学号：{}", username);
             } else if ("jiaoshi".equals(tableName)) {
                 params.put("jieshourenGonghao", username);
+                log.info("教师角色，工号：{}", username);
+            } else {
+                log.info("管理员角色，查看所有消息");
             }
             
             PageUtils page = xiaoxiTongzhiService.queryPageView(params);
+            log.info("消息列表查询成功，总数：{}", page.getTotal());
             return R.ok().put("data", page);
         } catch (Exception e) {
             log.error("查询消息列表异常", e);
@@ -58,19 +66,36 @@ public class XiaoxiTongzhiController {
     @GetMapping("/unread/count")
     public R getUnreadCount(HttpServletRequest request) {
         try {
+            log.info("========== 查询未读消息数量开始 ==========");
             String tableName = (String) request.getSession().getAttribute("tableName");
             String username = (String) request.getSession().getAttribute("username");
             
-            EntityWrapper<XiaoxiTongzhiEntity> ew = new EntityWrapper<>();
-            ew.eq("is_read", "未读");
+            // 使用内存过滤方式，避免 selectCount 问题
+            List<XiaoxiTongzhiEntity> allMessages = xiaoxiTongzhiService.selectList(null);
+            int count = 0;
             
-            if ("xuesheng".equals(tableName)) {
-                ew.eq("jieshouren_xuehao", username);
-            } else if ("jiaoshi".equals(tableName)) {
-                ew.eq("jieshouren_gonghao", username);
+            if (allMessages != null) {
+                for (XiaoxiTongzhiEntity msg : allMessages) {
+                    // 过滤未读消息
+                    if ("未读".equals(msg.getIsRead())) {
+                        // 根据角色过滤
+                        if ("xuesheng".equals(tableName)) {
+                            if (username.equals(msg.getJieshourenXuehao())) {
+                                count++;
+                            }
+                        } else if ("jiaoshi".equals(tableName)) {
+                            if (username.equals(msg.getJieshourenGonghao())) {
+                                count++;
+                            }
+                        } else {
+                            // 管理员查看所有
+                            count++;
+                        }
+                    }
+                }
             }
             
-            int count = xiaoxiTongzhiService.selectCount(ew);
+            log.info("未读消息数量：{}", count);
             return R.ok().put("count", count);
         } catch (Exception e) {
             log.error("获取未读消息数量异常", e);
@@ -84,18 +109,46 @@ public class XiaoxiTongzhiController {
     @OperationLog("标记消息为已读")
     @PostMapping("/markRead/{id}")
     @Transactional(rollbackFor = Exception.class)
-    public R markRead(@PathVariable Long id) {
+    public R markRead(@PathVariable Long id, HttpServletRequest request) {
         try {
+            log.info("========== 标记消息已读开始，ID: {} ==========", id);
+            
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String username = (String) request.getSession().getAttribute("username");
+            
             XiaoxiTongzhiEntity entity = xiaoxiTongzhiService.selectById(id);
             if (entity == null) {
+                log.warn("消息不存在，ID: {}", id);
                 return R.error("消息不存在");
+            }
+            
+            // 权限验证：确保用户只能标记自己的消息
+            boolean canMark = false;
+            if ("xuesheng".equals(tableName)) {
+                canMark = username.equals(entity.getJieshourenXuehao());
+            } else if ("jiaoshi".equals(tableName)) {
+                canMark = username.equals(entity.getJieshourenGonghao());
+            } else {
+                // 管理员可以标记所有消息
+                canMark = true;
+            }
+            
+            if (!canMark) {
+                log.warn("无权操作此消息，用户: {}, 消息ID: {}", username, id);
+                return R.error("无权操作此消息");
+            }
+            
+            // 如果已经是已读状态，直接返回成功
+            if ("已读".equals(entity.getIsRead())) {
+                log.info("消息已是已读状态，ID: {}", id);
+                return R.ok("操作成功");
             }
             
             entity.setIsRead("已读");
             entity.setReadTime(new Date());
             xiaoxiTongzhiService.updateById(entity);
             
-            log.info("✓ 消息已标记为已读，ID: {}", id);
+            log.info("✓ 消息已标记为已读，ID: {}, 用户: {}", id, username);
             return R.ok("操作成功");
         } catch (Exception e) {
             log.error("✗ 标记消息已读异常，ID: {}", id, e);
@@ -111,26 +164,37 @@ public class XiaoxiTongzhiController {
     @Transactional(rollbackFor = Exception.class)
     public R markAllRead(HttpServletRequest request) {
         try {
+            log.info("========== 批量标记消息已读开始 ==========");
             String tableName = (String) request.getSession().getAttribute("tableName");
             String username = (String) request.getSession().getAttribute("username");
             
-            EntityWrapper<XiaoxiTongzhiEntity> ew = new EntityWrapper<>();
-            ew.eq("is_read", "未读");
+            // 使用内存过滤方式
+            List<XiaoxiTongzhiEntity> allMessages = xiaoxiTongzhiService.selectList(null);
+            int count = 0;
             
-            if ("xuesheng".equals(tableName)) {
-                ew.eq("jieshouren_xuehao", username);
-            } else if ("jiaoshi".equals(tableName)) {
-                ew.eq("jieshouren_gonghao", username);
+            for (XiaoxiTongzhiEntity entity : allMessages) {
+                if ("未读".equals(entity.getIsRead())) {
+                    // 根据角色过滤
+                    boolean shouldUpdate = false;
+                    if ("xuesheng".equals(tableName)) {
+                        shouldUpdate = username.equals(entity.getJieshourenXuehao());
+                    } else if ("jiaoshi".equals(tableName)) {
+                        shouldUpdate = username.equals(entity.getJieshourenGonghao());
+                    } else {
+                        // 管理员可以标记所有
+                        shouldUpdate = true;
+                    }
+                    
+                    if (shouldUpdate) {
+                        entity.setIsRead("已读");
+                        entity.setReadTime(new Date());
+                        xiaoxiTongzhiService.updateById(entity);
+                        count++;
+                    }
+                }
             }
             
-            java.util.List<XiaoxiTongzhiEntity> list = xiaoxiTongzhiService.selectList(ew);
-            for (XiaoxiTongzhiEntity entity : list) {
-                entity.setIsRead("已读");
-                entity.setReadTime(new Date());
-                xiaoxiTongzhiService.updateById(entity);
-            }
-            
-            log.info("✓ 批量标记消息已读成功，数量: {}", list.size());
+            log.info("✓ 批量标记消息已读成功，数量: {}", count);
             return R.ok("操作成功");
         } catch (Exception e) {
             log.error("✗ 批量标记消息已读异常", e);

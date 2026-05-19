@@ -48,26 +48,37 @@
     <!-- 搜索和操作区域 -->
     <div class="search-wrapper">
       <el-form :inline="true" :model="searchForm" class="tech-search-form">
-        <el-form-item label="消息类型">
-          <el-select v-model="searchForm.leixing" placeholder="请选择类型" clearable style="width: 150px;">
-            <el-option label="系统通知" value="系统通知"></el-option>
-            <el-option label="审核结果" value="审核结果"></el-option>
-            <el-option label="成绩通知" value="成绩通知"></el-option>
-            <el-option label="截止提醒" value="截止提醒"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="阅读状态">
-          <el-select v-model="searchForm.isRead" placeholder="请选择状态" clearable style="width: 120px;">
-            <el-option label="未读" value="未读"></el-option>
-            <el-option label="已读" value="已读"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="search()">查询</el-button>
-          <el-button type="success" icon="el-icon-refresh" @click="resetSearch()">重置</el-button>
-          <el-button type="warning" icon="el-icon-select" @click="markAllAsRead()" :disabled="statistics.unread === 0">全部已读</el-button>
-          <el-button type="danger" icon="el-icon-delete" @click="batchDelete()" :disabled="selectedIds.length === 0">批量删除</el-button>
-        </el-form-item>
+        <el-row :gutter="20" class="search-row">
+          <el-form-item label="消息标题">
+            <el-input 
+              v-model="searchForm.biaoti" 
+              placeholder="请输入标题关键词" 
+              clearable
+              prefix-icon="el-icon-search"
+              style="width: 200px;"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="消息类型">
+            <el-select v-model="searchForm.leixing" placeholder="请选择类型" clearable style="width: 150px;">
+              <el-option label="系统通知" value="系统通知"></el-option>
+              <el-option label="审核结果" value="审核结果"></el-option>
+              <el-option label="成绩通知" value="成绩通知"></el-option>
+              <el-option label="截止提醒" value="截止提醒"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="阅读状态">
+            <el-select v-model="searchForm.isRead" placeholder="请选择状态" clearable style="width: 120px;">
+              <el-option label="未读" value="未读"></el-option>
+              <el-option label="已读" value="已读"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" icon="el-icon-search" @click="search()">查询</el-button>
+            <el-button type="success" icon="el-icon-refresh" @click="resetSearch()">重置</el-button>
+            <el-button type="warning" icon="el-icon-select" @click="markAllAsRead()" :disabled="statistics.unread === 0">全部已读</el-button>
+            <el-button type="danger" icon="el-icon-delete" @click="batchDelete()" :disabled="selectedIds.length === 0">批量删除</el-button>
+          </el-form-item>
+        </el-row>
       </el-form>
     </div>
 
@@ -179,6 +190,7 @@ export default {
   data() {
     return {
       searchForm: {
+        biaoti: '',
         leixing: '',
         isRead: ''
       },
@@ -208,38 +220,15 @@ export default {
   methods: {
     // 获取统计数据
     getStatistics() {
-      const tableName = this.$storage.get('sessionTable')
-      const username = this.$storage.get('username')
-      
-      let params = {}
-      if (tableName === 'xuesheng') {
-        params.jieshourenXuehao = username
-      } else if (tableName === 'jiaoshi') {
-        params.jieshourenGonghao = username
-      }
-      
+      // 使用专门的 statistics 接口
       this.$http({
-        url: 'xiaoxitongzhi/page',
-        method: 'get',
-        params: {
-          page: 1,
-          limit: 1,
-          ...params
-        }
-      }).then(({ data }) => {
-        if (data && data.code === 0) {
-          this.statistics.total = data.data.total || 0
-        }
-      })
-      
-      // 获取未读数
-      this.$http({
-        url: 'xiaoxitongzhi/unread/count',
+        url: 'xiaoxitongzhi/statistics',
         method: 'get'
       }).then(({ data }) => {
         if (data && data.code === 0) {
-          this.statistics.unread = data.count || 0
-          this.statistics.read = this.statistics.total - this.statistics.unread
+          this.statistics.total = data.data.total || 0
+          this.statistics.unread = data.data.unread || 0
+          this.statistics.read = data.data.read || 0
         }
       })
     },
@@ -264,6 +253,10 @@ export default {
         params.jieshourenGonghao = username
       }
       
+      // 添加搜索条件
+      if (this.searchForm.biaoti) {
+        params.biaoti = '%' + this.searchForm.biaoti + '%'
+      }
       if (this.searchForm.leixing) {
         params.leixing = this.searchForm.leixing
       }
@@ -295,11 +288,30 @@ export default {
     // 重置搜索
     resetSearch() {
       this.searchForm = {
+        biaoti: '',
         leixing: '',
         isRead: ''
       }
       this.pageIndex = 1
       this.getDataList()
+    },
+    
+    // 点击表格行
+    handleRowClick(row) {
+      if (row.isRead === '未读') {
+        this.viewAndMarkRead(row)
+      } else {
+        this.viewDetail(row)
+      }
+    },
+    
+    // 点击消息标题
+    handleMessageClick(row) {
+      if (row.isRead === '未读') {
+        this.viewAndMarkRead(row)
+      } else {
+        this.viewDetail(row)
+      }
     },
     
     // 查看详情并标记为已读
@@ -313,11 +325,24 @@ export default {
         method: 'post'
       }).then(({ data }) => {
         if (data && data.code === 0) {
+          console.log('消息标记为已读成功，ID:', row.id)
+          // 更新当前行的状态
           row.isRead = '已读'
+          // 刷新统计数据
           this.getStatistics()
-          // 触发header更新
-          this.$parent.$parent.$children[0].loadUnreadCount && this.$parent.$parent.$children[0].loadUnreadCount()
+          // 触发header更新未读数量
+          if (this.$parent.$parent && this.$parent.$parent.$children && this.$parent.$parent.$children[0]) {
+            this.$parent.$parent.$children[0].loadUnreadCount && this.$parent.$parent.$children[0].loadUnreadCount()
+          }
+          // 提示用户
+          this.$message.success('已标记为已读')
+        } else {
+          console.error('标记已读失败:', data.msg)
+          this.$message.error(data.msg || '标记已读失败')
         }
+      }).catch(error => {
+        console.error('标记已读请求异常:', error)
+        this.$message.error('网络错误，请稍后重试')
       })
     },
     
@@ -347,6 +372,12 @@ export default {
             this.$message.error(data.msg)
           }
         })
+      }).catch((error) => {
+        // 用户点击取消或关闭对话框，不做任何处理
+        // Element UI 的 $confirm 在取消时会抛出 'cancel' 字符串
+        if (error !== 'cancel') {
+          console.error('删除操作出错:', error)
+        }
       })
     },
     
@@ -370,6 +401,12 @@ export default {
             this.$message.error(data.msg)
           }
         })
+      }).catch((error) => {
+        // 用户点击取消或关闭对话框，不做任何处理
+        // Element UI 的 $confirm 在取消时会抛出 'cancel' 字符串
+        if (error !== 'cancel') {
+          console.error('批量删除操作出错:', error)
+        }
       })
     },
     
@@ -392,6 +429,12 @@ export default {
             this.$message.error(data.msg)
           }
         })
+      }).catch((error) => {
+        // 用户点击取消或关闭对话框，不做任何处理
+        // Element UI 的 $confirm 在取消时会抛出 'cancel' 字符串
+        if (error !== 'cancel') {
+          console.error('全部标记为已读操作出错:', error)
+        }
       })
     },
     

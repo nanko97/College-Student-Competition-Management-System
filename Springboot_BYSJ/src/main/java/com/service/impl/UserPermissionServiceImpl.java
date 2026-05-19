@@ -60,6 +60,9 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/xiaoxitongzhi/info",
         "/xiaoxitongzhi/unread/count",
         "/xiaoxitongzhi/statistics",  // 消息统计
+        "/xiaoxitongzhi/markRead",    // 标记消息为已读
+        "/xiaoxitongzhi/markAllRead", // 批量标记已读
+        "/xiaoxitongzhi/delete",      // 删除消息
         // 文件下载
         "/file/download",
         "/file/upload",
@@ -126,7 +129,9 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         // 人员变更审核
         "/jingsai/biangueng/",
         // 竞赛费用配置
-        "/jingsai/feiyong/"
+        "/jingsai/feiyong/",
+        // 消息通知（教师需要查看和标记消息）
+        "/xiaoxitongzhi/"
     };
     
     @Override
