@@ -341,15 +341,27 @@ public class JiaoshiController {
                   JiaoshiEntity jiaoshi,
                   HttpServletRequest request) {
         try {
+            log.info("教师分页查询，参数：{}", params);
+            
             // 1. 构建查询条件
             EntityWrapper<JiaoshiEntity> ew = new EntityWrapper<>();
             
-            // 2. 执行分页查询
+            // 2. 处理姓名模糊查询
+            if (params.containsKey("jiaoshixingming") && params.get("jiaoshixingming") != null) {
+                String xingming = params.get("jiaoshixingming").toString();
+                if (!xingming.isEmpty()) {
+                    ew.like("jiaoshixingming", xingming.replace("%", ""));
+                    log.info("教师姓名模糊查询：{}", xingming);
+                }
+            }
+            
+            // 3. 执行分页查询
             PageUtils page = jiaoshiService.queryPage(
                 params, 
                 MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, jiaoshi), params), params)
             );
             
+            log.info("教师分页查询成功，总数：{}", page.getTotal());
             return R.ok().put("data", page).put("page", page);
             
         } catch (Exception e) {

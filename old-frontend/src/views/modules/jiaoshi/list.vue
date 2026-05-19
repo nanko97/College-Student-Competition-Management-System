@@ -20,6 +20,14 @@
                 prefix-icon="el-icon-postcard"
               ></el-input>
             </el-form-item>
+            <el-form-item label="教师姓名">
+              <el-input 
+                v-model="searchForm.jiaoshixingming" 
+                placeholder="请输入姓名" 
+                clearable
+                prefix-icon="el-icon-s-custom"
+              ></el-input>
+            </el-form-item>
             <el-form-item>
               <el-button type="primary" icon="el-icon-search" @click="search()">查询</el-button>
             </el-form-item>
@@ -223,6 +231,9 @@ export default {
       let params = { page: this.pageIndex, limit: this.pageSize, sort: 'id' }
       if(this.searchForm.gonghao){
         params['gonghao'] = '%' + this.searchForm.gonghao + '%'
+      }
+      if(this.searchForm.jiaoshixingming){
+        params['jiaoshixingming'] = '%' + this.searchForm.jiaoshixingming + '%'
       }
       this.$http({ url: "jiaoshi/page", method: "get", params }).then(({ data }) => {
         if (data && data.code === 0) {
