@@ -133,8 +133,8 @@
                 </el-input>
               </el-form-item>
               <div v-else>
-                <el-form-item v-if="ruleForm.jingsaiguize" label="竞赛规则" prop="jingsaiguize">
-                    <span>{{ruleForm.jingsaiguize}}</span>
+                <el-form-item label="竞赛规则" prop="jingsaiguize">
+                    <div class="detail-textarea">{{ruleForm.jingsaiguize || '暂无内容'}}</div>
                 </el-form-item>
               </div>
             </el-col>
@@ -151,8 +151,8 @@
                 </el-input>
               </el-form-item>
               <div v-else>
-                <el-form-item v-if="ruleForm.jingsaijiangli" label="竞赛奖励" prop="jingsaijiangli">
-                    <span>{{ruleForm.jingsaijiangli}}</span>
+                <el-form-item label="竞赛奖励" prop="jingsaijiangli">
+                    <div class="detail-textarea">{{ruleForm.jingsaijiangli || '暂无内容'}}</div>
                 </el-form-item>
               </div>
             </el-col>
@@ -237,7 +237,7 @@ export default {
       }
     };
     return {
-	  addEditForm: {"btnSaveFontColor":"rgba(34, 32, 32, 1)","selectFontSize":"14px","btnCancelBorderColor":"#DCDFE6","inputBorderRadius":"16px","inputFontSize":"14px","textareaBgColor":"rgba(207, 199, 199, 0.13)","btnSaveFontSize":"14px","textareaBorderRadius":"16px","uploadBgColor":"rgba(207, 199, 199, 0.13)","textareaBorderStyle":"solid","btnCancelWidth":"88px","textareaHeight":"120px","dateBgColor":"rgba(207, 199, 199, 0.13)","btnSaveBorderRadius":"16px","uploadLableFontSize":"14px","textareaBorderWidth":"1px","inputLableColor":"#606266","addEditBoxColor":"rgba(238, 221, 221, 0.32)","dateIconFontSize":"14px","btnSaveBgColor":"#409EFF","uploadIconFontColor":"#8c939d","textareaBorderColor":"#DCDFE6","btnCancelBgColor":"rgba(84, 244, 185, 1)","selectLableColor":"#606266","btnSaveBorderStyle":"solid","dateBorderWidth":"1px","dateLableFontSize":"14px","dateBorderRadius":"16px","btnCancelBorderStyle":"solid","selectLableFontSize":"14px","selectBorderStyle":"solid","selectIconFontColor":"#C0C4CC","btnCancelHeight":"44px","inputHeight":"40px","btnCancelFontColor":"rgba(23, 23, 24, 1)","dateBorderColor":"#DCDFE6","dateIconFontColor":"#C0C4CC","uploadBorderStyle":"solid","dateBorderStyle":"solid","dateLableColor":"#606266","dateFontSize":"14px","inputBorderWidth":"1px","uploadIconFontSize":"28px","selectHeight":"40px","inputFontColor":"rgba(25, 26, 27, 1)","uploadHeight":"148px","textareaLableColor":"#606266","textareaLableFontSize":"14px","btnCancelFontSize":"14px","inputBorderStyle":"solid","btnCancelBorderRadius":"16px","inputBgColor":"rgba(207, 199, 199, 0.13)","inputLableFontSize":"14px","uploadLableColor":"#606266","uploadBorderRadius":"16px","btnSaveHeight":"44px","selectBgColor":"rgba(207, 199, 199, 0.13)","btnSaveWidth":"88px","selectIconFontSize":"14px","dateHeight":"40px","selectBorderColor":"#DCDFE6","inputBorderColor":"#DCDFE6","uploadBorderColor":"#DCDFE6","textareaFontColor":"rgba(25, 26, 27, 1)","selectBorderWidth":"1px","dateFontColor":"rgba(255, 69, 0, 0.66)","btnCancelBorderWidth":"1px","uploadBorderWidth":"1px","textareaFontSize":"14px","selectBorderRadius":"16px","selectFontColor":"rgba(25, 26, 27, 1)","btnSaveBorderColor":"#409EFF","btnSaveBorderWidth":"1px"},
+	  addEditForm: {"btnSaveFontColor":"#ffffff","selectFontSize":"14px","btnCancelBorderColor":"#dcdfe6","inputBorderRadius":"8px","inputFontSize":"14px","textareaBgColor":"#f5f7fa","btnSaveFontSize":"14px","textareaBorderRadius":"8px","uploadBgColor":"#f5f7fa","textareaBorderStyle":"solid","btnCancelWidth":"100px","textareaHeight":"120px","dateBgColor":"#f5f7fa","btnSaveBorderRadius":"8px","uploadLableFontSize":"14px","textareaBorderWidth":"1px","inputLableColor":"#606266","addEditBoxColor":"#ffffff","dateIconFontSize":"14px","btnSaveBgColor":"#409eff","uploadIconFontColor":"#8c939d","textareaBorderColor":"#dcdfe6","btnCancelBgColor":"#f5f7fa","selectLableColor":"#606266","btnSaveBorderStyle":"solid","dateBorderWidth":"1px","dateLableFontSize":"14px","dateBorderRadius":"8px","btnCancelBorderStyle":"solid","selectLableFontSize":"14px","selectBorderStyle":"solid","selectIconFontColor":"#c0c4cc","btnCancelHeight":"40px","inputHeight":"40px","btnCancelFontColor":"#606266","dateBorderColor":"#dcdfe6","dateIconFontColor":"#c0c4cc","uploadBorderStyle":"solid","dateBorderStyle":"solid","dateLableColor":"#606266","dateFontSize":"14px","inputBorderWidth":"1px","uploadIconFontSize":"28px","selectHeight":"40px","inputFontColor":"#303133","uploadHeight":"148px","textareaLableColor":"#606266","textareaLableFontSize":"14px","btnCancelFontSize":"14px","inputBorderStyle":"solid","btnCancelBorderRadius":"8px","inputBgColor":"#f5f7fa","inputLableFontSize":"14px","uploadLableColor":"#606266","uploadBorderRadius":"8px","btnSaveHeight":"40px","selectBgColor":"#f5f7fa","btnSaveWidth":"100px","selectIconFontSize":"14px","dateHeight":"40px","selectBorderColor":"#dcdfe6","inputBorderColor":"#dcdfe6","uploadBorderColor":"#dcdfe6","textareaFontColor":"#303133","selectBorderWidth":"1px","dateFontColor":"#303133","btnCancelBorderWidth":"1px","uploadBorderWidth":"1px","textareaFontSize":"14px","selectBorderRadius":"8px","selectFontColor":"#303133","btnSaveBorderColor":"#409eff","btnSaveBorderWidth":"1px"},
       id: '',
       type: '',
       ro:{
@@ -364,36 +364,38 @@ export default {
           }
         }
       }
-      // 获取用户信息
-      const sessionTable = this.$storage.get('sessionTable');
-      if (!sessionTable) {
-        console.error('sessionTable 为空，无法获取用户信息');
-        this.$message.error('请先登录');
-        return;
-      }
-      
-      this.$http({
-        url: `${sessionTable}/session`,
-        method: "get"
-      }).then(({ data }) => {
-        if (data && data.code === 0) {
-          var json = data.data;
-          if(json.gonghao != '' && json.gonghao) {
-            this.ruleForm.gonghao = json.gonghao;
-            console.log('自动填充工号:', json.gonghao);
-          }
-          if(json.jiaoshixingming != '' && json.jiaoshixingming) {
-            this.ruleForm.jiaoshixingming = json.jiaoshixingming;
-            console.log('自动填充教师姓名:', json.jiaoshixingming);
-          }
-        } else {
-          console.error('获取用户信息失败:', data.msg);
-          this.$message.error(data.msg || '获取用户信息失败');
+      // 获取用户信息（只在新增/编辑时自动填充，查看详情时不填充）
+      if(this.type != 'info') {
+        const sessionTable = this.$storage.get('sessionTable');
+        if (!sessionTable) {
+          console.error('sessionTable 为空，无法获取用户信息');
+          this.$message.error('请先登录');
+          return;
         }
-      }).catch(error => {
-        console.error('获取用户信息异常:', error);
-        this.$message.error('获取用户信息失败，请重新登录');
-      });
+        
+        this.$http({
+          url: `${sessionTable}/session`,
+          method: "get"
+        }).then(({ data }) => {
+          if (data && data.code === 0) {
+            var json = data.data;
+            if(json.gonghao != '' && json.gonghao) {
+              this.ruleForm.gonghao = json.gonghao;
+              console.log('自动填充工号:', json.gonghao);
+            }
+            if(json.jiaoshixingming != '' && json.jiaoshixingming) {
+              this.ruleForm.jiaoshixingming = json.jiaoshixingming;
+              console.log('自动填充教师姓名:', json.jiaoshixingming);
+            }
+          } else {
+            console.error('获取用户信息失败:', data.msg);
+            this.$message.error(data.msg || '获取用户信息失败');
+          }
+        }).catch(error => {
+          console.error('获取用户信息异常:', error);
+          this.$message.error('获取用户信息失败，请重新登录');
+        });
+      }
             this.moshiOptions = "付费,免费".split(',')
     },
     // 多级联动参数
@@ -634,5 +636,15 @@ export default {
 }
 .btn .el-button {
   padding: 0;
+}
+
+/* 详情模式下的文本域样式 */
+.detail-textarea {
+  color: #303133 !important;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-word;
+  white-space: pre-wrap;
+  min-height: 40px;
 }
 </style>

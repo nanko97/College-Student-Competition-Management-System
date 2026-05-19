@@ -11,6 +11,7 @@ import pay from '@/views/pay'
 import register from '@/views/register'
 import center from '@/views/center'
 import jingsaixinxi from '@/views/modules/jingsaixinxi/list'
+import jingsaixinxiMyList from '@/views/modules/jingsaixinxi/my-list'
 import xuesheng from '@/views/modules/xuesheng/list'
 import jingsaibaoming from '@/views/modules/jingsaibaoming/list'
 import jiaoshi from '@/views/modules/jiaoshi/list'
@@ -75,6 +76,11 @@ const routes = [{
       path: '/jingsaixinxi',
       name: '竞赛信息',
       component: jingsaixinxi
+    }
+    , {
+      path: '/jingsaixinxi-my',
+      name: '我的竞赛',
+      component: jingsaixinxiMyList
     }
     , {
       path: '/xuesheng',

@@ -2,14 +2,14 @@
   <div class="page-container tech-theme animate-fade-in-up">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h2 class="page-title">竞赛信息管理</h2>
-      <p class="page-subtitle">Competition Information Management</p>
+      <h2 class="page-title">我的竞赛</h2>
+      <p class="page-subtitle">My Competitions</p>
     </div>
 
     <!-- 提示信息 -->
     <div class="role-tip">
       <i class="el-icon-info"></i>
-      <span>提示：管理所有竞赛信息，包括竞赛名称、类型、级别、时间等详细信息</span>
+      <span>提示：管理您自己创建的竞赛，可以进行新增、修改、删除等操作</span>
     </div>
 
     <!-- 统计信息 -->
@@ -84,8 +84,19 @@
 
       <!-- 操作按钮区域 -->
       <div class="action-wrapper">
-        <!-- 竞赛信息页面：不显示任何操作按钮 -->
-        <!-- 所有操作都集中到“我的竞赛”菜单中进行 -->
+        <el-button
+          v-if="isAuth('jingsaixinxi','新增')"
+          type="success"
+          icon="el-icon-plus"
+          @click="addOrUpdateHandler()"
+        >新增竞赛</el-button>
+        <el-button
+          v-if="isAuth('jingsaixinxi','删除') && contents.tableSelection"
+          :disabled="dataListSelections.length <= 0"
+          type="danger"
+          icon="el-icon-delete"
+          @click="deleteHandler()"
+        >批量删除</el-button>
       </div>
 
       <!-- 数据表格 -->
@@ -225,19 +236,21 @@
                 {{scope.row.jiaoshixingming}}
               </template>
             </el-table-column>
-            <el-table-column width="200" :align="contents.tableAlign"
+            <el-table-column width="250" :align="contents.tableAlign"
                 header-align="center"
                 label="操作">
                 <template slot-scope="scope">
-                  <!-- 学生端显示报名按钮 -->
-                  <el-button v-if="isStudent()" 
-                    type="warning" icon="el-icon-user" size="mini" 
-                    @click="baomingHandle(scope.row)"
-                    :disabled="isBaomingEnded(scope.row)">立即报名</el-button>
-                  <!-- 教师/管理员只显示详情按钮 -->
-                  <el-button v-if="!isStudent() && isAuth('jingsaixinxi','查看')" 
+                  <!-- 教师/管理员显示详情、修改、删除 -->
+                  <!-- 我的竞赛页面：因为只查询自己的竞赛，所以可以直接编辑/删除 -->
+                  <el-button v-if="isAuth('jingsaixinxi','查看')" 
                     type="primary" icon="el-icon-view" size="mini" 
                     @click="addOrUpdateHandler(scope.row.id,'info')">详情</el-button>
+                  <el-button v-if="isAuth('jingsaixinxi','修改')" 
+                    type="success" icon="el-icon-edit" size="mini" 
+                    @click="addOrUpdateHandler(scope.row.id)">修改</el-button>
+                  <el-button v-if="isAuth('jingsaixinxi','删除')" 
+                    type="danger" icon="el-icon-delete" size="mini" 
+                    @click="deleteHandler(scope.row.id)">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -329,6 +342,12 @@ export default {
       if(this.searchForm.jingsaimingcheng) params['jingsaimingcheng'] = '%' + this.searchForm.jingsaimingcheng + '%'
       if(this.searchForm.jingsaileixing) params['jingsaileixing'] = '%' + this.searchForm.jingsaileixing + '%'
       if(this.searchForm.jingsaididian) params['jingsaididian'] = '%' + this.searchForm.jingsaididian + '%'
+      
+      // 只查询当前教师创建的竞赛
+      const gonghao = this.$storage.get("username");
+      if (gonghao) {
+        params['gonghao'] = gonghao;
+      }
       
       this.$http({ url: "jingsaixinxi/page", method: "get", params }).then(({ data }) => {
         console.log('竞赛列表API响应:', data);
@@ -510,7 +529,7 @@ export default {
     // 获取统计信息
     getStatistics() {
       this.$http({
-        url: 'jingsaixinxi/statistics',
+        url: 'jingsaixinxi/mystatistics',
         method: 'get'
       }).then(({data}) => {
         if (data && data.code === 0) {
@@ -522,8 +541,10 @@ export default {
             ongoingJingsai: stats.ongoingJingsai || 0,
             baomingJingsai: stats.baomingJingsai || 0
           }
-          console.log('竞赛统计数据加载成功:', this.statistics)
+          console.log('我的竞赛统计数据加载成功:', this.statistics)
           console.log('原始返回数据:', stats)
+        } else {
+          console.error('获取统计数据失败:', data.msg)
         }
       }).catch((error) => {
         console.error('获取统计数据失败:', error)

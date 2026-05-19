@@ -127,8 +127,30 @@ export default {
         this.defaultActive = '0'
         return
       }
-      // 将 tableName 的下划线转换为短横线以匹配路由定义
-      const path = '/' + name.replace(/_/g, '-')
+      
+      // 查找菜单项，看看是否有自定义路由路径
+      let targetPath = null
+      for (let item of this.menuList) {
+        if (item.roleName === this.role) {
+          for (let menu of item.backMenu) {
+            for (let child of menu.child) {
+              if (child.tableName === name) {
+                if (child.routePath) {
+                  targetPath = child.routePath
+                }
+                break
+              }
+            }
+            if (targetPath) break
+          }
+        }
+        if (targetPath) break
+      }
+      
+      // 如果有自定义路由路径，使用它；否则使用 tableName 转换
+      const path = targetPath || ('/' + name.replace(/_/g, '-'))
+      console.log('菜单跳转 - tableName:', name, 'routePath:', targetPath, '最终path:', path)
+      
       router.push(path).catch(err => {
         if (err.name !== 'NavigationDuplicated') {
           console.error('路由跳转失败:', err)

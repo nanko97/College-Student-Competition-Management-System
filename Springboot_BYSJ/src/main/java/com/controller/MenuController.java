@@ -111,6 +111,7 @@ public class MenuController {
         menus.add(createMenu("jingsai", "竞赛管理", "TrophyOutlined", "/jingsai", null,
                 Arrays.asList(
                         createSubMenu("jingsai_xinxi", "竞赛信息", "jingsaixinxi/list"),
+                        createSubMenu("jingsai_my", "我的竞赛", "jingsaixinxi/my-list"),
                         createSubMenu("jingsai_baoming", "竞赛报名", "jingsaibaoming/list"),
                         createSubMenu("jingsai_feiyong", "费用配置", "jingsai-feiyong/list"),
                         createSubMenu("jingsai_jiaofei", "缴费记录", "jingsai-jiaofei/list"),
@@ -246,6 +247,7 @@ public class MenuController {
         menus.add(createMenu("jingsai", "竞赛管理", "TrophyOutlined", "/jingsai", null,
                 Arrays.asList(
                         createSubMenu("jingsai_xinxi", "竞赛信息", "jingsaixinxi/list"),
+                        createSubMenu("jingsai_my", "我的竞赛", "jingsaixinxi/my-list"),
                         createSubMenu("jingsai_baoming", "竞赛报名", "jingsaibaoming/list")
                 )));
 

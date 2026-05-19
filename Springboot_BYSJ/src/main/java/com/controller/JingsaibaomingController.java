@@ -90,10 +90,27 @@ public class JingsaibaomingController {
             log.info("前端传递的xuehao：{}", params.get("xuehao"));
             
             if ("jiaoshi".equals(tableName)) {
-                // 教师只能查看自己发布的竞赛的报名
+                // 教师只能查看自己组织的竞赛的报名
                 String gonghao = (String) request.getSession().getAttribute("username");
-                jingsaibaoming.setGonghao(gonghao);
-                log.info("教师 {} 查询所教竞赛的报名列表", gonghao);
+                
+                // 先查询该教师创建的所有竞赛ID
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", gonghao);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    // 提取竞赛 ID 列表
+                    List<Long> myJingsaiIds = myJingsaiList.stream()
+                            .map(JingsaixinxiEntity::getId)
+                            .collect(Collectors.toList());
+                    // 使用 IN 查询，只查询这些竞赛的报名
+                    params.put("jingsai_id_in", myJingsaiIds);
+                    log.info("教师 {} 查询自己组织的 {} 个竞赛的报名列表", gonghao, myJingsaiIds.size());
+                } else {
+                    // 该教师没有创建任何竞赛，返回空结果
+                    params.put("jingsai_id", -1);
+                    log.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+                }
             } else if ("xuesheng".equals(tableName)) {
                 // 学生只能查看自己的报名 - 强制过滤
                 String xuehao = (String) request.getSession().getAttribute("username");
@@ -229,16 +246,50 @@ public class JingsaibaomingController {
                   JingsaibaomingEntity jingsaibaoming,
                   HttpServletRequest request) {
         try {
-            // 1. 构建查询条件
+            // 1. 权限控制：根据用户角色过滤数据
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            
+            if ("jiaoshi".equals(tableName)) {
+                // 教师只能查看自己组织的竞赛的报名
+                String gonghao = (String) request.getSession().getAttribute("username");
+                
+                // 先查询该教师创建的所有竞赛ID
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", gonghao);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    // 提取竞赛 ID 列表
+                    List<Long> myJingsaiIds = myJingsaiList.stream()
+                            .map(JingsaixinxiEntity::getId)
+                            .collect(Collectors.toList());
+                    // 使用 IN 查询，只查询这些竞赛的报名
+                    params.put("jingsai_id_in", myJingsaiIds);
+                    log.info("教师 {} 查询自己组织的 {} 个竞赛的报名列表", gonghao, myJingsaiIds.size());
+                } else {
+                    // 该教师没有创建任何竞赛，返回空结果
+                    params.put("jingsai_id", -1);
+                    log.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+                }
+            } else if ("xuesheng".equals(tableName)) {
+                // 学生只能查看自己的报名
+                String xuehao = (String) request.getSession().getAttribute("username");
+                if (xuehao != null && !xuehao.isEmpty()) {
+                    params.put("xuehao", xuehao);
+                    log.info("学生 {} 查询自己的报名列表", xuehao);
+                }
+            }
+            
+            // 2. 构建查询条件
             EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<>();
             
-            // 2. 执行分页查询
+            // 3. 执行分页查询
             PageUtils page = jingsaibaomingService.queryPage(
                 params, 
                 MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, jingsaibaoming), params), params)
             );
             
-            // 3. 为每条报名记录填充竞赛类型
+            // 4. 为每条报名记录填充竞赛类型
             if (page != null && page.getList() != null) {
                 for (Object obj : page.getList()) {
                     JingsaibaomingEntity baoming = (JingsaibaomingEntity) obj;

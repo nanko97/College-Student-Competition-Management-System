@@ -120,6 +120,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/jingsai/jinji/",
         // 级别版本
         "/jingsai/jibie/",
+        "/jingsai/jibiebanben/",
         // 作品管理
         "/zuopin/",
         // 赛道管理

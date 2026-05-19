@@ -80,12 +80,42 @@ public class JingsaiJinjiController {
 
     /**
      * 查询晋级关系列表
+     * 教师只能查看自己组织的竞赛的晋级关系
      */
-    @IgnoreAuth
     @GetMapping("/guanxi/list")
-    public R listGuanxi(@RequestParam Map<String, Object> params) {
+    public R listGuanxi(@RequestParam Map<String, Object> params, HttpServletRequest request) {
+        // 权限控制：根据用户角色过滤数据
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        log.info("当前用户角色tableName：{}", tableName);
+        
         // 构建查询条件
         EntityWrapper<JingsaiJinjiGuanxiEntity> ew = new EntityWrapper<>();
+        
+        // 教师只能查看自己组织的竞赛的晋级关系
+        if ("jiaoshi".equals(tableName)) {
+            String gonghao = (String) request.getSession().getAttribute("username");
+            log.info("教师 {} 查询自己组织的竞赛的晋级关系", gonghao);
+            
+            // 先查询该教师创建的所有竞赛ID
+            EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+            jingsaiEw.eq("gonghao", gonghao);
+            List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+            
+            if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                // 提取竞赛 ID 列表
+                List<Long> myJingsaiIds = myJingsaiList.stream()
+                        .map(JingsaixinxiEntity::getId)
+                        .collect(java.util.stream.Collectors.toList());
+                
+                // 晋级关系的fu_jingsai_id或zi_jingsai_id必须在这个教师的竞赛ID列表中
+                ew.andNew().in("fu_jingsai_id", myJingsaiIds).or().in("zi_jingsai_id", myJingsaiIds);
+                log.info("教师 {} 查询到 {} 个竞赛的晋级关系", gonghao, myJingsaiIds.size());
+            } else {
+                // 该教师没有创建任何竞赛，返回空结果
+                ew.eq("id", -1);
+                log.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+            }
+        }
         
         // 处理父竞赛筛选
         if (params.get("fuJingsaiId") != null && !params.get("fuJingsaiId").toString().isEmpty()) {
@@ -359,24 +389,99 @@ public class JingsaiJinjiController {
 
     /**
      * 获取晋级统计信息
+     * 教师只能查看自己创建的竞赛相关的晋级数据
+     * 学生只能查看自己的晋级数据
      */
-    @IgnoreAuth
     @GetMapping("/statistics")
-    public R getStatistics(@RequestParam Map<String, Object> params) {
+    public R getStatistics(HttpServletRequest request) {
         try {
             log.info("========== 晋级统计数据查询开始 ==========");
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            log.info("当前用户角色tableName：{}", tableName);
+            
+            // 获取用户相关的竞赛ID列表
+            final List<Long> myJingsaiIds = new java.util.ArrayList<>();
+            
+            if ("jiaoshi".equals(tableName)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                log.info("教师角色，工号：{}", gonghao);
+                
+                // 查询该教师创建的所有竞赛ID
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", gonghao);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    for (JingsaixinxiEntity jingsai : myJingsaiList) {
+                        myJingsaiIds.add(jingsai.getId());
+                    }
+                    log.info("教师 {} 创建了 {} 个竞赛，IDs: {}", gonghao, myJingsaiIds.size(), myJingsaiIds);
+                } else {
+                    log.info("教师 {} 还没有创建任何竞赛", gonghao);
+                }
+            } else if ("xuesheng".equals(tableName)) {
+                String xuehao = (String) request.getSession().getAttribute("username");
+                log.info("学生角色，学号：{}", xuehao);
+                
+                // 学生通过xuehao字段过滤自己的晋级记录，不需要竞赛ID列表
+            }
+            
             // 使用更可靠的查询方式：先查询所有，再过滤
             List<JingsaiJinjiGuanxiEntity> allGuanxi = jinjiGuanxiService.selectList(null);
             List<JingsaiJinjiJiluEntity> allJilu = jinjiJiluService.selectList(null);
             
+            // 根据角色过滤数据
+            List<JingsaiJinjiGuanxiEntity> filteredGuanxi = allGuanxi;
+            List<JingsaiJinjiJiluEntity> filteredJilu = allJilu;
+            
+            if ("jiaoshi".equals(tableName)) {
+                // 教师：只查看自己竞赛相关的晋级关系和记录
+                if (!myJingsaiIds.isEmpty()) {
+                    filteredGuanxi = new java.util.ArrayList<>();
+                    if (allGuanxi != null) {
+                        for (JingsaiJinjiGuanxiEntity guanxi : allGuanxi) {
+                            if (myJingsaiIds.contains(guanxi.getFuJingsaiId()) || 
+                                myJingsaiIds.contains(guanxi.getZiJingsaiId())) {
+                                filteredGuanxi.add(guanxi);
+                            }
+                        }
+                    }
+                    
+                    filteredJilu = new java.util.ArrayList<>();
+                    if (allJilu != null) {
+                        for (JingsaiJinjiJiluEntity jilu : allJilu) {
+                            if (myJingsaiIds.contains(jilu.getYuanJingsaiId()) || 
+                                myJingsaiIds.contains(jilu.getXinJingsaiId())) {
+                                filteredJilu.add(jilu);
+                            }
+                        }
+                    }
+                } else {
+                    filteredGuanxi = new java.util.ArrayList<>();
+                    filteredJilu = new java.util.ArrayList<>();
+                }
+            } else if ("xuesheng".equals(tableName)) {
+                String xuehao = (String) request.getSession().getAttribute("username");
+                // 学生：只查看自己的晋级记录
+                filteredGuanxi = new java.util.ArrayList<>(); // 学生不看晋级关系配置
+                filteredJilu = new java.util.ArrayList<>();
+                if (allJilu != null) {
+                    for (JingsaiJinjiJiluEntity jilu : allJilu) {
+                        if (xuehao.equals(jilu.getXuehao())) {
+                            filteredJilu.add(jilu);
+                        }
+                    }
+                }
+            }
+            
             // 总晋级关系数
-            int totalGuanxi = allGuanxi != null ? allGuanxi.size() : 0;
+            int totalGuanxi = filteredGuanxi != null ? filteredGuanxi.size() : 0;
             log.info("晋级关系总数：{}", totalGuanxi);
             
             // 活跃晋级关系数
             int activeGuanxi = 0;
-            if (allGuanxi != null) {
-                for (JingsaiJinjiGuanxiEntity guanxi : allGuanxi) {
+            if (filteredGuanxi != null) {
+                for (JingsaiJinjiGuanxiEntity guanxi : filteredGuanxi) {
                     if ("是".equals(guanxi.getIsActive())) {
                         activeGuanxi++;
                     }
@@ -385,15 +490,15 @@ public class JingsaiJinjiController {
             log.info("活跃晋级关系数：{}", activeGuanxi);
             
             // 总晋级记录数
-            int totalJilu = allJilu != null ? allJilu.size() : 0;
+            int totalJilu = filteredJilu != null ? filteredJilu.size() : 0;
             log.info("晋级记录总数：{}", totalJilu);
             
             // 待审核、已通过、已驳回数
             int pendingCount = 0;
             int approvedCount = 0;
             int rejectedCount = 0;
-            if (allJilu != null) {
-                for (JingsaiJinjiJiluEntity jilu : allJilu) {
+            if (filteredJilu != null) {
+                for (JingsaiJinjiJiluEntity jilu : filteredJilu) {
                     String status = jilu.getJinjiZhuangtai();
                     if ("待审核".equals(status)) {
                         pendingCount++;

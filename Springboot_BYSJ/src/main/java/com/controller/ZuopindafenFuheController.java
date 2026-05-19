@@ -7,8 +7,10 @@ import javax.servlet.http.HttpServletRequest;
 import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
 import com.entity.JiaoshiEntity;
+import com.entity.JingsaixinxiEntity;
 import com.entity.ZuopindafenEntity;
 import com.service.JiaoshiService;
+import com.service.JingsaixinxiService;
 import com.service.ZuopindafenService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -42,6 +44,9 @@ public class ZuopindafenFuheController {
     
     @Autowired
     private JiaoshiService jiaoshiService;
+    
+    @Autowired
+    private JingsaixinxiService jingsaixinxiService;
 
     /**
      * 后端列表
@@ -50,10 +55,43 @@ public class ZuopindafenFuheController {
     public R page(@RequestParam Map<String, Object> params, HttpServletRequest request) {
         logger.debug("page方法:,,Controller:{},,params:{}", this.getClass().getName(), params);
         
-        // 权限控制：学生只能查看自己的复核记录
+        // 权限控制：根据用户角色过滤数据
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        logger.info("当前用户角色tableName：{}", tableName);
+        
         String xuehao = (String) params.get("xuehao");
-        if (xuehao != null && !xuehao.isEmpty()) {
-            logger.info("学生复核记录过滤：只查询学号 {} 的记录", xuehao);
+        
+        // 教师只能审核自己创建的竞赛的成绩复核申请
+        if ("jiaoshi".equals(tableName)) {
+            String gonghao = (String) request.getSession().getAttribute("username");
+            logger.info("教师 {} 查询成绩复核申请", gonghao);
+            
+            // 查询该教师创建的所有竞赛ID
+            EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+            jingsaiEw.eq("gonghao", gonghao);
+            List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+            
+            if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                // 提取竞赛ID列表
+                List<Long> jingsaiIds = myJingsaiList.stream()
+                        .map(JingsaixinxiEntity::getId)
+                        .collect(java.util.stream.Collectors.toList());
+                
+                // 只查询这些竞赛的成绩复核申请
+                // 需要通过zuopindafen_id关联查询
+                params.put("jingsaiIds", jingsaiIds);
+                logger.info("教师 {} 只能审核自己创建的 {} 个竞赛的成绩复核申请", gonghao, jingsaiIds.size());
+            } else {
+                // 如果教师没有创建任何竞赛，返回空列表
+                logger.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+                return R.ok().put("data", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1))
+                           .put("page", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1));
+            }
+        } else if ("xuesheng".equals(tableName)) {
+            // 学生只能查看自己的复核记录
+            if (xuehao != null && !xuehao.isEmpty()) {
+                logger.info("学生复核记录过滤：只查询学号 {} 的记录", xuehao);
+            }
         }
         
         PageUtils page = zuopindafenFuheService.queryPage(params);

@@ -4,7 +4,9 @@ import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.entity.JingsaiSaidaoEntity;
+import com.entity.JingsaixinxiEntity;
 import com.service.JingsaiSaidaoService;
+import com.service.JingsaixinxiService;
 import com.utils.IdWorker;
 import com.utils.PageUtils;
 import com.utils.R;
@@ -12,14 +14,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
 @RequestMapping("/jingsai/saidao")
 public class JingsaiSaidaoController {
     @Autowired private JingsaiSaidaoService saidaoService;
+    @Autowired private JingsaixinxiService jingsaixinxiService;
 
     @OperationLog("保存竞赛赛道")
     @PostMapping("/save")
@@ -79,14 +86,130 @@ public class JingsaiSaidaoController {
         }
     }
 
+    /**
+     * 查询赛道列表
+     * 教师只能查看自己组织的竞赛的赛道
+     */
     @GetMapping("/list")
-    public R list(@RequestParam Map<String, Object> params) {
+    public R list(@RequestParam Map<String, Object> params, HttpServletRequest request) {
+        // 权限控制：根据用户角色过滤数据
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        log.info("查询赛道列表 - 角色: {}", tableName);
+        
+        // 先查询所有数据
+        List<JingsaiSaidaoEntity> allSaidao = saidaoService.selectList(null);
+        
+        // 教师过滤：只查看自己组织的竞赛的赛道
+        if ("jiaoshi".equals(tableName)) {
+            String gonghao = (String) request.getSession().getAttribute("username");
+            log.info("教师 {} 查询自己组织的竞赛的赛道", gonghao);
+            
+            // 查询该教师创建的所有竞赛ID
+            EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+            jingsaiEw.eq("gonghao", gonghao);
+            List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+            
+            if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                // 提取竞赛 ID 列表
+                List<Long> myJingsaiIds = myJingsaiList.stream()
+                        .map(JingsaixinxiEntity::getId)
+                        .collect(Collectors.toList());
+                
+                // 内存过滤：只保留教师创建的竞赛的赛道
+                List<JingsaiSaidaoEntity> filteredSaidao = new ArrayList<>();
+                for (JingsaiSaidaoEntity saidao : allSaidao) {
+                    if (myJingsaiIds.contains(saidao.getJingsaiId())) {
+                        filteredSaidao.add(saidao);
+                    }
+                }
+                
+                log.info("教师 {} 查询到 {} 个竞赛的 {} 个赛道", gonghao, myJingsaiIds.size(), filteredSaidao.size());
+                
+                // 构建分页结果
+                int total = filteredSaidao.size();
+                int pageSize = params.get("limit") != null ? Integer.parseInt(params.get("limit").toString()) : 10;
+                int pageNum = params.get("page") != null ? Integer.parseInt(params.get("page").toString()) : 1;
+                int startIndex = (pageNum - 1) * pageSize;
+                int endIndex = Math.min(startIndex + pageSize, total);
+                
+                List<JingsaiSaidaoEntity> pageList = filteredSaidao.subList(
+                    Math.max(0, startIndex), 
+                    Math.max(0, endIndex)
+                );
+                
+                PageUtils page = new PageUtils(pageList, total, pageSize, pageNum);
+                return R.ok().put("page", page);
+            } else {
+                log.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+                return R.ok().put("page", new PageUtils(new ArrayList<>(), 0, 10, 1));
+            }
+        }
+        
+        // 管理员或学生：查询所有
         PageUtils page = saidaoService.queryPage(params);
         return R.ok().put("page", page);
     }
 
+    /**
+     * 分页查询赛道
+     * 教师只能查看自己组织的竞赛的赛道
+     */
     @GetMapping("/page")
-    public R page(@RequestParam Map<String, Object> params) {
+    public R page(@RequestParam Map<String, Object> params, HttpServletRequest request) {
+        // 权限控制：根据用户角色过滤数据
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        log.info("分页查询赛道 - 角色: {}", tableName);
+        
+        // 先查询所有数据
+        List<JingsaiSaidaoEntity> allSaidao = saidaoService.selectList(null);
+        
+        // 教师过滤：只查看自己组织的竞赛的赛道
+        if ("jiaoshi".equals(tableName)) {
+            String gonghao = (String) request.getSession().getAttribute("username");
+            log.info("教师 {} 分页查询自己组织的竞赛的赛道", gonghao);
+            
+            // 查询该教师创建的所有竞赛ID
+            EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+            jingsaiEw.eq("gonghao", gonghao);
+            List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+            
+            if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                // 提取竞赛 ID 列表
+                List<Long> myJingsaiIds = myJingsaiList.stream()
+                        .map(JingsaixinxiEntity::getId)
+                        .collect(Collectors.toList());
+                
+                // 内存过滤：只保留教师创建的竞赛的赛道
+                List<JingsaiSaidaoEntity> filteredSaidao = new ArrayList<>();
+                for (JingsaiSaidaoEntity saidao : allSaidao) {
+                    if (myJingsaiIds.contains(saidao.getJingsaiId())) {
+                        filteredSaidao.add(saidao);
+                    }
+                }
+                
+                log.info("教师 {} 分页查询到 {} 个竞赛的 {} 个赛道", gonghao, myJingsaiIds.size(), filteredSaidao.size());
+                
+                // 构建分页结果
+                int total = filteredSaidao.size();
+                int pageSize = params.get("limit") != null ? Integer.parseInt(params.get("limit").toString()) : 10;
+                int pageNum = params.get("page") != null ? Integer.parseInt(params.get("page").toString()) : 1;
+                int startIndex = (pageNum - 1) * pageSize;
+                int endIndex = Math.min(startIndex + pageSize, total);
+                
+                List<JingsaiSaidaoEntity> pageList = filteredSaidao.subList(
+                    Math.max(0, startIndex), 
+                    Math.max(0, endIndex)
+                );
+                
+                PageUtils page = new PageUtils(pageList, total, pageSize, pageNum);
+                return R.ok().put("page", page);
+            } else {
+                log.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+                return R.ok().put("page", new PageUtils(new ArrayList<>(), 0, 10, 1));
+            }
+        }
+        
+        // 管理员或学生：查询所有
         PageUtils page = saidaoService.queryPage(params);
         return R.ok().put("page", page);
     }

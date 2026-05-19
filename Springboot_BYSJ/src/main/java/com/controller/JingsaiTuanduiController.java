@@ -156,6 +156,7 @@ public class JingsaiTuanduiController {
 
     /**
      * 查询我参与的团队列表
+     * 注意：教师只能查看自己创建的竞赛的团队，学生查看自己参与的团队
      */
     @GetMapping("/my/list")
     public R myList(@RequestParam Map<String, Object> params, HttpServletRequest request) {
@@ -164,10 +165,39 @@ public class JingsaiTuanduiController {
         
         log.info("查询团队列表 - 用户名:{}, 角色:{}", username, tableName);
         
-        // 教师/管理员可以查看所有团队
-        if ("jiaoshi".equals(tableName) || "users".equals(tableName)) {
+        // 教师只能查看自己创建的竞赛的团队
+        if ("jiaoshi".equals(tableName)) {
+            String gonghao = username;
+            log.info("教师 {} 查询自己创建的竞赛的团队", gonghao);
+            
+            // 查询该教师创建的所有竞赛ID
+            EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+            jingsaiEw.eq("gonghao", gonghao);
+            List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+            
+            if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                // 提取竞赛ID列表
+                List<Long> jingsaiIds = myJingsaiList.stream()
+                        .map(JingsaixinxiEntity::getId)
+                        .collect(java.util.stream.Collectors.toList());
+                
+                // 只查询这些竞赛的团队
+                EntityWrapper<JingsaiTuanduiEntity> ew = new EntityWrapper<>();
+                ew.in("jingsai_id", jingsaiIds);
+                PageUtils page = tuanduiService.queryPage(params, ew);
+                log.info("教师 {} 查询到 {} 个团队", gonghao, page.getList().size());
+                return R.ok().put("page", page);
+            } else {
+                // 如果教师没有创建任何竞赛，返回空列表
+                log.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+                return R.ok().put("page", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1));
+            }
+        }
+        
+        // 管理员可以查看所有团队
+        if ("users".equals(tableName)) {
             PageUtils page = tuanduiService.queryPage(params);
-            log.info("教师查询所有团队，返回:{} 条", page.getList().size());
+            log.info("管理员查询所有团队，返回:{} 条", page.getList().size());
             return R.ok().put("page", page);
         }
         

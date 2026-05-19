@@ -4,11 +4,18 @@ import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.entity.JingsaibaomingEntity;
+import com.entity.JingsaiJiaofeiJiluEntity;
+import com.entity.JingsaiTuanduiEntity;
 import com.entity.JingsaixinxiEntity;
+import com.entity.ZuopindafenEntity;
+import com.entity.ZuopindafenFuheEntity;
 import com.entity.view.JingsaixinxiView;
 import com.service.JingsaibaomingService;
-import com.service.impl.JingsaixinxiServiceImpl;
+import com.service.JingsaiJiaofeiJiluService;
+import com.service.JingsaiTuanduiService;
 import com.service.JingsaixinxiService;
+import com.service.ZuopindafenFuheService;
+import com.service.ZuopindafenService;
 import com.utils.IdWorker;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
@@ -23,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -54,6 +62,18 @@ public class JingsaixinxiController {
     
     @Autowired
     private JingsaibaomingService jingsaibaomingService;
+    
+    @Autowired
+    private JingsaiJiaofeiJiluService jingsaiJiaofeiJiluService;
+    
+    @Autowired
+    private JingsaiTuanduiService jingsaiTuanduiService;
+    
+    @Autowired
+    private ZuopindafenService zuopindafenService;
+    
+    @Autowired
+    private ZuopindafenFuheService zuopindafenFuheService;
 
     /**
      * 后端分页列表查询
@@ -74,18 +94,20 @@ public class JingsaixinxiController {
                   JingsaixinxiEntity jingsaixinxi,
                   HttpServletRequest request) {
         try {
-            // 1. 权限控制：如果是教师登录，只能查看自己发布的竞赛
+            // 1. 权限控制：根据前端传递的参数进行过滤
+            // 注意：不在这里自动过滤教师的竞赛，因为“竞赛信息”页面需要显示所有竞赛
+            // 如果前端需要只显示教师的竞赛，会通过params传递gonghao参数
             String tableName = (String) request.getSession().getAttribute("tableName");
-            String role = (String) request.getSession().getAttribute("role");
-            
-            if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
-                String gonghao = (String) request.getSession().getAttribute("username");
-                jingsaixinxi.setGonghao(gonghao);
-                log.debug("教师 {} 查询个人竞赛列表", gonghao);
-            }
+            log.debug("当前用户角色：{}", tableName);
             
             // 2. 构建查询条件 (支持模糊查询、区间查询、排序)
             EntityWrapper<JingsaixinxiEntity> ew = new EntityWrapper<>();
+            
+            // 如果前端传递了gonghao参数，则进行过滤（用于“我的竞赛”页面）
+            if (params.get("gonghao") != null && !params.get("gonghao").toString().isEmpty()) {
+                ew.eq("gonghao", params.get("gonghao").toString());
+                log.debug("按工号过滤：{}", params.get("gonghao"));
+            }
             
             // 3. 处理前端传递的模糊查询参数（带 % 的参数）
             if (params.get("jingsaimingcheng") != null) {
@@ -247,9 +269,8 @@ public class JingsaixinxiController {
                 return R.error("竞赛 ID 非法");
             }
             
-            // 2. 查询竞赛信息 (带缓存)
-            JingsaixinxiEntity jingsaixinxi = ((JingsaixinxiServiceImpl) jingsaixinxiService)
-                .selectByIdWithCache(id);
+            // 2. 查询竞赛信息
+            JingsaixinxiEntity jingsaixinxi = jingsaixinxiService.selectById(id);
             
             if (jingsaixinxi == null) {
                 log.warn("查询竞赛详情失败：ID{}不存在", id);
@@ -636,73 +657,326 @@ public class JingsaixinxiController {
     @RequestMapping("/statistics")
     public R statistics(HttpServletRequest request) {
         try {
-            log.info("========== 竞赛统计数据查询开始 ==========");
+            log.info("========== 统计数据查询开始 ==========");
             Map<String, Object> stats = new HashMap<>();
             String tableName = (String) request.getSession().getAttribute("tableName");
             log.info("当前用户角色tableName：{}", tableName);
             
-            // 1. 统计竞赛总数 - 使用更可靠的查询方式
-            List<JingsaixinxiEntity> allContests = jingsaixinxiService.selectList(null);
-            int totalContests = allContests != null ? allContests.size() : 0;
-            log.info("竞赛总数：{}", totalContests);
+            // 0. 如果是学生，获取该学生报名的竞赛ID列表（用于个人统计）
+            // 注意：教师和管理员都显示所有竞赛的全局统计
+            final List<Long> myJingsaiIds = new ArrayList<>();
             
-            // 如果教师角色，过滤出该教师的竞赛
-            if ("jiaoshi".equals(tableName)) {
+            if ("xuesheng".equals(tableName)) {
+                String xuehao = (String) request.getSession().getAttribute("username");
+                log.info("学生角色，学号：{}", xuehao);
+                
+                // 查询该学生报名的所有竞赛ID（去重）
+                EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
+                baomingEw.eq("xuehao", xuehao);
+                List<JingsaibaomingEntity> myBaomingList = jingsaibaomingService.selectList(baomingEw);
+                
+                if (myBaomingList != null && !myBaomingList.isEmpty()) {
+                    myJingsaiIds.addAll(myBaomingList.stream()
+                            .map(JingsaibaomingEntity::getJingsaiId)
+                            .distinct()
+                            .collect(java.util.stream.Collectors.toList()));
+                    log.info("学生 {} 报名了 {} 个竞赛，IDs: {}", xuehao, myJingsaiIds.size(), myJingsaiIds);
+                } else {
+                    log.info("学生 {} 还没有报名任何竞赛", xuehao);
+                }
+            } else if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
-                log.info("教师角色，工号：{}", gonghao);
-                totalContests = (int) allContests.stream()
-                    .filter(c -> gonghao.equals(c.getGonghao()))
-                    .count();
-                log.info("教师竞赛总数：{}", totalContests);
+                log.info("教师角色，工号：{} - 竞赛信息页面显示所有竞赛的全局统计", gonghao);
+            }
+            
+            // 1. 统计竞赛总数
+            int totalContests = 0;
+            if ("xuesheng".equals(tableName)) {
+                totalContests = myJingsaiIds.size();
+            } else {
+                // 教师和管理员：统计所有竞赛
+                List<JingsaixinxiEntity> allContests = jingsaixinxiService.selectList(null);
+                totalContests = allContests != null ? allContests.size() : 0;
             }
             stats.put("totalJingsai", totalContests);
+            log.info("竞赛总数：{}", totalContests);
             
             // 2. 统计进行中竞赛（竞赛时间未过期的）
-            log.info("查询到的竞赛列表数量：{}", allContests.size());
             int ongoingCount = 0;
             Date now = new Date();
-            log.info("当前时间：{}", now);
             
-            // 如果是教师，只统计该教师的竞赛
-            List<JingsaixinxiEntity> contestsToCheck = allContests;
-            if ("jiaoshi".equals(tableName)) {
-                String gonghao = (String) request.getSession().getAttribute("username");
-                contestsToCheck = allContests.stream()
-                    .filter(c -> gonghao.equals(c.getGonghao()))
-                    .collect(java.util.stream.Collectors.toList());
+            if ("xuesheng".equals(tableName)) {
+                // 学生：只统计自己报名的竞赛
+                if (!myJingsaiIds.isEmpty()) {
+                    List<JingsaixinxiEntity> myContests = jingsaixinxiService.selectBatchIds(myJingsaiIds);
+                    for (JingsaixinxiEntity contest : myContests) {
+                        if (contest.getJingsaishijian() != null && contest.getJingsaishijian().after(now)) {
+                            ongoingCount++;
+                        }
+                    }
+                }
+            } else {
+                // 教师和管理员：统计所有竞赛
+                List<JingsaixinxiEntity> allContests = jingsaixinxiService.selectList(null);
+                if (allContests != null) {
+                    for (JingsaixinxiEntity contest : allContests) {
+                        if (contest.getJingsaishijian() != null && contest.getJingsaishijian().after(now)) {
+                            ongoingCount++;
+                        }
+                    }
+                }
+            }
+            stats.put("ongoingJingsai", ongoingCount);
+            log.info("进行中竞赛数：{}", ongoingCount);
+            
+            // 3. 统计报名记录数
+            int totalApplications = 0;
+            if ("xuesheng".equals(tableName)) {
+                // 学生：只统计自己的报名
+                EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
+                baomingEw.eq("xuehao", (String) request.getSession().getAttribute("username"));
+                List<JingsaibaomingEntity> myBaomings = jingsaibaomingService.selectList(baomingEw);
+                totalApplications = myBaomings != null ? myBaomings.size() : 0;
+            } else {
+                // 教师和管理员：统计所有报名
+                List<JingsaibaomingEntity> allBaomings = jingsaibaomingService.selectList(null);
+                totalApplications = allBaomings != null ? allBaomings.size() : 0;
+            }
+            stats.put("baomingJingsai", totalApplications);
+            log.info("报名记录总数：{}", totalApplications);
+            
+            // 4. 统计待审核报名数
+            int pendingApplications = 0;
+            if ("xuesheng".equals(tableName)) {
+                // 学生：只统计自己的待审核报名
+                EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
+                baomingEw.eq("xuehao", (String) request.getSession().getAttribute("username"));
+                baomingEw.eq("sfsh", "待审核");
+                List<JingsaibaomingEntity> pendingBaomings = jingsaibaomingService.selectList(baomingEw);
+                pendingApplications = pendingBaomings != null ? pendingBaomings.size() : 0;
+            } else {
+                // 教师和管理员：统计所有待审核报名
+                EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
+                baomingEw.eq("sfsh", "待审核");
+                List<JingsaibaomingEntity> pendingBaomings = jingsaibaomingService.selectList(baomingEw);
+                pendingApplications = pendingBaomings != null ? pendingBaomings.size() : 0;
+            }
+            stats.put("pendingBaoming", pendingApplications);
+            log.info("待审核报名数：{}", pendingApplications);
+            
+            // 5. 统计缴费记录数
+            int totalJiaofei = 0;
+            if ("xuesheng".equals(tableName)) {
+                // 学生：只统计自己的缴费
+                EntityWrapper<JingsaiJiaofeiJiluEntity> jiaofeiEw = new EntityWrapper<>();
+                jiaofeiEw.eq("xuehao", (String) request.getSession().getAttribute("username"));
+                List<JingsaiJiaofeiJiluEntity> myJiaofei = jingsaiJiaofeiJiluService.selectList(jiaofeiEw);
+                totalJiaofei = myJiaofei != null ? myJiaofei.size() : 0;
+            } else {
+                // 教师和管理员：统计所有缴费
+                List<JingsaiJiaofeiJiluEntity> allJiaofei = jingsaiJiaofeiJiluService.selectList(null);
+                totalJiaofei = allJiaofei != null ? allJiaofei.size() : 0;
+            }
+            stats.put("totalJiaofei", totalJiaofei);
+            log.info("缴费记录总数：{}", totalJiaofei);
+            
+            // 6. 统计待审核缴费数
+            int pendingJiaofei = 0;
+            if ("jiaoshi".equals(tableName) || "xuesheng".equals(tableName)) {
+                // 教师或学生：只统计自己相关的竞赛缴费
+                if (!myJingsaiIds.isEmpty()) {
+                    EntityWrapper<JingsaiJiaofeiJiluEntity> jiaofeiEw = new EntityWrapper<>();
+                    jiaofeiEw.in("jingsai_id", myJingsaiIds);
+                    jiaofeiEw.eq("jiaofei_zhuangtai", "已缴费");
+                    List<JingsaiJiaofeiJiluEntity> pendingJiaofeiList = jingsaiJiaofeiJiluService.selectList(jiaofeiEw);
+                    pendingJiaofei = pendingJiaofeiList != null ? pendingJiaofeiList.size() : 0;
+                }
+            } else {
+                // 管理员：统计所有待审核缴费
+                EntityWrapper<JingsaiJiaofeiJiluEntity> jiaofeiEw = new EntityWrapper<>();
+                jiaofeiEw.eq("jiaofei_zhuangtai", "已缴费");
+                List<JingsaiJiaofeiJiluEntity> pendingJiaofeiList = jingsaiJiaofeiJiluService.selectList(jiaofeiEw);
+                pendingJiaofei = pendingJiaofeiList != null ? pendingJiaofeiList.size() : 0;
+            }
+            stats.put("pendingJiaofei", pendingJiaofei);
+            log.info("待审核缴费数：{}", pendingJiaofei);
+            
+            // 7. 统计作品提交数
+            int totalZuopin = 0;
+            if ("jiaoshi".equals(tableName) || "xuesheng".equals(tableName)) {
+                // 教师或学生：只统计自己相关的竞赛作品
+                if (!myJingsaiIds.isEmpty()) {
+                    EntityWrapper<JingsaibaomingEntity> zuopinEw = new EntityWrapper<>();
+                    zuopinEw.in("jingsai_id", myJingsaiIds);
+                    zuopinEw.isNotNull("cansaizuopin");
+                    zuopinEw.ne("cansaizuopin", "");
+                    List<JingsaibaomingEntity> zuopinBaomings = jingsaibaomingService.selectList(zuopinEw);
+                    totalZuopin = zuopinBaomings != null ? zuopinBaomings.size() : 0;
+                }
+            } else {
+                // 管理员：统计所有作品
+                EntityWrapper<JingsaibaomingEntity> zuopinEw = new EntityWrapper<>();
+                zuopinEw.isNotNull("cansaizuopin");
+                zuopinEw.ne("cansaizuopin", "");
+                List<JingsaibaomingEntity> zuopinBaomings = jingsaibaomingService.selectList(zuopinEw);
+                totalZuopin = zuopinBaomings != null ? zuopinBaomings.size() : 0;
+            }
+            stats.put("totalZuopin", totalZuopin);
+            log.info("作品提交总数：{}", totalZuopin);
+            
+            // 8. 统计团队数量
+            int totalTuandui = 0;
+            if ("jiaoshi".equals(tableName) || "xuesheng".equals(tableName)) {
+                // 教师或学生：只统计自己相关的竞赛团队
+                if (!myJingsaiIds.isEmpty()) {
+                    EntityWrapper<JingsaiTuanduiEntity> tuanduiEw = new EntityWrapper<>();
+                    tuanduiEw.in("jingsai_id", myJingsaiIds);
+                    List<JingsaiTuanduiEntity> myTuandui = jingsaiTuanduiService.selectList(tuanduiEw);
+                    totalTuandui = myTuandui != null ? myTuandui.size() : 0;
+                }
+            } else {
+                // 管理员：统计所有团队
+                List<JingsaiTuanduiEntity> allTuandui = jingsaiTuanduiService.selectList(null);
+                totalTuandui = allTuandui != null ? allTuandui.size() : 0;
+            }
+            stats.put("totalTuandui", totalTuandui);
+            log.info("团队总数：{}", totalTuandui);
+            
+            // 9. 统计待审核团队数
+            int pendingTuandui = 0;
+            if ("jiaoshi".equals(tableName) || "xuesheng".equals(tableName)) {
+                // 教师或学生：只统计自己相关的竞赛团队
+                if (!myJingsaiIds.isEmpty()) {
+                    EntityWrapper<JingsaiTuanduiEntity> tuanduiEw = new EntityWrapper<>();
+                    tuanduiEw.in("jingsai_id", myJingsaiIds);
+                    tuanduiEw.eq("shenhe_zhuangtai", "待审核");
+                    List<JingsaiTuanduiEntity> pendingTuanduiList = jingsaiTuanduiService.selectList(tuanduiEw);
+                    pendingTuandui = pendingTuanduiList != null ? pendingTuanduiList.size() : 0;
+                }
+            } else {
+                // 管理员：统计所有待审核团队
+                EntityWrapper<JingsaiTuanduiEntity> tuanduiEw = new EntityWrapper<>();
+                tuanduiEw.eq("shenhe_zhuangtai", "待审核");
+                List<JingsaiTuanduiEntity> pendingTuanduiList = jingsaiTuanduiService.selectList(tuanduiEw);
+                pendingTuandui = pendingTuanduiList != null ? pendingTuanduiList.size() : 0;
+            }
+            stats.put("pendingTuandui", pendingTuandui);
+            log.info("待审核团队数：{}", pendingTuandui);
+            
+            // 10. 统计待审核复核申请数
+            int pendingFuhe = 0;
+            if ("jiaoshi".equals(tableName) || "xuesheng".equals(tableName)) {
+                // 教师或学生：只统计自己相关的竞赛复核
+                if (!myJingsaiIds.isEmpty()) {
+                    // 先获取这些竞赛的所有作品打分记录
+                    List<ZuopindafenEntity> allZuopindafen = zuopindafenService.selectList(null);
+                    
+                    // 获取我相关的竞赛名称列表
+                    List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectBatchIds(myJingsaiIds);
+                    final List<String> myJingsaiNames = myJingsaiList.stream()
+                            .map(JingsaixinxiEntity::getJingsaimingcheng)
+                            .collect(java.util.stream.Collectors.toList());
+                    
+                    // 过滤出这些竞赛的作品打分ID
+                    final List<Long> myZuopindafenIds = allZuopindafen.stream()
+                            .filter(z -> myJingsaiNames.contains(z.getJingsaimingcheng()))
+                            .map(ZuopindafenEntity::getId)
+                            .collect(java.util.stream.Collectors.toList());
+                    
+                    // 统计这些作品打分的待审核复核申请
+                    if (!myZuopindafenIds.isEmpty()) {
+                        EntityWrapper<ZuopindafenFuheEntity> fuheEw = new EntityWrapper<>();
+                        fuheEw.in("zuopindafen_id", myZuopindafenIds);
+                        fuheEw.eq("fuhe_status", "待审核");
+                        List<ZuopindafenFuheEntity> pendingFuheList = zuopindafenFuheService.selectList(fuheEw);
+                        pendingFuhe = pendingFuheList != null ? pendingFuheList.size() : 0;
+                    }
+                }
+            } else {
+                // 管理员：统计所有待审核复核
+                EntityWrapper<ZuopindafenFuheEntity> fuheEw = new EntityWrapper<>();
+                fuheEw.eq("fuhe_status", "待审核");
+                List<ZuopindafenFuheEntity> pendingFuheList = zuopindafenFuheService.selectList(fuheEw);
+                pendingFuhe = pendingFuheList != null ? pendingFuheList.size() : 0;
+            }
+            stats.put("pendingFuhe", pendingFuhe);
+            log.info("待审核复核申请数：{}", pendingFuhe);
+
+            log.info("统计数据查询成功，角色：{}", tableName);
+            return R.ok().put("data", stats);
+            
+        } catch (Exception e) {
+            log.error("统计数据查询异常：", e);
+            return R.error("统计查询失败，请重试");
+        }
+    }
+    
+    /**
+     * “我的竞赛”统计数据接口
+     * 功能：只统计当前教师自己创建的竞赛数据
+     * 
+     * @param request HTTP 请求
+     * @return R 统一返回结果，包含统计数据
+     */
+    @RequestMapping("/mystatistics")
+    public R mystatistics(HttpServletRequest request) {
+        try {
+            log.info("========== 我的竞赛统计数据查询开始 ==========");
+            Map<String, Object> stats = new HashMap<>();
+            
+            // 获取当前登录教师的工号
+            String gonghao = (String) request.getSession().getAttribute("username");
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            
+            if (!"jiaoshi".equals(tableName)) {
+                log.warn("非教师角色访问我的竞赛统计，角色：{}", tableName);
+                return R.error("只有教师可以查看我的竞赛统计");
             }
             
-            for (JingsaixinxiEntity contest : contestsToCheck) {
-                if (contest.getJingsaishijian() != null) {
-                    log.info("竞赛【{}】时间：{}", contest.getJingsaimingcheng(), contest.getJingsaishijian());
-                    if (contest.getJingsaishijian().after(now)) {
+            log.info("教师工号：{}", gonghao);
+            
+            // 1. 查询该教师创建的所有竞赛
+            EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+            jingsaiEw.eq("gonghao", gonghao);
+            List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+            
+            int totalContests = myJingsaiList != null ? myJingsaiList.size() : 0;
+            stats.put("totalJingsai", totalContests);
+            log.info("我的竞赛总数：{}", totalContests);
+            
+            // 2. 统计进行中竞赛
+            int ongoingCount = 0;
+            Date now = new Date();
+            if (myJingsaiList != null) {
+                for (JingsaixinxiEntity contest : myJingsaiList) {
+                    if (contest.getJingsaishijian() != null && contest.getJingsaishijian().after(now)) {
                         ongoingCount++;
                     }
                 }
             }
-            log.info("进行中竞赛数：{}", ongoingCount);
             stats.put("ongoingJingsai", ongoingCount);
+            log.info("我的进行中竞赛数：{}", ongoingCount);
             
-            // 3. 统计报名记录数
-            List<JingsaibaomingEntity> allBaomings = jingsaibaomingService.selectList(null);
-            int totalApplications = allBaomings != null ? allBaomings.size() : 0;
-            
-            // 如果是教师，过滤出该教师的竞赛的报名记录
-            if ("jiaoshi".equals(tableName)) {
-                String gonghao = (String) request.getSession().getAttribute("username");
-                totalApplications = (int) allBaomings.stream()
-                    .filter(b -> gonghao.equals(b.getGonghao()))
-                    .count();
+            // 3. 统计这些竞赛的报名记录数
+            int totalApplications = 0;
+            if (totalContests > 0) {
+                List<Long> myJingsaiIds = myJingsaiList.stream()
+                        .map(JingsaixinxiEntity::getId)
+                        .collect(java.util.stream.Collectors.toList());
+                
+                EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
+                baomingEw.in("jingsai_id", myJingsaiIds);
+                List<JingsaibaomingEntity> myBaomings = jingsaibaomingService.selectList(baomingEw);
+                totalApplications = myBaomings != null ? myBaomings.size() : 0;
             }
-            log.info("报名记录总数：{}", totalApplications);
             stats.put("baomingJingsai", totalApplications);
+            log.info("我的竞赛报名记录总数：{}", totalApplications);
             
-            log.info("竞赛统计数据查询成功，角色：{}, 总数：{}, 进行中：{}, 报名数：{}", 
-                    tableName, totalContests, ongoingCount, totalApplications);
+            log.info("我的竞赛统计数据查询成功，教师：{}", gonghao);
             return R.ok().put("data", stats);
             
         } catch (Exception e) {
-            log.error("竞赛统计数据查询异常：", e);
+            log.error("我的竞赛统计数据查询异常：", e);
             return R.error("统计查询失败，请重试");
         }
     }

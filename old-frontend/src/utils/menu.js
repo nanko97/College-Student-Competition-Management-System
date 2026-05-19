@@ -15,7 +15,10 @@ const menu = {
                     "tableName": "jiaoshi"
                 }], "menu": "用户管理"
             }, {
-                "child": [{"buttons": ["查看", "删除"], "menu": "竞赛信息", "menuJump": "列表", "tableName": "jingsaixinxi"}],
+                "child": [
+                    {"buttons": ["查看"], "menu": "竞赛信息", "menuJump": "列表", "tableName": "jingsaixinxi"},
+                    {"buttons": ["新增", "查看", "修改", "删除"], "menu": "我的竞赛", "menuJump": "列表", "tableName": "jingsaixinxi_my", "routePath": "/jingsaixinxi-my"}
+                ],
                 "menu": "竞赛管理"
             }, {
                 "child": [{"buttons": ["查看", "删除"], "menu": "竞赛报名", "menuJump": "列表", "tableName": "jingsaibaoming"}],
@@ -119,12 +122,21 @@ const menu = {
         }, {
             // ==================== 教师菜单 ====================
             "backMenu": [{
-                "child": [{
-                    "buttons": ["新增", "查看", "修改", "删除", "查看评论"],
-                    "menu": "竞赛信息",
-                    "menuJump": "列表",
-                    "tableName": "jingsaixinxi"
-                }], "menu": "竞赛管理"
+                "child": [
+                    {
+                        "buttons": ["查看"],
+                        "menu": "竞赛信息",
+                        "menuJump": "列表",
+                        "tableName": "jingsaixinxi"
+                    },
+                    {
+                        "buttons": ["新增", "查看", "修改", "删除"],
+                        "menu": "我的竞赛",
+                        "menuJump": "列表",
+                        "tableName": "jingsaixinxi_my",
+                        "routePath": "/jingsaixinxi-my"
+                    }
+                ], "menu": "竞赛管理"
             }, {
                 "child": [{
                     "buttons": ["查看", "审核", "评分", "删除"],
