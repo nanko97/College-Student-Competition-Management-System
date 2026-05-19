@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -181,6 +182,67 @@ public class XiaoxiTongzhiController {
         } catch (Exception e) {
             log.error("发送消息异常", e);
             return R.error("发送失败");
+        }
+    }
+
+    /**
+     * 获取统计数据
+     * 功能：统计总消息数、未读消息数、已读消息数
+     * 
+     * @param request HTTP 请求
+     * @return R 统一返回结果，包含统计信息
+     */
+    @RequestMapping("/statistics")
+    public R statistics(HttpServletRequest request) {
+        try {
+            log.info("========== 消息统计数据查询开始 ==========");
+            Map<String, Object> stats = new java.util.HashMap<>();
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String username = (String) request.getSession().getAttribute("username");
+            
+            // 使用更可靠的查询方式：先查询所有，再过滤
+            List<XiaoxiTongzhiEntity> allMessages = xiaoxiTongzhiService.selectList(null);
+            
+            // 根据角色过滤
+            if ("xuesheng".equals(tableName)) {
+                final String finalUsername = username;
+                allMessages = allMessages.stream()
+                    .filter(m -> finalUsername.equals(m.getJieshourenXuehao()))
+                    .collect(java.util.stream.Collectors.toList());
+            } else if ("jiaoshi".equals(tableName)) {
+                final String finalUsername = username;
+                allMessages = allMessages.stream()
+                    .filter(m -> finalUsername.equals(m.getJieshourenGonghao()))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            // 1. 统计总消息数
+            int totalCount = allMessages != null ? allMessages.size() : 0;
+            log.info("消息总数：{}", totalCount);
+            stats.put("total", totalCount);
+            
+            // 2. 统计未读和已读消息数
+            int unreadCount = 0;
+            int readCount = 0;
+            if (allMessages != null) {
+                for (XiaoxiTongzhiEntity message : allMessages) {
+                    if ("未读".equals(message.getIsRead())) {
+                        unreadCount++;
+                    } else if ("已读".equals(message.getIsRead())) {
+                        readCount++;
+                    }
+                }
+            }
+            log.info("未读：{}，已读：{}", unreadCount, readCount);
+            stats.put("unread", unreadCount);
+            stats.put("read", readCount);
+            
+            log.info("消息统计数据查询成功，角色：{}", tableName);
+            return R.ok().put("data", stats);
+            
+        } catch (Exception e) {
+            log.error("消息统计数据查询异常：", e);
+            return R.error("统计查询失败，请重试");
         }
     }
 }

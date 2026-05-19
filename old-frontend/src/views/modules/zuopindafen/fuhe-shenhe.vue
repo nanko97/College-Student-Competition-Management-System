@@ -291,6 +291,17 @@ export default {
     margin-bottom: 0;
     margin-right: 20px;
   }
+  ::v-deep .el-input__inner { width: 200px; }
+  ::v-deep .el-select .el-input__inner { width: 150px; }
+  // 让最后一个form-item（查询按钮）垂直居中
+  ::v-deep .el-form-item:last-child {
+    margin-right: 0;
+    .el-form-item__content {
+      display: flex;
+      align-items: center;
+      line-height: 32px; // 与输入框高度一致
+    }
+  }
 }
 .tech-pagination {
   margin-top: 20px;

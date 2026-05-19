@@ -1,26 +1,25 @@
 const menu = {
     list() {
         return [{
+            // ==================== 管理员菜单 ====================
             "backMenu": [{
                 "child": [{
                     "buttons": ["新增", "查看", "修改", "删除"],
                     "menu": "学生",
                     "menuJump": "列表",
                     "tableName": "xuesheng"
-                }], "menu": "学生管理"
-            }, {
-                "child": [{
+                }, {
                     "buttons": ["新增", "查看", "修改", "删除"],
                     "menu": "教师",
                     "menuJump": "列表",
                     "tableName": "jiaoshi"
-                }], "menu": "教师管理"
+                }], "menu": "用户管理"
             }, {
                 "child": [{"buttons": ["查看", "删除"], "menu": "竞赛信息", "menuJump": "列表", "tableName": "jingsaixinxi"}],
-                "menu": "竞赛信息管理"
+                "menu": "竞赛管理"
             }, {
                 "child": [{"buttons": ["查看", "删除"], "menu": "竞赛报名", "menuJump": "列表", "tableName": "jingsaibaoming"}],
-                "menu": "竞赛报名管理"
+                "menu": "报名管理"
             }, {
                 "child": [
                     {"buttons": ["新增", "查看", "修改", "删除"], "menu": "费用配置", "menuJump": "列表", "tableName": "jingsai_feiyong"},
@@ -43,7 +42,7 @@ const menu = {
                 "child": [
                     {"buttons": ["新增", "查看", "修改", "删除"], "menu": "赛道管理", "menuJump": "列表", "tableName": "jingsai_saidao"}
                 ],
-                "menu": "赛道分组管理"
+                "menu": "赛道管理"
             }, {
                 "child": [
                     {"buttons": ["查看"], "menu": "团队管理", "menuJump": "列表", "tableName": "jingsai_tuandui"}
@@ -51,19 +50,15 @@ const menu = {
                 "menu": "团队管理"
             }, {
                 "child": [
-                    {"buttons": ["新增", "查看", "修改", "删除"], "menu": "作品打分", "menuJump": "列表", "tableName": "zuopindafen"}
-                ],
-                "menu": "作品打分管理"
-            }, {
-                "child": [
-                    {"buttons": ["查看", "下载", "评分"], "menu": "作品管理", "menuJump": "列表", "tableName": "zuopin"}
+                    {"buttons": ["新增", "查看", "修改", "删除"], "menu": "作品打分", "menuJump": "列表", "tableName": "zuopindafen"},
+                    {"buttons": ["查看", "下载", "评分"], "menu": "作品查看", "menuJump": "列表", "tableName": "zuopin"}
                 ],
                 "menu": "作品管理"
             }, {
                 "child": [
                     {"buttons": ["查看", "审核"], "menu": "成绩复核", "menuJump": "列表", "tableName": "zuopindafen-fuhe-shenhe"}
                 ],
-                "menu": "成绩复核管理"
+                "menu": "复核管理"
             }, {
                 "child": [
                     {"buttons": ["新增", "查看"], "menu": "人员变更申请", "menuJump": "列表", "tableName": "jingsai_renyuan_biangueng"},
@@ -79,6 +74,7 @@ const menu = {
             "roleName": "管理员",
             "tableName": "users"
         }, {
+            // ==================== 学生菜单 ====================
             "backMenu": [{
                 "child": [{
                     "buttons": ["查看", "报名"],
@@ -86,10 +82,10 @@ const menu = {
                     "menuJump": "列表",
                     "tableName": "jingsaixinxi",
                     "routePath": "/jingsaixinxi"
-                }], "menu": "竞赛信息管理"
+                }], "menu": "竞赛信息"
             }, {
                 "child": [{"buttons": ["查看"], "menu": "我的报名", "menuJump": "列表", "tableName": "jingsaibaoming", "routePath": "/jingsaibaoming"}],
-                "menu": "竞赛报名管理"
+                "menu": "我的报名"
             }, {
                 "child": [{"buttons": ["查看", "上传凭证"], "menu": "我的缴费", "menuJump": "列表", "tableName": "xuesheng_my_jiaofei", "routePath": "/xuesheng-my-jiaofei"}],
                 "menu": "我的缴费"
@@ -108,7 +104,7 @@ const menu = {
                     {"buttons": ["查看"], "menu": "申请加入团队", "menuJump": "列表", "tableName": "xuesheng_tuandui_join", "routePath": "/xuesheng-tuandui-join"},
                     {"buttons": ["新增"], "menu": "创建团队", "menuJump": "列表", "tableName": "xuesheng_tuandui_create", "routePath": "/xuesheng-tuandui-create"}
                 ],
-                "menu": "团队管理"
+                "menu": "我的团队"
             }, {
                 "child": [{"buttons": ["查看"], "menu": "我的复核", "menuJump": "列表", "tableName": "zuopindafen_my_fuhe", "routePath": "/zuopindafen-my-fuhe"}],
                 "menu": "我的复核"
@@ -121,29 +117,26 @@ const menu = {
             "roleName": "学生",
             "tableName": "xuesheng"
         }, {
+            // ==================== 教师菜单 ====================
             "backMenu": [{
                 "child": [{
                     "buttons": ["新增", "查看", "修改", "删除", "查看评论"],
                     "menu": "竞赛信息",
                     "menuJump": "列表",
                     "tableName": "jingsaixinxi"
-                }], "menu": "竞赛信息管理"
+                }], "menu": "竞赛管理"
             }, {
                 "child": [{
                     "buttons": ["查看", "审核", "评分", "删除"],
                     "menu": "竞赛报名",
                     "menuJump": "列表",
                     "tableName": "jingsaibaoming"
-                }], "menu": "竞赛报名管理"
+                }], "menu": "报名管理"
             }, {
                 "child": [
                     {"buttons": ["查看", "修改", "删除"], "menu": "作品打分", "menuJump": "列表", "tableName": "zuopindafen"},
-                    {"buttons": ["查看", "审核"], "menu": "成绩复核审核", "menuJump": "列表", "tableName": "zuopindafen_fuhe_shenhe"}
-                ],
-                "menu": "作品打分管理"
-            }, {
-                "child": [
-                    {"buttons": ["查看", "下载", "评分"], "menu": "作品管理", "menuJump": "列表", "tableName": "zuopin"}
+                    {"buttons": ["查看", "审核"], "menu": "成绩复核审核", "menuJump": "列表", "tableName": "zuopindafen_fuhe_shenhe"},
+                    {"buttons": ["查看", "下载", "评分"], "menu": "作品查看", "menuJump": "列表", "tableName": "zuopin"}
                 ],
                 "menu": "作品管理"
             }, {
@@ -167,7 +160,7 @@ const menu = {
                 "child": [
                     {"buttons": ["新增", "查看", "修改", "删除"], "menu": "赛道管理", "menuJump": "列表", "tableName": "jingsai_saidao"}
                 ],
-                "menu": "赛道分组管理"
+                "menu": "赛道管理"
             }, {
                 "child": [
                     {"buttons": ["查看"], "menu": "团队管理", "menuJump": "列表", "tableName": "jingsai_tuandui"}

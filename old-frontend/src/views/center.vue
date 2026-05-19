@@ -141,10 +141,27 @@
           </div>
         </el-form-item>
       </el-col>
-      <el-form-item v-if="flag=='users'" label="用户名" prop="username">
-        <el-input v-model="ruleForm.username" 
-        placeholder="用户名"></el-input>
-      </el-form-item>
+      <!-- 管理员个人信息 -->
+      <el-col :span="12">
+        <el-form-item v-if="flag=='users'" label="用户名" prop="username">
+          <el-input v-model="ruleForm.username" placeholder="请输入用户名" readonly></el-input>
+        </el-form-item>
+      </el-col>
+      <el-col :span="24">
+        <el-form-item v-if="flag=='users'" label="头像" prop="touxiang">
+          <file-upload
+          tip="点击上传头像（建议尺寸：200x200像素，支持jpg/png格式）"
+          action="file/upload"
+          :limit="1"
+          :multiple="false"
+          :fileUrls="ruleForm.touxiang?ruleForm.touxiang:''"
+          @change="userstouxiangUploadChange"
+          ></file-upload>
+          <div v-if="ruleForm.touxiang" style="margin-top: 10px;">
+            <img :src="$imageUrl(ruleForm.touxiang)" width="120" height="120" style="border-radius: 8px; border: 2px solid #e4e7ed;" @error="handleImageError" v-show="imageUrlValid">
+          </div>
+        </el-form-item>
+      </el-col>
       <el-col :span="24">
       <el-form-item>
         <el-button type="primary" @click="onUpdateHandler">修 改</el-button>
@@ -187,10 +204,10 @@ export default {
     var table = this.$storage.get("sessionTable");
     this.flag = table;
     
-    // 管理员默认可以修改所有角色，初始选择学生
+    // 管理员默认查看自己的信息
     if (table === 'users') {
-      this.targetRole = 'xuesheng';
-      this.loadUserInfo('xuesheng');
+      this.targetRole = 'users';
+      this.loadUserInfo('users');
     } else {
       // 学生和教师只能修改自己的信息
       this.loadUserInfo(table);
@@ -224,6 +241,9 @@ export default {
     },
     jiaoshizhaopianUploadChange(fileUrls) {
         this.ruleForm.zhaopian = fileUrls;
+    },
+    userstouxiangUploadChange(fileUrls) {
+        this.ruleForm.touxiang = fileUrls;
     },
     // 图片加载错误处理
     handleImageError(e) {

@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -738,6 +739,101 @@ public class ZuopindafenController {
         } catch (Exception e) {
             log.error("作品评分提醒查询异常：", e);
             return R.error("查询失败，请重试");
+        }
+    }
+
+    /**
+     * 获取统计数据
+     * 功能：统计评分总数、平均分数、复核申请数
+     * 
+     * @param request HTTP 请求
+     * @return R 统一返回结果，包含统计信息
+     */
+    @RequestMapping("/statistics")
+    public R statistics(HttpServletRequest request) {
+        try {
+            log.info("========== 作品打分统计数据查询开始 ==========");
+            Map<String, Object> stats = new HashMap<>();
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            
+            // 使用更可靠的查询方式：先查询所有，再过滤
+            List<ZuopindafenEntity> allScores = zuopindafenService.selectList(null);
+            
+            // 根据用户角色过滤数据
+            if ("xuesheng".equals(tableName)) {
+                // 学生只能查看自己的数据
+                String xuehao = (String) request.getSession().getAttribute("username");
+                final String finalXuehao = xuehao;
+                allScores = allScores.stream()
+                    .filter(s -> finalXuehao.equals(s.getXuehao()))
+                    .collect(java.util.stream.Collectors.toList());
+            } else if ("jiaoshi".equals(tableName)) {
+                // 教师只能查看自己评分的数据
+                String gonghao = (String) request.getSession().getAttribute("username");
+                final String finalGonghao = gonghao;
+                allScores = allScores.stream()
+                    .filter(s -> finalGonghao.equals(s.getGonghao()))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            // 1. 统计评分总数
+            int totalCount = allScores != null ? allScores.size() : 0;
+            log.info("评分总数：{}", totalCount);
+            stats.put("totalPingfen", totalCount);
+            
+            // 2. 计算平均分数
+            if (totalCount > 0) {
+                double sumScore = 0;
+                int validScoreCount = 0;
+                for (ZuopindafenEntity item : allScores) {
+                    if (item.getZuopinpingfen() != null) {
+                        sumScore += item.getZuopinpingfen();
+                        validScoreCount++;
+                    }
+                }
+                if (validScoreCount > 0) {
+                    double avgScore = sumScore / validScoreCount;
+                    // 保留一位小数
+                    stats.put("avgScore", Math.round(avgScore * 10.0) / 10.0);
+                    log.info("平均分：{}", stats.get("avgScore"));
+                } else {
+                    stats.put("avgScore", 0);
+                    log.info("平均分：0（无有效分数）");
+                }
+            } else {
+                stats.put("avgScore", 0);
+                log.info("平均分：0（无评分记录）");
+            }
+            
+            // 3. 统计复核申请数
+            List<ZuopindafenFuheEntity> allFuhes = zuopindafenFuheService.selectList(null);
+            
+            // 根据角色过滤复核记录
+            if ("xuesheng".equals(tableName)) {
+                String xuehao = (String) request.getSession().getAttribute("username");
+                final String finalXuehao = xuehao;
+                allFuhes = allFuhes.stream()
+                    .filter(f -> finalXuehao.equals(f.getXuehao()))
+                    .collect(java.util.stream.Collectors.toList());
+            } else if ("jiaoshi".equals(tableName)) {
+                // 教师需要过滤出自己评分的作品对应的复核记录
+                final List<Long> myScoreIds = allScores.stream()
+                    .map(ZuopindafenEntity::getId)
+                    .collect(java.util.stream.Collectors.toList());
+                allFuhes = allFuhes.stream()
+                    .filter(f -> myScoreIds.contains(f.getZuopindafenId()))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            int fuheCount = allFuhes != null ? allFuhes.size() : 0;
+            log.info("复核申请数：{}", fuheCount);
+            stats.put("fuheCount", fuheCount);
+            
+            log.info("统计数据查询成功，角色：{}", tableName);
+            return R.ok().put("data", stats);
+            
+        } catch (Exception e) {
+            log.error("统计数据查询异常：", e);
+            return R.error("统计查询失败，请重试");
         }
     }
 }

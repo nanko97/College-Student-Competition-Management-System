@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -111,6 +112,49 @@ public class JingsaiFeiyongController {
         } catch (Exception e) {
             log.error("删除费用配置异常", e);
             return R.error("删除失败，请重试");
+        }
+    }
+
+    /**
+     * 获取统计数据
+     * 功能：统计费用配置总数、收费竞赛数、免费竞赛数
+     * 
+     * @return R 统一返回结果，包含统计信息
+     */
+    @RequestMapping("/statistics")
+    public R statistics() {
+        try {
+            log.info("========== 费用统计数据查询开始 ==========");
+            Map<String, Object> stats = new java.util.HashMap<>();
+            
+            // 使用更可靠的查询方式：先查询所有，再过滤
+            List<JingsaiFeiyongEntity> allFeiyong = jingsaiFeiyongService.selectList(null);
+            int totalCount = allFeiyong != null ? allFeiyong.size() : 0;
+            log.info("费用配置总数：{}", totalCount);
+            stats.put("totalFeiyong", totalCount);
+            
+            // 2. 统计收费竞赛数
+            int shoufeiCount = 0;
+            int mianfeiCount = 0;
+            if (allFeiyong != null) {
+                for (JingsaiFeiyongEntity feiyong : allFeiyong) {
+                    if ("是".equals(feiyong.getShifouShoufei())) {
+                        shoufeiCount++;
+                    } else if ("否".equals(feiyong.getShifouShoufei())) {
+                        mianfeiCount++;
+                    }
+                }
+            }
+            log.info("收费竞赛数：{}，免费竞赛数：{}", shoufeiCount, mianfeiCount);
+            stats.put("shoufeiCount", shoufeiCount);
+            stats.put("mianfeiCount", mianfeiCount);
+            
+            log.info("费用统计数据查询成功");
+            return R.ok().put("data", stats);
+            
+        } catch (Exception e) {
+            log.error("费用统计数据查询异常：", e);
+            return R.error("统计查询失败，请重试");
         }
     }
 }

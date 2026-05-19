@@ -1,13 +1,16 @@
 package com.aspect;
 
 import com.annotation.OperationLog;
+import com.entity.OperationLogEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.service.OperationLogService;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -42,6 +45,9 @@ import java.util.Date;
 @Slf4j
 public class OperationLogAspect {
     
+    @Autowired
+    private OperationLogService operationLogService;
+    
     // JSON 序列化工具
     private static final ObjectMapper objectMapper = new ObjectMapper();
     
@@ -74,9 +80,33 @@ public class OperationLogAspect {
         
         // 获取操作人信息
         String operator = getOperator(request);
+        String operatorRole = getOperatorRole(request);
         String methodName = method.getName();
         String description = operationLog.value();
         String module = operationLog.module();
+        
+        // 创建操作日志实体
+        OperationLogEntity logEntity = new OperationLogEntity();
+        logEntity.setOperator(operator);
+        logEntity.setOperatorRole(operatorRole);
+        logEntity.setOperationModule(module);
+        logEntity.setOperationType(getOperationType(methodName));
+        logEntity.setOperationDesc(description);
+        logEntity.setRequestMethod(request.getMethod());
+        logEntity.setRequestUrl(request.getRequestURI());
+        logEntity.setClientIp(getClientIp(request));
+        logEntity.setUserAgent(request.getHeader("User-Agent"));
+        
+        // 记录请求参数（如果需要）
+        if (operationLog.recordParams()) {
+            try {
+                String params = objectMapper.writeValueAsString(joinPoint.getArgs());
+                logEntity.setRequestParams(params.length() > 2000 ? params.substring(0, 2000) + "..." : params);
+            } catch (Exception e) {
+                log.warn("参数序列化失败：{}", e.getMessage());
+                logEntity.setRequestParams("参数序列化失败");
+            }
+        }
         
         // 打印操作开始日志
         log.info("\n===== 操作开始 =====");
@@ -87,22 +117,20 @@ public class OperationLogAspect {
         log.info("请求 URL: {}", request.getRequestURI());
         log.info("请求方式：{}", request.getMethod());
         
-        // 记录请求参数（如果需要）
-        if (operationLog.recordParams()) {
-            try {
-                String params = objectMapper.writeValueAsString(joinPoint.getArgs());
-                log.info("请求参数：{}", params);
-            } catch (Exception e) {
-                log.warn("参数序列化失败：{}", e.getMessage());
-            }
-        }
-        
         try {
             // 执行目标方法
             Object result = joinPoint.proceed();
             
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
+            
+            // 设置成功状态
+            logEntity.setStatus("成功");
+            logEntity.setExecutionTime(duration);
+            logEntity.setCreateTime(new Date());
+            
+            // 异步保存日志到数据库
+            saveLogAsync(logEntity);
             
             // 打印操作成功日志
             log.info("===== 操作成功 =====");
@@ -114,6 +142,15 @@ public class OperationLogAspect {
         } catch (Throwable e) {
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
+            
+            // 设置失败状态
+            logEntity.setStatus("失败");
+            logEntity.setExecutionTime(duration);
+            logEntity.setErrorMsg(e.getMessage());
+            logEntity.setCreateTime(new Date());
+            
+            // 异步保存日志到数据库
+            saveLogAsync(logEntity);
             
             // 打印操作失败日志
             log.error("===== 操作失败 =====");
@@ -148,5 +185,84 @@ public class OperationLogAspect {
         }
         
         return "匿名用户";
+    }
+    
+    /**
+     * 获取操作人角色
+     * 
+     * @param request HTTP 请求
+     * @return 操作人角色
+     */
+    private String getOperatorRole(HttpServletRequest request) {
+        String role = (String) request.getSession().getAttribute("role");
+        if (role != null && !role.trim().isEmpty()) {
+            return role;
+        }
+        return "未知";
+    }
+    
+    /**
+     * 获取客户端IP地址
+     * 
+     * @param request HTTP 请求
+     * @return 客户端IP
+     */
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        // 多个代理时，第一个IP为真实IP
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip;
+    }
+    
+    /**
+     * 根据方法名判断操作类型
+     * 
+     * @param methodName 方法名
+     * @return 操作类型
+     */
+    private String getOperationType(String methodName) {
+        if (methodName.contains("add") || methodName.contains("save") || methodName.contains("insert")) {
+            return "新增";
+        } else if (methodName.contains("update") || methodName.contains("edit")) {
+            return "修改";
+        } else if (methodName.contains("delete") || methodName.contains("remove")) {
+            return "删除";
+        } else if (methodName.contains("shenhe") || methodName.contains("approve")) {
+            return "审核";
+        } else if (methodName.contains("query") || methodName.contains("list") || methodName.contains("page")) {
+            return "查询";
+        } else {
+            return "其他";
+        }
+    }
+    
+    /**
+     * 异步保存日志到数据库
+     * 
+     * @param logEntity 日志实体
+     */
+    private void saveLogAsync(final OperationLogEntity logEntity) {
+        // 使用新线程异步保存，避免影响主业务流程
+        new Thread(() -> {
+            try {
+                operationLogService.saveLog(logEntity);
+            } catch (Exception e) {
+                log.error("异步保存操作日志失败", e);
+            }
+        }).start();
     }
 }

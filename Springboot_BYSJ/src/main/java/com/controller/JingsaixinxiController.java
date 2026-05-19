@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -635,49 +636,73 @@ public class JingsaixinxiController {
     @RequestMapping("/statistics")
     public R statistics(HttpServletRequest request) {
         try {
+            log.info("========== 竞赛统计数据查询开始 ==========");
             Map<String, Object> stats = new HashMap<>();
             String tableName = (String) request.getSession().getAttribute("tableName");
+            log.info("当前用户角色tableName：{}", tableName);
             
-            // 1. 统计竞赛数量
-            EntityWrapper<JingsaixinxiEntity> contestEw = new EntityWrapper<>();
-            if ("jiaoshi".equals(tableName)) {
-                // 教师只能查看自己的竞赛
-                String gonghao = (String) request.getSession().getAttribute("username");
-                contestEw.eq("gonghao", gonghao);
-            }
-            stats.put("totalContests", jingsaixinxiService.selectCount(contestEw));
+            // 1. 统计竞赛总数 - 使用更可靠的查询方式
+            List<JingsaixinxiEntity> allContests = jingsaixinxiService.selectList(null);
+            int totalContests = allContests != null ? allContests.size() : 0;
+            log.info("竞赛总数：{}", totalContests);
             
-            // 2. 统计报名人数
-            EntityWrapper<JingsaibaomingEntity> applyEw = new EntityWrapper<>();
+            // 如果教师角色，过滤出该教师的竞赛
             if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
-                applyEw.eq("gonghao", gonghao);
+                log.info("教师角色，工号：{}", gonghao);
+                totalContests = (int) allContests.stream()
+                    .filter(c -> gonghao.equals(c.getGonghao()))
+                    .count();
+                log.info("教师竞赛总数：{}", totalContests);
             }
-            stats.put("totalApplications", jingsaibaomingService.selectCount(applyEw));
+            stats.put("totalJingsai", totalContests);
             
-            // 3. 统计已审核数量
-            EntityWrapper<JingsaibaomingEntity> approvedEw = new EntityWrapper<>();
-            approvedEw.eq("sfsh", "是");
+            // 2. 统计进行中竞赛（竞赛时间未过期的）
+            log.info("查询到的竞赛列表数量：{}", allContests.size());
+            int ongoingCount = 0;
+            Date now = new Date();
+            log.info("当前时间：{}", now);
+            
+            // 如果是教师，只统计该教师的竞赛
+            List<JingsaixinxiEntity> contestsToCheck = allContests;
             if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
-                approvedEw.eq("gonghao", gonghao);
+                contestsToCheck = allContests.stream()
+                    .filter(c -> gonghao.equals(c.getGonghao()))
+                    .collect(java.util.stream.Collectors.toList());
             }
-            stats.put("approvedApplications", jingsaibaomingService.selectCount(approvedEw));
             
-            // 4. 统计待审核数量
-            EntityWrapper<JingsaibaomingEntity> pendingEw = new EntityWrapper<>();
-            pendingEw.eq("sfsh", "否");
+            for (JingsaixinxiEntity contest : contestsToCheck) {
+                if (contest.getJingsaishijian() != null) {
+                    log.info("竞赛【{}】时间：{}", contest.getJingsaimingcheng(), contest.getJingsaishijian());
+                    if (contest.getJingsaishijian().after(now)) {
+                        ongoingCount++;
+                    }
+                }
+            }
+            log.info("进行中竞赛数：{}", ongoingCount);
+            stats.put("ongoingJingsai", ongoingCount);
+            
+            // 3. 统计报名记录数
+            List<JingsaibaomingEntity> allBaomings = jingsaibaomingService.selectList(null);
+            int totalApplications = allBaomings != null ? allBaomings.size() : 0;
+            
+            // 如果是教师，过滤出该教师的竞赛的报名记录
             if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
-                pendingEw.eq("gonghao", gonghao);
+                totalApplications = (int) allBaomings.stream()
+                    .filter(b -> gonghao.equals(b.getGonghao()))
+                    .count();
             }
-            stats.put("pendingApplications", jingsaibaomingService.selectCount(pendingEw));
+            log.info("报名记录总数：{}", totalApplications);
+            stats.put("baomingJingsai", totalApplications);
             
-            log.info("统计数据查询成功，角色：{}", tableName);
-            return R.ok(stats);
+            log.info("竞赛统计数据查询成功，角色：{}, 总数：{}, 进行中：{}, 报名数：{}", 
+                    tableName, totalContests, ongoingCount, totalApplications);
+            return R.ok().put("data", stats);
             
         } catch (Exception e) {
-            log.error("统计数据查询异常：", e);
+            log.error("竞赛统计数据查询异常：", e);
             return R.error("统计查询失败，请重试");
         }
     }

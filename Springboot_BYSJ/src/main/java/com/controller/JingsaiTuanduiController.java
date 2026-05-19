@@ -366,4 +366,72 @@ public class JingsaiTuanduiController {
     public R applyQuit(@RequestBody Map<String, Object> params) {
         return R.error("请使用新的接口 /tuandui/apply/quit");
     }
+
+    /**
+     * 获取团队统计信息
+     */
+    @GetMapping("/statistics")
+    public R getStatistics(HttpServletRequest request) {
+        try {
+            log.info("========== 团队统计数据查询开始 ==========");
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String username = (String) request.getSession().getAttribute("username");
+            
+            // 使用更可靠的查询方式：先查询所有，再过滤
+            List<JingsaiTuanduiEntity> allTuandui = tuanduiService.selectList(null);
+            
+            // 如果是教师，过滤出该教师的竞赛的团队
+            if ("jiaoshi".equals(tableName)) {
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", username);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    List<Long> jingsaiIds = new java.util.ArrayList<>();
+                    for (JingsaixinxiEntity jingsai : myJingsaiList) {
+                        jingsaiIds.add(jingsai.getId());
+                    }
+                    final List<Long> finalJingsaiIds = jingsaiIds;
+                    allTuandui = allTuandui.stream()
+                        .filter(t -> finalJingsaiIds.contains(t.getJingsaiId()))
+                        .collect(java.util.stream.Collectors.toList());
+                } else {
+                    Map<String, Object> stats = new java.util.HashMap<>();
+                    stats.put("totalTuandui", 0);
+                    stats.put("pendingCount", 0);
+                    stats.put("passedCount", 0);
+                    return R.ok().put("data", stats);
+                }
+            }
+            
+            // 总团队数
+            int totalTuandui = allTuandui != null ? allTuandui.size() : 0;
+            log.info("团队总数：{}", totalTuandui);
+            
+            // 待审核和已通过数
+            int pendingCount = 0;
+            int passedCount = 0;
+            if (allTuandui != null) {
+                for (JingsaiTuanduiEntity tuandui : allTuandui) {
+                    String status = tuandui.getShenheZhuangtai();
+                    if ("待审核".equals(status)) {
+                        pendingCount++;
+                    } else if ("已通过".equals(status)) {
+                        passedCount++;
+                    }
+                }
+            }
+            log.info("待审核：{}，已通过：{}", pendingCount, passedCount);
+            
+            Map<String, Object> stats = new java.util.HashMap<>();
+            stats.put("totalTuandui", totalTuandui);
+            stats.put("pendingCount", pendingCount);
+            stats.put("passedCount", passedCount);
+            
+            return R.ok().put("data", stats);
+        } catch (Exception e) {
+            log.error("获取团队统计异常", e);
+            return R.error("获取统计信息失败");
+        }
+    }
 }

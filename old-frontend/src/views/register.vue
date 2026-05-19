@@ -211,6 +211,15 @@
             </div>
           </div>
 
+          <!-- 激励语句 -->
+          <div class="inspiration-quote">
+            <div class="quote-icon">
+              <i class="el-icon-star-on"></i>
+            </div>
+            <p class="quote-text">梦想从这里开始</p>
+            <p class="quote-subtext">Your Dream Starts Here</p>
+          </div>
+
           <div class="features-list">
             <div class="feature-item">
               <i class="el-icon-circle-check"></i>
@@ -876,6 +885,43 @@ export default {
       }
     }
 
+    /* 激励语句样式 */
+    .inspiration-quote {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 25px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: fadeInUp 0.8s ease-out;
+
+      .quote-icon {
+        margin-bottom: 10px;
+        
+        i {
+          font-size: 32px;
+          color: #ffd700;
+          animation: pulse 2s infinite;
+        }
+      }
+
+      .quote-text {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0 0 8px;
+        letter-spacing: 2px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .quote-subtext {
+        font-size: 14px;
+        opacity: 0.8;
+        margin: 0;
+        letter-spacing: 1px;
+      }
+    }
+
     .features-list {
       margin-bottom: 40px;
 
@@ -940,6 +986,26 @@ export default {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
   }
 }
 

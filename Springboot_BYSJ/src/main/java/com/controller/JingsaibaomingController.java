@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -823,6 +824,44 @@ public class JingsaibaomingController {
             
         } catch (Exception e) {
             log.error("报名提醒查询异常：", e);
+            return R.error("查询失败，请重试");
+        }
+    }
+
+    /**
+     * 获取统计数据
+     * 功能：统计报名总数、已通过数、待审核数
+     * 
+     * @param request HTTP 请求
+     * @return R 统一返回结果，包含统计信息
+     */
+    @RequestMapping("/statistics")
+    public R statistics(HttpServletRequest request) {
+        log.info("=========== 报名统计查询开始 ===========");
+        try {
+            Map<String, Object> params = new HashMap<>();
+            
+            // 根据用户角色设置查询参数
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            log.info("当前用户角色tableName：{}", tableName);
+            
+            if ("xuesheng".equals(tableName)) {
+                // 学生只能查看自己的数据
+                String xuehao = (String) request.getSession().getAttribute("username");
+                log.info("学生学号：{}", xuehao);
+                if (xuehao != null) {
+                    params.put("xuehao", xuehao);
+                }
+            }
+            // 教师和管理员可以查看所有数据，不添加过滤条件
+            
+            log.info("查询参数：{}", params);
+            Map<String, Object> statistics = jingsaibaomingService.getStatistics(params);
+            log.info("统计结果：{}", statistics);
+            return R.ok().put("data", statistics);
+            
+        } catch (Exception e) {
+            log.error("获取报名统计数据异常：", e);
             return R.error("查询失败，请重试");
         }
     }

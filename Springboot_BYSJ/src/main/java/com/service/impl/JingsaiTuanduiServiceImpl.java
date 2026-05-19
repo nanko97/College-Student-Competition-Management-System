@@ -60,8 +60,29 @@ public class JingsaiTuanduiServiceImpl extends ServiceImpl<JingsaiTuanduiDao, Ji
 
     @Override
     public PageUtils queryPage(Map<String, Object> params, Wrapper<JingsaiTuanduiEntity> wrapper) {
+        // 如果wrapper为null，创建一个新的
+        if (wrapper == null) {
+            wrapper = new EntityWrapper<>();
+        }
+        
+        // 在现有wrapper基础上，添加搜索条件
+        String tuanduiMingcheng = (String) params.get("tuanduiMingcheng");
+        if (tuanduiMingcheng != null && !tuanduiMingcheng.isEmpty()) {
+            wrapper.like("tuandui_mingcheng", tuanduiMingcheng);
+        }
+        
+        String jingsaimingcheng = (String) params.get("jingsaimingcheng");
+        if (jingsaimingcheng != null && !jingsaimingcheng.isEmpty()) {
+            wrapper.like("jingsaimingcheng", jingsaimingcheng);
+        }
+        
+        String shenheZhuangtai = (String) params.get("shenheZhuangtai");
+        if (shenheZhuangtai != null && !shenheZhuangtai.isEmpty()) {
+            wrapper.eq("shenhe_zhuangtai", shenheZhuangtai);
+        }
+        
         Page<JingsaiTuanduiEntity> page = new Query<JingsaiTuanduiEntity>(params).getPage();
-        List<JingsaiTuanduiEntity> records = baseMapper.selectListView(wrapper);
+        List<JingsaiTuanduiEntity> records = baseMapper.selectListView((com.baomidou.mybatisplus.mapper.Wrapper<JingsaiTuanduiEntity>) wrapper);
         page.setTotal((long) records.size());
         page.setRecords(records);
         return new PageUtils(page);

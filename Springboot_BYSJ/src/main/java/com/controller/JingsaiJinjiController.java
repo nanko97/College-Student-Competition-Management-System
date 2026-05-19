@@ -364,26 +364,47 @@ public class JingsaiJinjiController {
     @GetMapping("/statistics")
     public R getStatistics(@RequestParam Map<String, Object> params) {
         try {
+            log.info("========== 晋级统计数据查询开始 ==========");
+            // 使用更可靠的查询方式：先查询所有，再过滤
+            List<JingsaiJinjiGuanxiEntity> allGuanxi = jinjiGuanxiService.selectList(null);
+            List<JingsaiJinjiJiluEntity> allJilu = jinjiJiluService.selectList(null);
+            
             // 总晋级关系数
-            int totalGuanxi = jinjiGuanxiService.selectCount(null);
+            int totalGuanxi = allGuanxi != null ? allGuanxi.size() : 0;
+            log.info("晋级关系总数：{}", totalGuanxi);
             
             // 活跃晋级关系数
-            EntityWrapper<JingsaiJinjiGuanxiEntity> activeEw = new EntityWrapper<>();
-            activeEw.eq("is_active", "是");
-            int activeGuanxi = jinjiGuanxiService.selectCount(activeEw);
+            int activeGuanxi = 0;
+            if (allGuanxi != null) {
+                for (JingsaiJinjiGuanxiEntity guanxi : allGuanxi) {
+                    if ("是".equals(guanxi.getIsActive())) {
+                        activeGuanxi++;
+                    }
+                }
+            }
+            log.info("活跃晋级关系数：{}", activeGuanxi);
             
             // 总晋级记录数
-            int totalJilu = jinjiJiluService.selectCount(null);
+            int totalJilu = allJilu != null ? allJilu.size() : 0;
+            log.info("晋级记录总数：{}", totalJilu);
             
-            // 待审核数
-            EntityWrapper<JingsaiJinjiJiluEntity> pendingEw = new EntityWrapper<>();
-            pendingEw.eq("jinji_zhuangtai", "待审核");
-            int pendingCount = jinjiJiluService.selectCount(pendingEw);
-            
-            // 已通过数
-            EntityWrapper<JingsaiJinjiJiluEntity> approvedEw = new EntityWrapper<>();
-            approvedEw.eq("jinji_zhuangtai", "已通过");
-            int approvedCount = jinjiJiluService.selectCount(approvedEw);
+            // 待审核、已通过、已驳回数
+            int pendingCount = 0;
+            int approvedCount = 0;
+            int rejectedCount = 0;
+            if (allJilu != null) {
+                for (JingsaiJinjiJiluEntity jilu : allJilu) {
+                    String status = jilu.getJinjiZhuangtai();
+                    if ("待审核".equals(status)) {
+                        pendingCount++;
+                    } else if ("已通过".equals(status)) {
+                        approvedCount++;
+                    } else if ("已驳回".equals(status)) {
+                        rejectedCount++;
+                    }
+                }
+            }
+            log.info("待审核：{}，已通过：{}，已驳回：{}", pendingCount, approvedCount, rejectedCount);
             
             Map<String, Object> stats = new java.util.HashMap<>();
             stats.put("totalGuanxi", totalGuanxi);
@@ -391,6 +412,8 @@ public class JingsaiJinjiController {
             stats.put("totalJilu", totalJilu);
             stats.put("pendingCount", pendingCount);
             stats.put("approvedCount", approvedCount);
+            stats.put("rejectedCount", rejectedCount);
+            stats.put("totalCount", totalJilu); // 添加总记录数字段
             
             return R.ok().put("data", stats);
         } catch (Exception e) {

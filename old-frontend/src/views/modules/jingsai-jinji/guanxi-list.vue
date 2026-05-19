@@ -7,43 +7,45 @@
     </div>
 
     <!-- 统计卡片 -->
-    <div class="stats-cards">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-          <i class="el-icon-s-order"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ statistics.totalGuanxi || 0 }}</div>
-          <div class="stat-label">总晋级关系</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-          <i class="el-icon-check"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ statistics.activeGuanxi || 0 }}</div>
-          <div class="stat-label">活跃关系</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #74c0fc 0%, #5c7cfa 100%);">
-          <i class="el-icon-document"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ statistics.totalJilu || 0 }}</div>
-          <div class="stat-label">晋级记录</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-          <i class="el-icon-time"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ statistics.pendingCount || 0 }}</div>
-          <div class="stat-label">待审核</div>
-        </div>
-      </div>
+    <div class="statistics-wrapper">
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="el-icon-s-order"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.totalGuanxi || 0 }}</div>
+              <div class="stat-label">总晋级关系</div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="stat-card stat-pink">
+            <div class="stat-icon"><i class="el-icon-check"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.activeGuanxi || 0 }}</div>
+              <div class="stat-label">活跃关系</div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon"><i class="el-icon-document"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.totalJilu || 0 }}</div>
+              <div class="stat-label">晋级记录</div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="stat-card stat-orange">
+            <div class="stat-icon"><i class="el-icon-time"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.pendingCount || 0 }}</div>
+              <div class="stat-label">待审核</div>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
     </div>
 
     <!-- 列表页 -->
@@ -328,6 +330,7 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/css/tech-theme.scss';
 @import '@/assets/css/global-responsive-mixin.scss';
+@import '@/assets/css/statistics-cards.scss';
 
 .action-wrapper {
   margin-bottom: 20px;
@@ -336,8 +339,19 @@ export default {
 
 .tech-search-form {
   ::v-deep .el-form-item {
-    margin-bottom: 10px;
-    margin-right: 24px;
+    margin-bottom: 0;
+    margin-right: 20px;
+  }
+  ::v-deep .el-input__inner { width: 200px; }
+  ::v-deep .el-select .el-input__inner { width: 150px; }
+  // 让最后一个form-item（查询按钮）垂直居中
+  ::v-deep .el-form-item:last-child {
+    margin-right: 0;
+    .el-form-item__content {
+      display: flex;
+      align-items: center;
+      line-height: 32px; // 与输入框高度一致
+    }
   }
 }
 
@@ -353,59 +367,5 @@ export default {
 }
 
 .tech-pagination { margin-top: 20px; }
-
-.stats-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-  
-  .stat-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s, box-shadow 0.3s;
-    
-    &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    }
-    
-    .stat-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 15px;
-      
-      i {
-        font-size: 28px;
-        color: #fff;
-      }
-    }
-    
-    .stat-content {
-      flex: 1;
-      
-      .stat-value {
-        font-size: 28px;
-        font-weight: 700;
-        color: #303133;
-        line-height: 1.2;
-      }
-      
-      .stat-label {
-        font-size: 14px;
-        color: #909399;
-        margin-top: 5px;
-      }
-    }
-  }
-}
 
 </style>

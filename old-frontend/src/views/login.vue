@@ -4,7 +4,7 @@
     <div class="left-banner">
       <!-- 背景轮播图 -->
       <div class="banner-slideshow">
-        <transition-group name="slide-fade" tag="div" class="slides-wrapper">
+        <transition-group name="slide-gradient" tag="div" class="slides-wrapper">
           <div
             v-for="(slide, index) in slides"
             :key="index"
@@ -217,6 +217,9 @@ export default {
       this.rememberMe = true;
     }
     
+    // 立即显示第一张轮播图
+    this.currentSlide = 0;
+    
     // 启动轮播图
     this.startSlideshow();
   },
@@ -231,7 +234,7 @@ export default {
     startSlideshow() {
       this.slideInterval = setInterval(() => {
         this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-      }, 3000); // 每3秒切换一次
+      }, 5000); // 每5秒切换一次（更慢）
     },
     
     getTableNameByRole(role) {
@@ -342,10 +345,12 @@ $white: #ffffff;
         background-position: center;
         background-repeat: no-repeat;
         opacity: 0;
-        transition: opacity 0.8s ease-in-out;
+        transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: scale(1.05);
         
         &.active {
           opacity: 1;
+          transform: scale(1);
         }
         
         .slide-overlay {
@@ -359,9 +364,29 @@ $white: #ffffff;
             rgba(102, 126, 234, 0.85) 0%,
             rgba(118, 75, 162, 0.85) 100%
           );
+          transition: opacity 1.5s ease-in-out;
         }
       }
     }
+  }
+  
+  /* 渐变切换动画 */
+  .slide-gradient-enter-active {
+    transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .slide-gradient-leave-active {
+    transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .slide-gradient-enter {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+  
+  .slide-gradient-leave-to {
+    opacity: 0;
+    transform: scale(0.95);
   }
   
   .banner-content {

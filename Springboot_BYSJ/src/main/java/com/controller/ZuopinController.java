@@ -256,46 +256,85 @@ public class ZuopinController {
      */
     @GetMapping("/statistics")
     public R statistics(HttpServletRequest request) {
-        String tableName = (String) request.getSession().getAttribute("tableName");
-        
-        Map<String, Object> data = new HashMap<>();
-        
-        if ("jiaoshi".equals(tableName)) {
-            // 教师端：统计所有报名的作品提交情况
-            EntityWrapper<JingsaibaomingEntity> allEw = new EntityWrapper<>();
-            allEw.eq("sfsh", "通过");
-            int totalBaoming = jingsaibaomingService.selectCount(allEw);
-
-            EntityWrapper<JingsaibaomingEntity> submittedEw = new EntityWrapper<>();
-            submittedEw.eq("sfsh", "通过");
-            submittedEw.isNotNull("cansaizuopin");
-            submittedEw.ne("cansaizuopin", "");
-            int submittedCount = jingsaibaomingService.selectCount(submittedEw);
-
-            data.put("totalBaoming", totalBaoming);
-            data.put("submittedCount", submittedCount);
-            data.put("unsubmittedCount", totalBaoming - submittedCount);
-        } else if ("xuesheng".equals(tableName)) {
-            // 学生端：统计自己的作品提交情况（所有报名）
-            String xuehao = (String) request.getSession().getAttribute("username");
+        try {
+            log.info("========== 作品统计数据查询开始 ==========");
+            String tableName = (String) request.getSession().getAttribute("tableName");
             
-            // 统计所有报名（不再限制审核状态）
-            EntityWrapper<JingsaibaomingEntity> allEw = new EntityWrapper<>();
-            allEw.eq("xuehao", xuehao);
-            int totalBaoming = jingsaibaomingService.selectCount(allEw);
-
-            // 统计已提交作品（只统计审核通过且已提交作品的）
-            EntityWrapper<JingsaibaomingEntity> submittedEw = new EntityWrapper<>();
-            submittedEw.eq("xuehao", xuehao);
-            submittedEw.isNotNull("cansaizuopin");
-            submittedEw.ne("cansaizuopin", "");
-            int submittedCount = jingsaibaomingService.selectCount(submittedEw);
-
-            data.put("totalBaoming", totalBaoming);
-            data.put("submittedCount", submittedCount);
-            data.put("unsubmittedCount", totalBaoming - submittedCount);
+            Map<String, Object> data = new HashMap<>();
+            
+            if ("jiaoshi".equals(tableName)) {
+                // 教师端：统计所有报名的作品提交情况
+                List<JingsaibaomingEntity> allBaomings = jingsaibaomingService.selectList(null);
+                
+                // 过滤审核通过的报名
+                int totalBaoming = 0;
+                int submittedCount = 0;
+                if (allBaomings != null) {
+                    for (JingsaibaomingEntity baoming : allBaomings) {
+                        if ("通过".equals(baoming.getSfsh())) {
+                            totalBaoming++;
+                            // 统计已提交作品的
+                            if (baoming.getCansaizuopin() != null && !baoming.getCansaizuopin().isEmpty()) {
+                                submittedCount++;
+                            }
+                        }
+                    }
+                }
+                log.info("教师端 - 已审核报名数：{}，已提交作品：{}，未提交：{}", totalBaoming, submittedCount, totalBaoming - submittedCount);
+                data.put("totalBaoming", totalBaoming);
+                data.put("submittedCount", submittedCount);
+                data.put("unsubmittedCount", totalBaoming - submittedCount);
+            } else if ("xuesheng".equals(tableName)) {
+                // 学生端：统计自己的作品提交情况
+                String xuehao = (String) request.getSession().getAttribute("username");
+                
+                List<JingsaibaomingEntity> allBaomings = jingsaibaomingService.selectList(null);
+                
+                // 过滤该学生的报名
+                int totalBaoming = 0;
+                int submittedCount = 0;
+                if (allBaomings != null) {
+                    for (JingsaibaomingEntity baoming : allBaomings) {
+                        if (xuehao.equals(baoming.getXuehao())) {
+                            totalBaoming++;
+                            // 统计已提交作品的
+                            if (baoming.getCansaizuopin() != null && !baoming.getCansaizuopin().isEmpty()) {
+                                submittedCount++;
+                            }
+                        }
+                    }
+                }
+                log.info("学生端 - 已审核报名数：{}，已提交作品：{}，未提交：{}", totalBaoming, submittedCount, totalBaoming - submittedCount);
+                data.put("totalBaoming", totalBaoming);
+                data.put("submittedCount", submittedCount);
+                data.put("unsubmittedCount", totalBaoming - submittedCount);
+            } else {
+                // 管理员端：统计所有审核通过的报名的作品提交情况
+                List<JingsaibaomingEntity> allBaomings = jingsaibaomingService.selectList(null);
+                
+                int totalBaoming = 0;
+                int submittedCount = 0;
+                if (allBaomings != null) {
+                    for (JingsaibaomingEntity baoming : allBaomings) {
+                        if ("通过".equals(baoming.getSfsh())) {
+                            totalBaoming++;
+                            // 统计已提交作品的
+                            if (baoming.getCansaizuopin() != null && !baoming.getCansaizuopin().isEmpty()) {
+                                submittedCount++;
+                            }
+                        }
+                    }
+                }
+                log.info("管理员端 - 已审核报名数：{}，已提交作品：{}，未提交：{}", totalBaoming, submittedCount, totalBaoming - submittedCount);
+                data.put("totalBaoming", totalBaoming);
+                data.put("submittedCount", submittedCount);
+                data.put("unsubmittedCount", totalBaoming - submittedCount);
+            }
+            
+            return R.ok().put("data", data);
+        } catch (Exception e) {
+            log.error("作品统计数据查询异常：", e);
+            return R.error("统计查询失败，请重试");
         }
-
-        return R.ok().put("data", data);
     }
 }

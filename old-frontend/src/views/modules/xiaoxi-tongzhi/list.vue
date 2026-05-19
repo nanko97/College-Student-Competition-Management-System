@@ -7,47 +7,37 @@
     </div>
 
     <!-- 统计卡片 -->
-    <el-row :gutter="20" class="stats-row">
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card stat-total">
-          <div class="stat-content">
-            <div class="stat-icon">
-              <i class="el-icon-message"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">总消息数</div>
+    <div class="statistics-wrapper">
+      <el-row :gutter="20">
+        <el-col :span="8">
+          <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="el-icon-message"></i></div>
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.total }}</div>
+              <div class="stat-label">总消息数</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card stat-unread">
-          <div class="stat-content">
-            <div class="stat-icon">
-              <i class="el-icon-bell"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">未读消息</div>
+        </el-col>
+        <el-col :span="8">
+          <div class="stat-card stat-pink">
+            <div class="stat-icon"><i class="el-icon-bell"></i></div>
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.unread }}</div>
+              <div class="stat-label">未读消息</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card stat-read">
-          <div class="stat-content">
-            <div class="stat-icon">
-              <i class="el-icon-circle-check"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">已读消息</div>
+        </el-col>
+        <el-col :span="8">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon"><i class="el-icon-circle-check"></i></div>
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.read }}</div>
+              <div class="stat-label">已读消息</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+        </el-col>
+      </el-row>
+    </div>
 
     <!-- 提示信息 -->
     <div class="role-tip">
@@ -440,67 +430,7 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/css/tech-theme.scss';
 @import '@/assets/css/global-responsive-mixin.scss';
-
-.stats-row {
-  margin-bottom: 20px;
-  
-  .stat-card {
-    transition: all 0.3s;
-    
-    &:hover {
-      transform: translateY(-5px);
-    }
-    
-    .stat-content {
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      
-      .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 15px;
-        
-        i {
-          font-size: 28px;
-          color: #fff;
-        }
-      }
-      
-      .stat-info {
-        flex: 1;
-        
-        .stat-label {
-          font-size: 14px;
-          color: #909399;
-          margin-bottom: 8px;
-        }
-        
-        .stat-value {
-          font-size: 28px;
-          font-weight: bold;
-          color: #303133;
-        }
-      }
-    }
-  }
-  
-  .stat-total .stat-icon {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  }
-  
-  .stat-unread .stat-icon {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  }
-  
-  .stat-read .stat-icon {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  }
-}
+@import '@/assets/css/statistics-cards.scss';
 
 .tech-search-form {
   ::v-deep .el-form-item {

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -86,5 +87,46 @@ public class JingsaiJibieBanbenController {
     public R delete(@RequestBody Long[] ids) {
         jibieBanbenService.deleteBatchIds(java.util.Arrays.asList(ids));
         return R.ok("删除成功");
+    }
+
+    /**
+     * 获取级别版本统计信息
+     */
+    @GetMapping("/statistics")
+    public R getStatistics() {
+        try {
+            log.info("========== 级别版本统计数据查询开始 ==========");
+            // 使用更可靠的查询方式：先查询所有，再过滤
+            List<JingsaiJibieBanbenEntity> allRecords = jibieBanbenService.selectList(null);
+            
+            // 总版本数
+            int totalBanben = allRecords != null ? allRecords.size() : 0;
+            log.info("级别版本总数：{}", totalBanben);
+            
+            // 国家级数量
+            int guojiajiCount = 0;
+            int currentBanben = 0;
+            if (allRecords != null) {
+                for (JingsaiJibieBanbenEntity record : allRecords) {
+                    if ("国家级".equals(record.getJibie())) {
+                        guojiajiCount++;
+                    }
+                    if ("是".equals(record.getIsCurrent())) {
+                        currentBanben++;
+                    }
+                }
+            }
+            log.info("国家级：{}，当前版本：{}", guojiajiCount, currentBanben);
+            
+            Map<String, Object> stats = new java.util.HashMap<>();
+            stats.put("totalBanben", totalBanben);
+            stats.put("guojiajiCount", guojiajiCount);
+            stats.put("currentBanben", currentBanben);
+            
+            return R.ok().put("data", stats);
+        } catch (Exception e) {
+            log.error("获取级别版本统计异常", e);
+            return R.error("获取统计信息失败");
+        }
     }
 }

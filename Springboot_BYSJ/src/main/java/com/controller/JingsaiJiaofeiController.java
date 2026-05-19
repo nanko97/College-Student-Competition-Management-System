@@ -413,30 +413,74 @@ public class JingsaiJiaofeiController {
     }
 
     /**
-     * 统计缴费情况
+     * 统计缴费情况（不需要jingsaiId参数，根据角色返回统计数据）
      */
-    @GetMapping("/statistics/{jingsaiId}")
-    public R statistics(@PathVariable Long jingsaiId) {
-        EntityWrapper<JingsaiJiaofeiJiluEntity> ew = new EntityWrapper<>();
-        ew.eq("jingsai_id", jingsaiId);
+    @GetMapping("/statistics")
+    public R statistics(HttpServletRequest request) {
+        try {
+            log.info("========== 缴费统计数据查询开始 ==========");
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String username = (String) request.getSession().getAttribute("username");
+            
+            log.info("缴费统计数据查询 - 角色:{}, 用户:{}", tableName, username);
+            
+            // 使用更可靠的查询方式：先查询所有，再过滤
+            List<JingsaiJiaofeiJiluEntity> allJiaofei = jingsaiJiaofeiJiluService.selectList(null);
+            
+            // 如果是教师，过滤出该教师的竞赛的缴费记录
+            if ("jiaoshi".equals(tableName)) {
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", username);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    List<Long> jingsaiIds = new java.util.ArrayList<>();
+                    for (JingsaixinxiEntity jingsai : myJingsaiList) {
+                        jingsaiIds.add(jingsai.getId());
+                    }
+                    final List<Long> finalJingsaiIds = jingsaiIds;
+                    allJiaofei = allJiaofei.stream()
+                        .filter(j -> finalJingsaiIds.contains(j.getJingsaiId()))
+                        .collect(java.util.stream.Collectors.toList());
+                    log.info("教师 {} 统计自己创建的 {} 个竞赛的缴费记录", username, jingsaiIds.size());
+                } else {
+                    Map<String, Object> stats = new java.util.HashMap<>();
+                    stats.put("total", 0);
+                    stats.put("yitongguo", 0);
+                    stats.put("daishenhe", 0);
+                    return R.ok().put("data", stats);
+                }
+            }
 
-        int total = jingsaiJiaofeiJiluService.selectCount(ew);
+            // 统计总数
+            int total = allJiaofei != null ? allJiaofei.size() : 0;
+            log.info("缴费记录总数：{}", total);
 
-        EntityWrapper<JingsaiJiaofeiJiluEntity> ewYitongguo = new EntityWrapper<>();
-        ewYitongguo.eq("jingsai_id", jingsaiId);
-        ewYitongguo.eq("jiaofei_zhuangtai", "已通过");
-        int yitongguo = jingsaiJiaofeiJiluService.selectCount(ewYitongguo);
+            // 统计已通过数量
+            int yitongguo = 0;
+            int daishenhe = 0;
+            if (allJiaofei != null) {
+                for (JingsaiJiaofeiJiluEntity jiaofei : allJiaofei) {
+                    if ("已通过".equals(jiaofei.getJiaofeiZhuangtai())) {
+                        yitongguo++;
+                    } else if ("已缴费".equals(jiaofei.getJiaofeiZhuangtai())) {
+                        daishenhe++;
+                    }
+                }
+            }
+            log.info("已通过：{}，待审核：{}", yitongguo, daishenhe);
 
-        EntityWrapper<JingsaiJiaofeiJiluEntity> ewDaishenhe = new EntityWrapper<>();
-        ewDaishenhe.eq("jingsai_id", jingsaiId);
-        ewDaishenhe.eq("jiaofei_zhuangtai", "已缴费");
-        int daishenhe = jingsaiJiaofeiJiluService.selectCount(ewDaishenhe);
-
-        Map<String, Object> data = new java.util.HashMap<>();
-        data.put("total", total);
-        data.put("yitongguo", yitongguo);
-        data.put("daishenhe", daishenhe);
-
-        return R.ok().put("data", data);
+            Map<String, Object> data = new java.util.HashMap<>();
+            data.put("total", total);
+            data.put("yitongguo", yitongguo);
+            data.put("daishenhe", daishenhe);
+            
+            log.info("缴费统计数据查询成功 - 总数:{}, 已通过:{}, 待审核:{}", total, yitongguo, daishenhe);
+            return R.ok().put("data", data);
+            
+        } catch (Exception e) {
+            log.error("缴费统计数据查询异常：", e);
+            return R.error("统计查询失败，请重试");
+        }
     }
 }

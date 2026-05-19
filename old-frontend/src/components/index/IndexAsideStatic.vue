@@ -84,7 +84,7 @@ export default {
         'el-icon-s-cooperation',
         'el-icon-s-order',
         'el-icon-s-platform',
-        'el-icon-s-fold',
+        'el-icon-coin',
         'el-icon-s-unfold',
         'el-icon-s-operation',
         'el-icon-s-marketing',

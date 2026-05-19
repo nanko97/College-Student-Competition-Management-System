@@ -33,5 +33,12 @@ public interface JingsaibaomingService extends IService<JingsaibaomingEntity> {
 
     PageUtils queryPage(Map<String, Object> params, Wrapper<JingsaibaomingEntity> wrapper);
 
+    /**
+     * 获取统计数据
+     * @param params 查询参数
+     * @return 统计信息
+     */
+    Map<String, Object> getStatistics(Map<String, Object> params);
+
 }
 

@@ -13,43 +13,45 @@
     </div>
 
     <!-- 统计卡片 -->
-    <div class="stats-cards">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #ffa94d 0%, #ff6b6b 100%);">
-          <i class="el-icon-time"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ statistics.pendingCount || 0 }}</div>
-          <div class="stat-label">待审核</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);">
-          <i class="el-icon-check"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ statistics.approvedCount || 0 }}</div>
-          <div class="stat-label">已通过</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #ff8787 0%, #f03e3e 100%);">
-          <i class="el-icon-close"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ statistics.rejectedCount || 0 }}</div>
-          <div class="stat-label">已驳回</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #74c0fc 0%, #1971c2 100%);">
-          <i class="el-icon-document"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ statistics.totalCount || 0 }}</div>
-          <div class="stat-label">总记录数</div>
-        </div>
-      </div>
+    <div class="statistics-wrapper">
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <div class="stat-card stat-orange">
+            <div class="stat-icon"><i class="el-icon-time"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.pendingCount || 0 }}</div>
+              <div class="stat-label">待审核</div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="stat-card stat-green">
+            <div class="stat-icon"><i class="el-icon-check"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.approvedCount || 0 }}</div>
+              <div class="stat-label">已通过</div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="stat-card stat-pink">
+            <div class="stat-icon"><i class="el-icon-close"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.rejectedCount || 0 }}</div>
+              <div class="stat-label">已驳回</div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon"><i class="el-icon-document"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.totalCount || 0 }}</div>
+              <div class="stat-label">总记录数</div>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
     </div>
 
     <!-- 列表页 -->
@@ -390,6 +392,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/css/tech-theme.scss';
+@import '@/assets/css/statistics-cards.scss';
 
 .tech-search-form {
   ::v-deep .el-form-item {
@@ -397,6 +400,16 @@ export default {
     margin-right: 20px;
   }
   ::v-deep .el-input__inner { width: 200px; }
+  ::v-deep .el-select .el-input__inner { width: 150px; }
+  // 让最后一个form-item（查询按钮）垂直居中
+  ::v-deep .el-form-item:last-child {
+    margin-right: 0;
+    .el-form-item__content {
+      display: flex;
+      align-items: center;
+      line-height: 32px; // 与输入框高度一致
+    }
+  }
 }
 
 .tech-table {
@@ -411,57 +424,4 @@ export default {
 }
 
 .tech-pagination { margin-top: 20px; }
-
-.stats-cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-bottom: 25px;
-}
-
-.stat-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s;
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-  }
-}
-
-.stat-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 15px;
-  
-  i {
-    font-size: 28px;
-    color: #fff;
-  }
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 5px;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #868e96;
-}
 </style>

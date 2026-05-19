@@ -157,4 +157,72 @@ public class JingsaiRenyuanBianguengController {
         ew.orderBy("addtime", false);
         return R.ok().put("data", bianguengService.selectList(ew));
     }
+
+    /**
+     * 获取人员变更统计信息
+     */
+    @GetMapping("/statistics")
+    public R getStatistics(HttpServletRequest request) {
+        try {
+            log.info("========== 人员变更统计数据查询开始 ==========");
+            String role = (String) request.getSession().getAttribute("role");
+            String gonghao = (String) request.getSession().getAttribute("username");
+            
+            // 使用更可靠的查询方式：先查询所有，再过滤
+            List<JingsaiRenyuanBianguengEntity> allBiangueng = bianguengService.selectList(null);
+            
+            // 教师只能统计自己创建的竞赛的变更申请
+            if ("教师".equals(role)) {
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", gonghao);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    List<Long> jingsaiIds = new java.util.ArrayList<>();
+                    for (JingsaixinxiEntity jingsai : myJingsaiList) {
+                        jingsaiIds.add(jingsai.getId());
+                    }
+                    final List<Long> finalJingsaiIds = jingsaiIds;
+                    allBiangueng = allBiangueng.stream()
+                        .filter(b -> finalJingsaiIds.contains(b.getJingsaiId()))
+                        .collect(java.util.stream.Collectors.toList());
+                } else {
+                    Map<String, Object> stats = new java.util.HashMap<>();
+                    stats.put("totalBiangueng", 0);
+                    stats.put("pendingCount", 0);
+                    stats.put("todayProcessed", 0);
+                    return R.ok().put("data", stats);
+                }
+            }
+            
+            // 总变更数
+            int totalBiangueng = allBiangueng != null ? allBiangueng.size() : 0;
+            log.info("变更总数：{}", totalBiangueng);
+            
+            // 待审核数和已处理数
+            int pendingCount = 0;
+            int todayProcessed = 0;
+            if (allBiangueng != null) {
+                for (JingsaiRenyuanBianguengEntity biangueng : allBiangueng) {
+                    String status = biangueng.getShenheZhuangtai();
+                    if ("审核中".equals(status)) {
+                        pendingCount++;
+                    } else if ("已通过".equals(status) || "已驳回".equals(status)) {
+                        todayProcessed++;
+                    }
+                }
+            }
+            log.info("待审核：{}，已处理：{}", pendingCount, todayProcessed);
+            
+            Map<String, Object> stats = new java.util.HashMap<>();
+            stats.put("totalBiangueng", totalBiangueng);
+            stats.put("pendingCount", pendingCount);
+            stats.put("todayProcessed", todayProcessed);
+            
+            return R.ok().put("data", stats);
+        } catch (Exception e) {
+            log.error("获取人员变更统计异常", e);
+            return R.error("获取统计信息失败");
+        }
+    }
 }

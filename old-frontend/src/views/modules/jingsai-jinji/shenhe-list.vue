@@ -13,133 +13,37 @@
     </div>
 
     <!-- 统计信息 -->
-    <el-row :gutter="20" class="stats-row">
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
-              <i class="el-icon-document"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">晋级记录总数</div>
+    <div class="statistics-wrapper">
+      <el-row :gutter="20">
+        <el-col :span="8">
+          <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="el-icon-document"></i></div>
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.totalJinji || 0 }}</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
-              <i class="el-icon-time"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">待审核</div>
-              <div class="stat-value">{{ statistics.pendingCount || 0 }}</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
-              <i class="el-icon-success"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">已通过</div>
-              <div class="stat-value">{{ statistics.approvedCount || 0 }}</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <!-- 统计信息 -->
-    <el-row :gutter="20" class="stats-row">
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
-              <i class="el-icon-document"></i>
-            </div>
-            <div class="stat-info">
               <div class="stat-label">晋级记录总数</div>
-              <div class="stat-value">{{ statistics.totalJinji || 0 }}</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
-              <i class="el-icon-time"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">待审核</div>
+        </el-col>
+        <el-col :span="8">
+          <div class="stat-card stat-pink">
+            <div class="stat-icon"><i class="el-icon-time"></i></div>
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.pendingCount || 0 }}</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
-              <i class="el-icon-success"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">已通过</div>
-              <div class="stat-value">{{ statistics.approvedCount || 0 }}</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <!-- 统计信息 -->
-    <el-row :gutter="20" class="stats-row">
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
-              <i class="el-icon-document"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">晋级记录总数</div>
-              <div class="stat-value">{{ statistics.totalJinji || 0 }}</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
-              <i class="el-icon-time"></i>
-            </div>
-            <div class="stat-info">
               <div class="stat-label">待审核</div>
-              <div class="stat-value">{{ statistics.pendingCount || 0 }}</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
-              <i class="el-icon-success"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">已通过</div>
+        </el-col>
+        <el-col :span="8">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon"><i class="el-icon-success"></i></div>
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.approvedCount || 0 }}</div>
+              <div class="stat-label">已通过</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+        </el-col>
+      </el-row>
+    </div>
 
     <!-- 列表页 -->
     <div v-if="showFlag">
@@ -332,7 +236,13 @@ export default {
         method: 'get'
       }).then(({data}) => {
         if (data && data.code === 0) {
-          this.statistics = data.data || {}
+          const stats = data.data || {}
+          // 适配后端返回的字段名
+          this.statistics = {
+            totalJinji: stats.totalJilu || 0,
+            pendingCount: stats.pendingCount || 0,
+            approvedCount: stats.approvedCount || 0
+          }
         }
       }).catch((error) => {
         console.error('获取统计数据失败:', error)
@@ -344,6 +254,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/css/tech-theme.scss';
+@import '@/assets/css/statistics-cards.scss';
 
 .tech-search-form {
   ::v-deep .el-form-item {
@@ -351,6 +262,16 @@ export default {
     margin-right: 20px;
   }
   ::v-deep .el-input__inner { width: 200px; }
+  ::v-deep .el-select .el-input__inner { width: 150px; }
+  // 让最后一个form-item（查询按钮）垂直居中
+  ::v-deep .el-form-item:last-child {
+    margin-right: 0;
+    .el-form-item__content {
+      display: flex;
+      align-items: center;
+      line-height: 32px; // 与输入框高度一致
+    }
+  }
 }
 
 .tech-table {

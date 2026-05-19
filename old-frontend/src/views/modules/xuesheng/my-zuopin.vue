@@ -26,47 +26,37 @@
     </div>
 
     <!-- 统计信息 -->
-    <el-row :gutter="20" class="stats-row">
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
-              <i class="el-icon-document"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">已报名竞赛</div>
+    <div class="statistics-wrapper">
+      <el-row :gutter="20">
+        <el-col :span="8">
+          <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="el-icon-document"></i></div>
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.totalBaoming || 0 }}</div>
+              <div class="stat-label">已报名竞赛</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
-              <i class="el-icon-upload"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">已提交作品</div>
+        </el-col>
+        <el-col :span="8">
+          <div class="stat-card stat-green">
+            <div class="stat-icon"><i class="el-icon-upload"></i></div>
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.submittedCount || 0 }}</div>
+              <div class="stat-label">已提交作品</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
-              <i class="el-icon-warning-outline"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">未提交作品</div>
+        </el-col>
+        <el-col :span="8">
+          <div class="stat-card stat-pink">
+            <div class="stat-icon"><i class="el-icon-warning-outline"></i></div>
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.unsubmittedCount || 0 }}</div>
+              <div class="stat-label">未提交作品</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+        </el-col>
+      </el-row>
+    </div>
 
     <div class="table-wrapper">
       <el-table :data="dataList" v-loading="dataListLoading" border stripe class="tech-table" style="width: 100%">
@@ -316,15 +306,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/css/tech-theme.scss';
-
-/* 统计卡片样式优化 */
-.stats-row {
-  margin-bottom: 20px;
-  
-  .stat-card {
-    margin-bottom: 0;
-  }
-}
+@import '@/assets/css/statistics-cards.scss';
 
 .page-header {
   margin-bottom: 24px;
@@ -342,72 +324,8 @@ export default {
   margin-top: 0;
 }
 
-.stat-card {
-  transition: all 0.3s;
-  height: 100%;
-  
-  &:hover {
-    transform: translateY(-5px);
-  }
-  
-  .stat-content {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-  }
-  
-  .stat-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 15px;
-    flex-shrink: 0;
-    
-    i {
-      font-size: 28px;
-      color: #fff;
-    }
-  }
-  
-  .stat-info {
-    flex: 1;
-    
-    .stat-label {
-      font-size: 14px;
-      color: #909399;
-      margin-bottom: 8px;
-    }
-    
-    .stat-value {
-      font-size: 28px;
-      font-weight: bold;
-      color: #303133;
-    }
-  }
-}
-
 /* 响应式设计 - 平板设备 */
 @media screen and (max-width: 1200px) {
-  .stats-row {
-    margin-bottom: 15px;
-  }
-  
-  .stat-card {
-    margin-bottom: 15px;
-  }
-  
-  .stat-icon {
-    width: 50px;
-    height: 50px;
-    
-    i {
-      font-size: 24px;
-    }
-  }
-  
   .stat-value {
     font-size: 24px;
   }
@@ -415,10 +333,6 @@ export default {
 
 /* 响应式设计 - 手机设备 */
 @media screen and (max-width: 768px) {
-  .stats-row {
-    margin-bottom: 10px;
-  }
-  
   .el-row {
     margin-left: 0 !important;
     margin-right: 0 !important;
@@ -427,31 +341,6 @@ export default {
   .el-col {
     padding-left: 0 !important;
     padding-right: 0 !important;
-  }
-  
-  .stat-card {
-    margin-bottom: 10px;
-  }
-  
-  .stat-content {
-    flex-direction: column;
-    text-align: center;
-    padding: 15px 10px;
-  }
-  
-  .stat-icon {
-    margin-right: 0;
-    margin-bottom: 10px;
-    width: 50px;
-    height: 50px;
-  }
-  
-  .stat-label {
-    font-size: 12px;
-  }
-  
-  .stat-value {
-    font-size: 20px;
   }
   
   .el-table {

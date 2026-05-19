@@ -23,9 +23,10 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/jingsaixinxi/page",
         "/jingsaixinxi/query",
         "/jingsaixinxi/info",
+        "/jingsaixinxi/statistics",  // 竞赛统计
         // 报名相关
         "/jingsaibaoming/add",
-        "/jingsaibaoming/save",  // 添加报名保存接口权限
+        "/jingsaibaoming/save",
         "/jingsaibaoming/my",
         "/jingsaibaoming/list",
         "/jingsaibaoming/page",
@@ -33,12 +34,14 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/jingsaibaoming/query",
         "/jingsaibaoming/update",
         "/jingsaibaoming/delete",
+        "/jingsaibaoming/statistics",  // 报名统计
         // 作品评分相关
         "/zuopindafen/list",
         "/zuopindafen/page",
         "/zuopindafen/info",
         "/zuopindafen/query",
         "/zuopindafen/my",
+        "/zuopindafen/statistics",  // 作品评分统计
         // 成绩复核相关（学生提交复核申请）
         "/zuopindafenfuhe/add",
         "/zuopindafenfuhe/save",
@@ -51,6 +54,12 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/xuesheng/update",
         "/xuesheng/session",
         "/xuesheng/resetPass",
+        // 消息通知
+        "/xiaoxitongzhi/list",
+        "/xiaoxitongzhi/page",
+        "/xiaoxitongzhi/info",
+        "/xiaoxitongzhi/unread/count",
+        "/xiaoxitongzhi/statistics",  // 消息统计
         // 文件下载
         "/file/download",
         "/file/upload",
@@ -74,20 +83,20 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/zuopin/delete",
         "/zuopin/statistics",
         // 团队管理相关（学生）
-        "/jingsai/tuandui/list",  // 浏览所有团队（申请加入）
-        "/jingsai/tuandui/my/list",  // 查询我的团队
-        "/jingsai/tuandui/myStatus",  // 查询我的团队状态
-        "/jingsai/tuandui/chengyuan/list",  // 查看团队成员
-        "/jingsai/tuandui/chengyuan/remove",  // 移除成员（负责人）
-        "/jingsai/tuandui/create",  // 创建团队
-        "/jingsai/tuandui/update",  // 更新团队信息
-        "/jingsai/tuandui/dissolve",  // 解散团队（负责人）
-        "/jingsai/tuandui/info",  // 查询团队详情
+        "/jingsai/tuandui/list",
+        "/jingsai/tuandui/my/list",
+        "/jingsai/tuandui/myStatus",
+        "/jingsai/tuandui/chengyuan/list",
+        "/jingsai/tuandui/chengyuan/remove",
+        "/jingsai/tuandui/create",
+        "/jingsai/tuandui/update",
+        "/jingsai/tuandui/dissolve",
+        "/jingsai/tuandui/info",
         // 团队申请相关
-        "/tuandui/apply/join",  // 申请加入
-        "/tuandui/apply/quit",  // 申请退出
-        "/tuandui/apply/my/list",  // 我的申请记录
-        "/tuandui/apply/shenhe/list"  // 审核列表（负责人）
+        "/tuandui/apply/join",
+        "/tuandui/apply/quit",
+        "/tuandui/apply/my/list",
+        "/tuandui/apply/shenhe/list"
     ));
     
     // 教师允许访问的接口前缀（通配符模式）
@@ -97,7 +106,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/jingsaixinxi/",
         "/jingsaibaoming/",
         "/zuopindafen/",
-        "/zuopindafenfuhe/",  // 成绩复核相关接口
+        "/zuopindafenfuhe/",
         "/xuesheng/list",
         "/xuesheng/info",
         "/jiaoshi/",

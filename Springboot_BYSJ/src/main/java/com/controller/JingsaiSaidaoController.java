@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -104,5 +105,54 @@ public class JingsaiSaidaoController {
         ew.orderBy("sort_order", true);
         PageUtils page = saidaoService.queryPage(params);
         return R.ok().put("data", page).put("page", page);
+    }
+
+    /**
+     * 获取统计数据
+     * 功能：统计赛道总数、活跃赛道数、关联竞赛数
+     * 
+     * @return R 统一返回结果，包含统计信息
+     */
+    @RequestMapping("/statistics")
+    public R statistics() {
+        try {
+            log.info("========== 赛道统计数据查询开始 ==========");
+            Map<String, Object> stats = new java.util.HashMap<>();
+            
+            // 使用更可靠的查询方式：先查询所有，再过滤
+            List<JingsaiSaidaoEntity> allSaidao = saidaoService.selectList(null);
+            
+            // 1. 统计赛道总数
+            int totalCount = allSaidao != null ? allSaidao.size() : 0;
+            log.info("赛道总数：{}", totalCount);
+            stats.put("totalSaidao", totalCount);
+            
+            // 2. 统计活跃赛道数
+            int activeCount = 0;
+            if (allSaidao != null) {
+                for (JingsaiSaidaoEntity saidao : allSaidao) {
+                    if ("是".equals(saidao.getIsActive())) {
+                        activeCount++;
+                    }
+                }
+            }
+            log.info("活跃赛道数：{}", activeCount);
+            stats.put("activeSaidao", activeCount);
+            
+            // 3. 统计关联竞赛数（去重）
+            long jingsaiCount = allSaidao.stream()
+                .map(JingsaiSaidaoEntity::getJingsaiId)
+                .filter(id -> id != null)
+                .distinct()
+                .count();
+            stats.put("jingsaiCount", jingsaiCount);
+            
+            log.info("赛道统计数据查询成功");
+            return R.ok().put("data", stats);
+            
+        } catch (Exception e) {
+            log.error("赛道统计数据查询异常：", e);
+            return R.error("统计查询失败，请重试");
+        }
     }
 }

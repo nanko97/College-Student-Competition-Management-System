@@ -13,47 +13,37 @@
     </div>
 
     <!-- 统计信息 -->
-    <el-row :gutter="20" class="stats-row">
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
-              <i class="el-icon-s-custom"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">团队总数</div>
+    <div class="statistics-wrapper">
+      <el-row :gutter="20">
+        <el-col :span="8">
+          <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="el-icon-s-custom"></i></div>
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.totalTuandui || 0 }}</div>
+              <div class="stat-label">团队总数</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
-              <i class="el-icon-time"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">待审核</div>
+        </el-col>
+        <el-col :span="8">
+          <div class="stat-card stat-pink">
+            <div class="stat-icon"><i class="el-icon-time"></i></div>
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.pendingCount || 0 }}</div>
+              <div class="stat-label">待审核</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
-              <i class="el-icon-success"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">已通过</div>
+        </el-col>
+        <el-col :span="8">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon"><i class="el-icon-success"></i></div>
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.passedCount || 0 }}</div>
+              <div class="stat-label">已通过</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+        </el-col>
+      </el-row>
+    </div>
 
     <!-- 列表页 -->
     <div v-if="showFlag">
@@ -480,7 +470,13 @@ export default {
         method: 'get'
       }).then(({data}) => {
         if (data && data.code === 0) {
-          this.statistics = data.data || {}
+          const stats = data.data || {}
+          // 适配后端返回的字段名
+          this.statistics = {
+            totalTuandui: stats.totalTuandui || 0,
+            pendingCount: stats.pendingCount || 0,
+            passedCount: stats.passedCount || 0
+          }
         }
       }).catch((error) => {
         console.error('获取统计数据失败:', error)
@@ -493,15 +489,7 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/css/tech-theme.scss';
 @import '@/assets/css/global-responsive-mixin.scss';
-
-/* 统计卡片样式优化 */
-.stats-row {
-  margin-bottom: 20px;
-  
-  .stat-card {
-    margin-bottom: 0;
-  }
-}
+@import '@/assets/css/statistics-cards.scss';
 
 .page-header {
   margin-bottom: 24px;
@@ -524,53 +512,6 @@ export default {
   margin-top: 0;
 }
 
-.stat-card {
-  transition: all 0.3s;
-  height: 100%;
-  
-  &:hover {
-    transform: translateY(-5px);
-  }
-  
-  .stat-content {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-  }
-  
-  .stat-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 15px;
-    flex-shrink: 0;
-    
-    i {
-      font-size: 28px;
-      color: #fff;
-    }
-  }
-  
-  .stat-info {
-    flex: 1;
-    
-    .stat-label {
-      font-size: 14px;
-      color: #909399;
-      margin-bottom: 8px;
-    }
-    
-    .stat-value {
-      font-size: 28px;
-      font-weight: bold;
-      color: #303133;
-    }
-  }
-}
-
 .action-wrapper {
   margin-bottom: 20px;
   .el-button { margin-right: 10px; }
@@ -582,6 +523,16 @@ export default {
     margin-right: 20px;
   }
   ::v-deep .el-input__inner { width: 200px; }
+  ::v-deep .el-select .el-input__inner { width: 150px; }
+  // 让最后一个form-item（查询按钮）垂直居中
+  ::v-deep .el-form-item:last-child {
+    margin-right: 0;
+    .el-form-item__content {
+      display: flex;
+      align-items: center;
+      line-height: 32px; // 与输入框高度一致
+    }
+  }
 }
 
 .tech-table {
@@ -599,23 +550,6 @@ export default {
 
 /* 响应式设计 - 平板设备 */
 @media screen and (max-width: 1200px) {
-  .stats-row {
-    margin-bottom: 15px;
-  }
-  
-  .stat-card {
-    margin-bottom: 15px;
-  }
-  
-  .stat-icon {
-    width: 50px;
-    height: 50px;
-    
-    i {
-      font-size: 24px;
-    }
-  }
-  
   .stat-value {
     font-size: 24px;
   }
@@ -623,10 +557,6 @@ export default {
 
 /* 响应式设计 - 手机设备 */
 @media screen and (max-width: 768px) {
-  .stats-row {
-    margin-bottom: 10px;
-  }
-  
   .el-row {
     margin-left: 0 !important;
     margin-right: 0 !important;
@@ -635,31 +565,6 @@ export default {
   .el-col {
     padding-left: 0 !important;
     padding-right: 0 !important;
-  }
-  
-  .stat-card {
-    margin-bottom: 10px;
-  }
-  
-  .stat-content {
-    flex-direction: column;
-    text-align: center;
-    padding: 15px 10px;
-  }
-  
-  .stat-icon {
-    margin-right: 0;
-    margin-bottom: 10px;
-    width: 50px;
-    height: 50px;
-  }
-  
-  .stat-label {
-    font-size: 12px;
-  }
-  
-  .stat-value {
-    font-size: 20px;
   }
   
   .el-table {
@@ -696,14 +601,6 @@ export default {
 
 /* 响应式设计 - 超小屏幕设备 */
 @media screen and (max-width: 480px) {
-  .stat-value {
-    font-size: 18px;
-  }
-  
-  .stat-label {
-    font-size: 11px;
-  }
-  
   .el-table {
     font-size: 11px;
   }
