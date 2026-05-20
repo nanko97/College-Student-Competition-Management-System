@@ -42,7 +42,7 @@
     <!-- 提示信息 -->
     <div class="role-tip">
       <i class="el-icon-info"></i>
-      <span>提示：此处显示所有系统通知、审核结果、成绩通知和截止提醒</span>
+      <span>提示：此处显示所有系统通知、审核结果、成绩通知等业务消息</span>
     </div>
 
     <!-- 搜索和操作区域 -->
@@ -50,9 +50,9 @@
       <el-form :inline="true" :model="searchForm" class="tech-search-form">
         <el-row :gutter="20" class="search-row">
           <el-form-item label="消息标题">
-            <el-input 
-              v-model="searchForm.biaoti" 
-              placeholder="请输入标题关键词" 
+            <el-input
+              v-model="searchForm.biaoti"
+              placeholder="请输入标题关键词"
               clearable
               prefix-icon="el-icon-search"
               style="width: 200px;"
@@ -60,10 +60,18 @@
           </el-form-item>
           <el-form-item label="消息类型">
             <el-select v-model="searchForm.leixing" placeholder="请选择类型" clearable style="width: 150px;">
-              <el-option label="系统通知" value="系统通知"></el-option>
+              <el-option label="报名申请" value="报名申请"></el-option>
               <el-option label="审核结果" value="审核结果"></el-option>
+              <el-option label="缴费审核" value="缴费审核"></el-option>
+              <el-option label="复核申请" value="复核申请"></el-option>
+              <el-option label="复核结果" value="复核结果"></el-option>
+              <el-option label="晋级结果" value="晋级结果"></el-option>
+              <el-option label="团队审核" value="团队审核"></el-option>
+              <el-option label="团队申请" value="团队申请"></el-option>
+              <el-option label="人员变更" value="人员变更"></el-option>
+              <el-option label="作品提交" value="作品提交"></el-option>
               <el-option label="成绩通知" value="成绩通知"></el-option>
-              <el-option label="截止提醒" value="截止提醒"></el-option>
+              <el-option label="系统通知" value="系统通知"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="阅读状态">
@@ -84,12 +92,12 @@
 
     <!-- 消息列表 -->
     <div class="table-wrapper">
-      <el-table 
+      <el-table
         class="tech-table"
-        :data="dataList" 
-        v-loading="dataListLoading" 
-        border 
-        stripe 
+        :data="dataList"
+        v-loading="dataListLoading"
+        border
+        stripe
         @selection-change="handleSelectionChange"
         style="width: 100%">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -118,26 +126,26 @@
         <el-table-column prop="addtime" label="接收时间" width="160" align="center"></el-table-column>
         <el-table-column label="操作" width="180" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button 
-              v-if="scope.row.isRead === '未读'" 
-              type="primary" 
-              size="mini" 
-              icon="el-icon-view" 
+            <el-button
+              v-if="scope.row.isRead === '未读'"
+              type="primary"
+              size="mini"
+              icon="el-icon-view"
               @click="viewAndMarkRead(scope.row)">
               查看
             </el-button>
-            <el-button 
-              v-else 
-              type="info" 
-              size="mini" 
-              icon="el-icon-view" 
+            <el-button
+              v-else
+              type="info"
+              size="mini"
+              icon="el-icon-view"
               @click="viewDetail(scope.row)">
               查看
             </el-button>
-            <el-button 
-              type="danger" 
-              size="mini" 
-              icon="el-icon-delete" 
+            <el-button
+              type="danger"
+              size="mini"
+              icon="el-icon-delete"
               @click="deleteMessage(scope.row.id)">
               删除
             </el-button>
@@ -159,9 +167,9 @@
     </div>
 
     <!-- 消息详情对话框 -->
-    <el-dialog 
-      title="消息详情" 
-      :visible.sync="detailVisible" 
+    <el-dialog
+      title="消息详情"
+      :visible.sync="detailVisible"
       width="600px"
       :close-on-click-modal="false">
       <div class="message-detail">
@@ -220,7 +228,6 @@ export default {
   methods: {
     // 获取统计数据
     getStatistics() {
-      // 使用专门的 statistics 接口
       this.$http({
         url: 'xiaoxitongzhi/statistics',
         method: 'get'
@@ -232,27 +239,27 @@ export default {
         }
       })
     },
-    
+
     // 获取消息列表
     getDataList() {
       this.dataListLoading = true
-      
+
       const tableName = this.$storage.get('sessionTable')
       const username = this.$storage.get('username')
-      
+
       let params = {
         page: this.pageIndex,
         limit: this.pageSize,
         sort: 'addtime',
         order: 'desc'
       }
-      
+
       if (tableName === 'xuesheng') {
         params.jieshourenXuehao = username
       } else if (tableName === 'jiaoshi') {
         params.jieshourenGonghao = username
       }
-      
+
       // 添加搜索条件
       if (this.searchForm.biaoti) {
         params.biaoti = '%' + this.searchForm.biaoti + '%'
@@ -263,7 +270,7 @@ export default {
       if (this.searchForm.isRead) {
         params.isRead = this.searchForm.isRead
       }
-      
+
       this.$http({
         url: 'xiaoxitongzhi/page',
         method: 'get',
@@ -278,13 +285,13 @@ export default {
         this.dataListLoading = false
       })
     },
-    
+
     // 搜索
     search() {
       this.pageIndex = 1
       this.getDataList()
     },
-    
+
     // 重置搜索
     resetSearch() {
       this.searchForm = {
@@ -292,16 +299,244 @@ export default {
         leixing: '',
         isRead: ''
       }
-在·
+      this.pageIndex = 1
+      this.getDataList()
+      this.getStatistics()
+    },
+
+    // 获取类型颜色
+    getTypeColor(leixing) {
+      const colorMap = {
+        '报名申请': 'primary',
+        '审核结果': 'success',
+        '缴费审核': 'warning',
+        '复核申请': '',
+        '复核结果': 'success',
+        '晋级结果': 'success',
+        '团队审核': 'primary',
+        '团队申请': '',
+        '人员变更': '',
+        '作品提交': 'warning',
+        '成绩通知': 'danger',
+        '系统通知': 'info'
+      }
+      return colorMap[leixing] || 'info'
+    },
+
+    // 查看并标记为已读
+    viewAndMarkRead(row) {
+      this.currentMessage = row
+      this.detailVisible = true
+      // 标记为已读
+      this.$http({
+        url: 'xiaoxitongzhi/update',
+        method: 'post',
+        data: { id: row.id, isRead: '已读', readTime: new Date().toLocaleString() }
+      }).then(({ data }) => {
+        if (data && data.code === 0) {
+          row.isRead = '已读'
+          this.getStatistics()
+        }
+      })
+    },
+
+    // 查看详情（已读消息）
+    viewDetail(row) {
+      this.currentMessage = row
+      this.detailVisible = true
+    },
+
+    // 删除消息
+    deleteMessage(id) {
+      this.$confirm('确定删除该消息?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$http({
+          url: 'xiaoxitongzhi/delete',
+          method: 'post',
+          data: [id]
+        }).then(({ data }) => {
+          if (data && data.code === 0) {
+            this.$message.success('删除成功')
+            this.getDataList()
+            this.getStatistics()
+          }
+        })
+      }).catch(() => {})
+    },
+
+    // 多选
+    handleSelectionChange(val) {
+      this.selectedIds = val.map(item => item.id)
+    },
+
+    // 全部已读
+    markAllAsRead() {
+      this.$confirm('确定将所有未读消息标记为已读?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        let unreadIds = this.dataList.filter(item => item.isRead === '未读').map(item => item.id)
+        if (unreadIds.length === 0) {
+          this.$message.info('没有未读消息')
+          return
+        }
+        let promises = unreadIds.map(id => {
+          return this.$http({
+            url: 'xiaoxitongzhi/update',
+            method: 'post',
+            data: { id: id, isRead: '已读', readTime: new Date().toLocaleString() }
+          })
+        })
+        Promise.all(promises).then(() => {
+          this.$message.success('全部标记已读成功')
+          this.getDataList()
+          this.getStatistics()
+        })
+      }).catch(() => {})
+    },
+
+    // 批量删除
+    batchDelete() {
+      if (this.selectedIds.length === 0) {
+        this.$message.warning('请先选择要删除的消息')
+        return
+      }
+      this.$confirm(`确定删除选中的 ${this.selectedIds.length} 条消息?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$http({
+          url: 'xiaoxitongzhi/delete',
+          method: 'post',
+          data: this.selectedIds
+        }).then(({ data }) => {
+          if (data && data.code === 0) {
+            this.$message.success('批量删除成功')
+            this.selectedIds = []
+            this.getDataList()
+            this.getStatistics()
+          }
+        })
+      }).catch(() => {})
+    },
+
+    // 分页
+    sizeChangeHandle(val) {
+      this.pageSize = val
+      this.pageIndex = 1
+      this.getDataList()
+    },
+    currentChangeHandle(val) {
+      this.pageIndex = val
+      this.getDataList()
+    }
   }
-  
-  .detail-content {
-    font-size: 15px;
-    line-height: 1.8;
-    color: #606266;
-    white-space: pre-wrap;
-    min-height: 100px;
-  }
+}
+</script>
+
+<style scoped>
+.page-container {
+  padding: 20px;
+}
+
+.page-header {
+  margin-bottom: 20px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #303133;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 12px;
+  color: #909399;
+  margin: 5px 0 0 0;
+}
+
+.statistics-wrapper {
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  color: white;
+}
+
+.stat-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.stat-pink { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.stat-blue { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+
+.stat-icon {
+  font-size: 36px;
+  margin-right: 15px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.stat-label {
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.role-tip {
+  background: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 4px;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  color: #1890ff;
+}
+
+.search-wrapper {
+  margin-bottom: 20px;
+}
+
+.message-detail {
+  padding: 10px;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.detail-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.detail-meta {
+  color: #909399;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.detail-meta span {
+  margin-right: 20px;
+}
+
+.detail-content {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #606266;
+  white-space: pre-wrap;
+  min-height: 100px;
 }
 
 .tech-pagination {

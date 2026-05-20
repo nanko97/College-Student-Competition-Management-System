@@ -5,9 +5,11 @@ import com.annotation.OperationLog;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.dao.JiaoshiDao;
 import com.entity.JiaoshiEntity;
+import com.entity.JingsaiJibieBanbenEntity;
 import com.entity.JingsaiJinjiGuanxiEntity;
 import com.entity.JingsaiJinjiJiluEntity;
 import com.entity.JingsaixinxiEntity;
+import com.service.JingsaiJibieBanbenService;
 import com.service.JingsaiJinjiGuanxiService;
 import com.service.JingsaiJinjiJiluService;
 import com.service.JingsaixinxiService;
@@ -16,9 +18,11 @@ import com.utils.PageUtils;
 import com.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +45,13 @@ public class JingsaiJinjiController {
     private JingsaixinxiService jingsaixinxiService;
 
     @Autowired
+    private JingsaiJibieBanbenService jibieBanbenService;
+
+    @Autowired
     private JiaoshiDao jiaoshiDao;
+
+    @Autowired
+    private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
 
     /**
      * 配置晋级关系
@@ -51,12 +61,72 @@ public class JingsaiJinjiController {
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R saveGuanxi(@RequestBody JingsaiJinjiGuanxiEntity guanxi, HttpServletRequest request) {
         try {
+            // 联动1：验证父竞赛和子竞赛不能相同
+            if (guanxi.getFuJingsaiId() != null && guanxi.getZiJingsaiId() != null
+                && guanxi.getFuJingsaiId().equals(guanxi.getZiJingsaiId())) {
+                return R.error("父竞赛和子竞赛不能相同");
+            }
+
+            // 联动2：自动填充竞赛名称（非DB字段，仅用于前端展示）
+            if (guanxi.getFuJingsaiId() != null) {
+                JingsaixinxiEntity fuJingsai = jingsaixinxiService.selectById(guanxi.getFuJingsaiId());
+                if (fuJingsai != null) {
+                    guanxi.setFuJingsaimingcheng(fuJingsai.getJingsaimingcheng());
+                }
+            }
+            if (guanxi.getZiJingsaiId() != null) {
+                JingsaixinxiEntity ziJingsai = jingsaixinxiService.selectById(guanxi.getZiJingsaiId());
+                if (ziJingsai != null) {
+                    guanxi.setZiJingsaimingcheng(ziJingsai.getJingsaimingcheng());
+                }
+            }
+
+            // 联动3：自动填充父级别（从当前版本）
+            if (guanxi.getFuJingsaiId() != null && !StringUtils.hasText(guanxi.getFuJibie())) {
+                EntityWrapper<JingsaiJibieBanbenEntity> ew = new EntityWrapper<>();
+                ew.eq("jingsai_id", guanxi.getFuJingsaiId());
+                ew.eq("is_current", "是");
+                JingsaiJibieBanbenEntity currentBanben = jibieBanbenService.selectOne(ew);
+                if (currentBanben != null && StringUtils.hasText(currentBanben.getJibie())) {
+                    guanxi.setFuJibie(currentBanben.getJibie());
+                    log.info("联动：自动填充父级别为 {}，竞赛ID: {}", currentBanben.getJibie(), guanxi.getFuJingsaiId());
+                } else {
+                    // 如果没有当前版本，尝试从竞赛信息获取
+                    JingsaixinxiEntity fuJingsai = jingsaixinxiService.selectById(guanxi.getFuJingsaiId());
+                    if (fuJingsai != null && StringUtils.hasText(fuJingsai.getJingsaiJibie())) {
+                        guanxi.setFuJibie(fuJingsai.getJingsaiJibie());
+                        log.info("联动：从竞赛信息自动填充父级别为 {}", fuJingsai.getJingsaiJibie());
+                    }
+                }
+            }
+
+            // 联动4：自动填充子级别（从当前版本）
+            if (guanxi.getZiJingsaiId() != null && !StringUtils.hasText(guanxi.getZiJibie())) {
+                EntityWrapper<JingsaiJibieBanbenEntity> ew = new EntityWrapper<>();
+                ew.eq("jingsai_id", guanxi.getZiJingsaiId());
+                ew.eq("is_current", "是");
+                JingsaiJibieBanbenEntity currentBanben = jibieBanbenService.selectOne(ew);
+                if (currentBanben != null && StringUtils.hasText(currentBanben.getJibie())) {
+                    guanxi.setZiJibie(currentBanben.getJibie());
+                    log.info("联动：自动填充子级别为 {}，竞赛ID: {}", currentBanben.getJibie(), guanxi.getZiJingsaiId());
+                } else {
+                    JingsaixinxiEntity ziJingsai = jingsaixinxiService.selectById(guanxi.getZiJingsaiId());
+                    if (ziJingsai != null && StringUtils.hasText(ziJingsai.getJingsaiJibie())) {
+                        guanxi.setZiJibie(ziJingsai.getJingsaiJibie());
+                        log.info("联动：从竞赛信息自动填充子级别为 {}", ziJingsai.getJingsaiJibie());
+                    }
+                }
+            }
+
             // 检查是否已存在
             JingsaiJinjiGuanxiEntity exist = jinjiGuanxiService.getByFuZiJingsai(
                 guanxi.getFuJingsaiId(), guanxi.getZiJingsaiId());
-            
+
+            StringBuilder msg = new StringBuilder();
             if (exist != null) {
                 // 更新现有配置
+                String oldFuJibie = exist.getFuJibie();
+                String oldZiJibie = exist.getZiJibie();
                 exist.setFuJibie(guanxi.getFuJibie());
                 exist.setZiJibie(guanxi.getZiJibie());
                 exist.setJinjiType(guanxi.getJinjiType());
@@ -65,12 +135,22 @@ public class JingsaiJinjiController {
                 exist.setZuidiMingci(guanxi.getZuidiMingci());
                 exist.setIsActive(guanxi.getIsActive());
                 jinjiGuanxiService.updateById(exist);
-                return R.ok("晋级关系更新成功");
+                msg.append("晋级关系更新成功");
+                // 联动提示：级别变更信息
+                if (!guanxi.getFuJibie().equals(oldFuJibie) || !guanxi.getZiJibie().equals(oldZiJibie)) {
+                    msg.append("，级别已同步更新");
+                }
+                return R.ok(msg.toString());
             } else {
                 // 新增配置
                 guanxi.setId(IdWorker.getId());
                 jinjiGuanxiService.insert(guanxi);
-                return R.ok("晋级关系配置成功");
+                msg.append("晋级关系配置成功");
+                // 联动提示
+                if (StringUtils.hasText(guanxi.getFuJibie()) || StringUtils.hasText(guanxi.getZiJibie())) {
+                    msg.append("，级别已自动填充");
+                }
+                return R.ok(msg.toString());
             }
         } catch (Exception e) {
             log.error("配置晋级关系异常", e);
@@ -313,6 +393,27 @@ public class JingsaiJinjiController {
             log.info("审核通过晋级 - 工号: {}, 姓名: {}", gonghao, shenheRen);
 
             R result = jinjiJiluService.shenheJinji(jinjiId, "已通过", shenheRen);
+
+            // 发送晋级审核通过通知给学生
+            try {
+                JingsaiJinjiJiluEntity jinji = jinjiJiluService.selectById(jinjiId);
+                if (jinji != null && jinji.getXuehao() != null) {
+                    String studentXuehao = jinji.getXuehao();
+                    String yuanJingsaiName = jinji.getYuanJingsaimingcheng() != null ? jinji.getYuanJingsaimingcheng() : "";
+                    String xinJingsaiName = jinji.getXinJingsaimingcheng() != null ? jinji.getXinJingsaimingcheng() : "";
+                    String title = "晋级审核通过";
+                    String content = String.format("您从「%s」晋级到「%s」的申请已通过审核。", yuanJingsaiName, xinJingsaiName);
+                    xiaoxiTongzhiService.sendTongzhi(
+                        title, content, "晋级结果", shenheRen,
+                        studentXuehao, null, "xuesheng",
+                        jinjiId, "jinji"
+                    );
+                    log.info("发送晋级审核通过通知给学生: {}, 晋级ID: {}", studentXuehao, jinjiId);
+                }
+            } catch (Exception e) {
+                log.error("发送晋级审核通知异常", e);
+            }
+
             return result;
         } catch (Exception e) {
             log.error("审核晋级异常", e);
@@ -339,6 +440,26 @@ public class JingsaiJinjiController {
             log.info("审核驳回晋级 - 工号: {}, 姓名: {}", gonghao, shenheRen);
 
             R result = jinjiJiluService.shenheJinji(jinjiId, "已驳回", shenheRen);
+
+            // 发送晋级审核驳回通知给学生
+            try {
+                JingsaiJinjiJiluEntity jinji = jinjiJiluService.selectById(jinjiId);
+                if (jinji != null && jinji.getXuehao() != null) {
+                    String studentXuehao = jinji.getXuehao();
+                    String yuanJingsaiName = jinji.getYuanJingsaimingcheng() != null ? jinji.getYuanJingsaimingcheng() : "";
+                    String title = "晋级审核未通过";
+                    String content = String.format("您从「%s」的晋级申请未通过审核，请联系教师了解详情。", yuanJingsaiName);
+                    xiaoxiTongzhiService.sendTongzhi(
+                        title, content, "晋级结果", shenheRen,
+                        studentXuehao, null, "xuesheng",
+                        jinjiId, "jinji"
+                    );
+                    log.info("发送晋级审核驳回通知给学生: {}, 晋级ID: {}", studentXuehao, jinjiId);
+                }
+            } catch (Exception e) {
+                log.error("发送晋级驳回通知异常", e);
+            }
+
             return result;
         } catch (Exception e) {
             log.error("驳回晋级异常", e);
@@ -348,14 +469,19 @@ public class JingsaiJinjiController {
 
     /**
      * 删除晋级关系
+     * 联动：删除成功后提示删除数量
      */
     @OperationLog("删除竞赛晋级关系")
     @PostMapping("/guanxi/delete")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R deleteGuanxi(@RequestBody Long[] ids) {
         try {
-            jinjiGuanxiService.deleteBatchIds(java.util.Arrays.asList(ids));
-            return R.ok("删除成功");
+            if (ids == null || ids.length == 0) {
+                return R.error("请选择要删除的晋级关系");
+            }
+            jinjiGuanxiService.deleteBatchIds(Arrays.asList(ids));
+            log.info("删除晋级关系 {} 条，IDs: {}", ids.length, Arrays.toString(ids));
+            return R.ok("删除成功(" + ids.length + "条晋级关系)");
         } catch (Exception e) {
             log.error("删除晋级关系异常", e);
             return R.error("删除失败，请重试");

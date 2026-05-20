@@ -60,6 +60,9 @@ public class JingsaibaomingController {
     
     @Autowired
     private com.service.JingsaiJiaofeiJiluService jiaofeiJiluService;
+    
+    @Autowired
+    private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
 
     /**
      * 后端分页列表查询
@@ -563,6 +566,42 @@ public class JingsaibaomingController {
                      jingsaibaoming.getId(), 
                      jingsaibaoming.getXuehao(), 
                      jingsaibaoming.getJingsaimingcheng());
+            
+            // 6. 发送报名通知给教师
+            try {
+                // 查询竞赛信息，获取负责教师
+                if (StringUtils.hasText(jingsaibaoming.getJingsaimingcheng())) {
+                    EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                    jingsaiEw.eq("jingsaimingcheng", jingsaibaoming.getJingsaimingcheng());
+                    JingsaixinxiEntity jingsai = jingsaixinxiService.selectOne(jingsaiEw);
+                    
+                    if (jingsai != null && StringUtils.hasText(jingsai.getGonghao())) {
+                        String teacherGonghao = jingsai.getGonghao();
+                        String teacherName = jingsai.getJiaoshixingming();
+                        String studentName = jingsaibaoming.getXueshengxingming() != null ? jingsaibaoming.getXueshengxingming() : "学生";
+                        
+                        String title = "新的报名申请";
+                        String content = String.format("学生「%s」提交了「%s」竞赛的报名申请，请及时审核。", studentName, jingsaibaoming.getJingsaimingcheng());
+                        
+                        xiaoxiTongzhiService.sendTongzhi(
+                            title,
+                            content,
+                            "报名申请",
+                            "系统",
+                            null,
+                            teacherGonghao,
+                            "jiaoshi",
+                            jingsaibaoming.getId(),
+                            "baoming"
+                        );
+                        log.info("✓ 发送报名通知给教师: {}, 竞赛: {}, 报名ID: {}", teacherGonghao, jingsaibaoming.getJingsaimingcheng(), jingsaibaoming.getId());
+                    }
+                }
+            } catch (Exception e) {
+                log.error("发送报名通知异常", e);
+                // 通知发送失败不影响报名流程
+            }
+            
             return R.ok("报名成功，请等待教师审核");
             
         } catch (Exception e) {
@@ -617,6 +656,42 @@ public class JingsaibaomingController {
                      jingsaibaoming.getId(), 
                      jingsaibaoming.getXuehao(), 
                      jingsaibaoming.getJingsaimingcheng());
+            
+            // 5. 发送报名通知给教师
+            try {
+                // 查询竞赛信息，获取负责教师
+                if (StringUtils.hasText(jingsaibaoming.getJingsaimingcheng())) {
+                    EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                    jingsaiEw.eq("jingsaimingcheng", jingsaibaoming.getJingsaimingcheng());
+                    JingsaixinxiEntity jingsai = jingsaixinxiService.selectOne(jingsaiEw);
+                    
+                    if (jingsai != null && StringUtils.hasText(jingsai.getGonghao())) {
+                        String teacherGonghao = jingsai.getGonghao();
+                        String teacherName = jingsai.getJiaoshixingming();
+                        String studentName = jingsaibaoming.getXueshengxingming() != null ? jingsaibaoming.getXueshengxingming() : "学生";
+                        
+                        String title = "新的报名申请";
+                        String content = String.format("学生「%s」提交了「%s」竞赛的报名申请，请及时审核。", studentName, jingsaibaoming.getJingsaimingcheng());
+                        
+                        xiaoxiTongzhiService.sendTongzhi(
+                            title,
+                            content,
+                            "报名申请",
+                            "系统",
+                            null,
+                            teacherGonghao,
+                            "jiaoshi",
+                            jingsaibaoming.getId(),
+                            "baoming"
+                        );
+                        log.info("✓ 发送报名通知给教师: {}, 竞赛: {}, 报名ID: {}", teacherGonghao, jingsaibaoming.getJingsaimingcheng(), jingsaibaoming.getId());
+                    }
+                }
+            } catch (Exception e) {
+                log.error("发送报名通知异常", e);
+                // 通知发送失败不影响报名流程
+            }
+            
             return R.ok("报名成功，请等待教师审核");
             
         } catch (Exception e) {
@@ -664,18 +739,68 @@ public class JingsaibaomingController {
             // 3. 【核心】检查是否为审核操作（sfsh字段变更）
             String newSfsh = jingsaibaoming.getSfsh();
             boolean isShenheAction = "是".equals(newSfsh) || "已通过".equals(newSfsh);
+            boolean isBohuiAction = "否".equals(newSfsh) || "未通过".equals(newSfsh);
             
-            if (isShenheAction) {
-                // 查询原报名记录，判断是否从未审核状态变为通过
+            if (isShenheAction || isBohuiAction) {
+                // 查询原报名记录，判断是否从未审核状态变为通过/驳回
                 JingsaibaomingEntity oldBaoming = jingsaibaomingService.selectById(jingsaibaoming.getId());
                 if (oldBaoming != null) {
                     String oldSfsh = oldBaoming.getSfsh();
                     boolean wasNotApproved = !"是".equals(oldSfsh) && !"已通过".equals(oldSfsh);
                     
                     // 如果是首次审核通过，生成缴费记录
-                    if (wasNotApproved) {
+                    if (isShenheAction && wasNotApproved) {
                         log.info("报名ID: {} 审核通过，准备生成缴费记录", jingsaibaoming.getId());
                         generateJiaofeiJiluOnApproval(jingsaibaoming);
+                        
+                        // 发送审核通过消息给学生
+                        String studentXuehao = oldBaoming.getXuehao();
+                        String studentName = oldBaoming.getXueshengxingming();
+                        String competitionName = oldBaoming.getJingsaimingcheng();
+                        String teacherName = (String) request.getSession().getAttribute("xingming");
+                        
+                        String title = "报名审核通过";
+                        String content = String.format("您的「%s」竞赛报名已通过审核。", competitionName);
+                        if (teacherName != null && !teacherName.isEmpty()) {
+                            content += "审核教师：" + teacherName;
+                        }
+                        
+                        xiaoxiTongzhiService.sendTongzhi(
+                            title,
+                            content,
+                            "审核结果",
+                            teacherName != null ? teacherName : "系统",
+                            studentXuehao,
+                            null,
+                            "xuesheng",
+                            oldBaoming.getId(),
+                            "baoming"
+                        );
+                        log.info("✓ 发送审核通过消息给学生: {}, 报名ID: {}", studentXuehao, oldBaoming.getId());
+                    }
+                    
+                    // 如果是审核驳回，发送消息给学生
+                    if (isBohuiAction && wasNotApproved) {
+                        String studentXuehao = oldBaoming.getXuehao();
+                        String studentName = oldBaoming.getXueshengxingming();
+                        String competitionName = oldBaoming.getJingsaimingcheng();
+                        String teacherName = (String) request.getSession().getAttribute("xingming");
+                        
+                        String title = "报名审核未通过";
+                        String content = String.format("您的「%s」竞赛报名审核未通过，请联系教师了解详情。", competitionName);
+                        
+                        xiaoxiTongzhiService.sendTongzhi(
+                            title,
+                            content,
+                            "审核结果",
+                            teacherName != null ? teacherName : "系统",
+                            studentXuehao,
+                            null,
+                            "xuesheng",
+                            oldBaoming.getId(),
+                            "baoming"
+                        );
+                        log.info("✓ 发送审核驳回消息给学生: {}, 报名ID: {}", studentXuehao, oldBaoming.getId());
                     }
                 }
             }
@@ -705,7 +830,7 @@ public class JingsaibaomingController {
     @OperationLog("删除竞赛报名信息")
     @RequestMapping("/delete")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
-    public R delete(@RequestBody Long[] ids) {
+    public R delete(@RequestBody String[] ids) {
         // 1. 参数校验
         if (ids == null || ids.length == 0) {
             log.warn("删除报名失败：ID 数组为空");
@@ -713,10 +838,23 @@ public class JingsaibaomingController {
         }
         
         try {
-            // 2. 批量删除
-            jingsaibaomingService.deleteBatchIds(Arrays.asList(ids));
+            // 将 String[] 转换为 Long[]，避免前端传递大数字时的精度丢失问题
+            Long[] longIds = new Long[ids.length];
+            for (int i = 0; i < ids.length; i++) {
+                try {
+                    longIds[i] = Long.parseLong(ids[i]);
+                } catch (NumberFormatException e) {
+                    log.error("ID 格式错误: {}", ids[i]);
+                    return R.error("报名 ID 格式错误: " + ids[i]);
+                }
+            }
             
-            log.info("删除报名信息成功，IDs: {}", Arrays.toString(ids));
+            log.info("接收到的删除请求，原始 IDs: {}，转换后 Long IDs: {}", Arrays.toString(ids), Arrays.toString(longIds));
+            
+            // 2. 批量删除
+            jingsaibaomingService.deleteBatchIds(Arrays.asList(longIds));
+            
+            log.info("删除报名信息成功，IDs: {}", Arrays.toString(longIds));
             return R.ok("删除成功");
             
         } catch (Exception e) {

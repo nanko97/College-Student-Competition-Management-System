@@ -26,6 +26,7 @@ public class JingsaiTuanduiController {
     @Autowired private JingsaiTuanduiService tuanduiService;
     @Autowired private JingsaiTuanduiChengyuanService chengyuanService;
     @Autowired private JingsaixinxiService jingsaixinxiService;
+    @Autowired private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
 
     @OperationLog("创建竞赛团队")
     @PostMapping("/create")
@@ -140,18 +141,65 @@ public class JingsaiTuanduiController {
     @OperationLog("审核竞赛团队")
     @PostMapping("/shenhe")
     @Transactional(rollbackFor = Exception.class)
-    public R shenhe(@RequestBody Map<String, Object> params) {
+    public R shenhe(@RequestBody Map<String, Object> params, HttpServletRequest request) {
         Long id = Long.parseLong(params.get("id").toString());
         String shenheZhuangtai = params.get("shenheZhuangtai").toString();
         String shenheYijian = params.get("shenheYijian") != null ? params.get("shenheYijian").toString() : "";
         JingsaiTuanduiEntity tuandui = tuanduiService.selectById(id);
-        if (tuandui != null) {
-            tuandui.setShenheZhuangtai(shenheZhuangtai);
-            tuandui.setShenheYijian(shenheYijian);
-            tuanduiService.updateById(tuandui);
-            return R.ok("审核成功");
+        if (tuandui == null) {
+            return R.error("团队不存在");
         }
-        return R.error("团队不存在");
+
+        // 幂等保护：防止重复审核
+        if (!"待审核".equals(tuandui.getShenheZhuangtai())) {
+            return R.error("该团队已审核，请勿重复操作");
+        }
+
+        tuandui.setShenheZhuangtai(shenheZhuangtai);
+        tuandui.setShenheYijian(shenheYijian);
+        tuanduiService.updateById(tuandui);
+
+        // 发送团队审核结果通知给团队负责人
+        try {
+            if ("已通过".equals(shenheZhuangtai) || "已驳回".equals(shenheZhuangtai)) {
+                String fuzerenXuehao = tuandui.getFuzerenXuehao();
+                String tuanduiMingcheng = tuandui.getTuanduiMingcheng();
+                String jingsaimingcheng = tuandui.getJingsaimingcheng();
+                String shenheRen = "管理员";
+                String tableName = (String) request.getSession().getAttribute("tableName");
+                if ("jiaoshi".equals(tableName)) {
+                    String gonghao = (String) request.getSession().getAttribute("username");
+                    shenheRen = (String) request.getSession().getAttribute("xingming");
+                    if (shenheRen == null || shenheRen.isEmpty()) {
+                        shenheRen = gonghao;
+                    }
+                }
+
+                String title;
+                String content;
+                if ("已通过".equals(shenheZhuangtai)) {
+                    title = "团队审核通过";
+                    content = String.format("您创建的团队「%s」（竞赛：%s）已通过审核。", tuanduiMingcheng, jingsaimingcheng);
+                } else {
+                    title = "团队审核未通过";
+                    content = String.format("您创建的团队「%s」（竞赛：%s）未通过审核。", tuanduiMingcheng, jingsaimingcheng);
+                    if (!shenheYijian.isEmpty()) {
+                        content += "审核意见：" + shenheYijian;
+                    }
+                }
+
+                xiaoxiTongzhiService.sendTongzhi(
+                    title, content, "团队审核", shenheRen,
+                    fuzerenXuehao, null, "xuesheng",
+                    tuandui.getId(), "tuandui"
+                );
+                log.info("发送团队审核结果通知给负责人: {}, 团队ID: {}, 结果: {}", fuzerenXuehao, id, shenheZhuangtai);
+            }
+        } catch (Exception e) {
+            log.error("发送团队审核通知异常", e);
+        }
+
+        return R.ok("审核成功");
     }
 
     /**

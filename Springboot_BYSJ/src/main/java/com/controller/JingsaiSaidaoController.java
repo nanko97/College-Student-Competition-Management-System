@@ -4,8 +4,10 @@ import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.entity.JingsaiSaidaoEntity;
+import com.entity.JingsaibaomingEntity;
 import com.entity.JingsaixinxiEntity;
 import com.service.JingsaiSaidaoService;
+import com.service.JingsaibaomingService;
 import com.service.JingsaixinxiService;
 import com.utils.IdWorker;
 import com.utils.PageUtils;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 public class JingsaiSaidaoController {
     @Autowired private JingsaiSaidaoService saidaoService;
     @Autowired private JingsaixinxiService jingsaixinxiService;
+    @Autowired private JingsaibaomingService jingsaibaomingService;
 
     @OperationLog("保存竞赛赛道")
     @PostMapping("/save")
@@ -38,10 +42,29 @@ public class JingsaiSaidaoController {
                 return R.error("赛道名称不能为空");
             }
             
+            // 联动：确保赛道中的竞赛名称与竞赛信息一致
+            if (saidao.getJingsaiId() != null && !StringUtils.hasText(saidao.getJingsaimingcheng())) {
+                JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(saidao.getJingsaiId());
+                if (jingsai != null) {
+                    saidao.setJingsaimingcheng(jingsai.getJingsaimingcheng());
+                    log.info("自动填充赛道竞赛名称：{}", jingsai.getJingsaimingcheng());
+                }
+            }
+            
+            // 联动：如果竞赛的“是否有赛道”为空或为“否”，自动更新为“是"
+            if (saidao.getJingsaiId() != null) {
+                JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(saidao.getJingsaiId());
+                if (jingsai != null && !"是".equals(jingsai.getShifouYouSaidao())) {
+                    jingsai.setShifouYouSaidao("是");
+                    jingsaixinxiService.updateById(jingsai);
+                    log.info("联动更新竞赛的“是否有赛道”标志为“是”，竞赛ID: {}", saidao.getJingsaiId());
+                }
+            }
+            
             saidao.setId(IdWorker.getId());
             saidaoService.insert(saidao);
             log.info("保存赛道成功，ID: {}, 名称: {}", saidao.getId(), saidao.getSaidaoMingcheng());
-            return R.ok("添加成功");
+            return R.ok("添加成功，竞赛的赛道标志已自动更新");
         } catch (Exception e) {
             log.error("保存赛道异常", e);
             return R.error("添加失败，请重试");
@@ -58,9 +81,56 @@ public class JingsaiSaidaoController {
                 return R.error("赛道ID非法");
             }
             
+            // 查询原赛道信息（用于对比变更）
+            JingsaiSaidaoEntity existingSaidao = saidaoService.selectById(saidao.getId());
+            if (existingSaidao == null) {
+                return R.error("赛道不存在");
+            }
+            
+            // 联动1：确保赛道中的竞赛名称与竞赛信息一致
+            if (saidao.getJingsaiId() != null) {
+                JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(saidao.getJingsaiId());
+                if (jingsai != null) {
+                    saidao.setJingsaimingcheng(jingsai.getJingsaimingcheng());
+                    log.debug("联动：同步赛道竞赛名称为 {}", jingsai.getJingsaimingcheng());
+                }
+            }
+            
+            // 联动2：参赛类型变更时，同步更新报名记录的参赛类型
+            String newCansaiLeixing = saidao.getCansaiLeixing();
+            String oldCansaiLeixing = existingSaidao.getCansaiLeixing();
+            StringBuilder msg = new StringBuilder("更新成功");
+            
+            if (newCansaiLeixing != null && !newCansaiLeixing.equals(oldCansaiLeixing)) {
+                try {
+                    EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
+                    baomingEw.eq("saidao_id", saidao.getId());
+                    List<JingsaibaomingEntity> baomingList = jingsaibaomingService.selectList(baomingEw);
+                    if (baomingList != null && !baomingList.isEmpty()) {
+                        for (JingsaibaomingEntity baoming : baomingList) {
+                            baoming.setCansaileixing(newCansaiLeixing);
+                            jingsaibaomingService.updateById(baoming);
+                        }
+                        msg.append("，报名记录参赛类型已同步更新(" + baomingList.size() + "条)");
+                        log.info("联动：赛道参赛类型变更，同步更新报名记录，赛道ID: {}", saidao.getId());
+                    }
+                } catch (Exception e) {
+                    log.error("联动更新报名记录参赛类型失败", e);
+                    msg.append("（报名记录参赛类型同步失败）");
+                }
+            }
+            
+            // 联动3：赛道状态从“是”变为“否”时，提示教师注意
+            String newIsActive = saidao.getIsActive();
+            String oldIsActive = existingSaidao.getIsActive();
+            if ("否".equals(newIsActive) && "是".equals(oldIsActive)) {
+                msg.append("，注意：赛道已停用，相关报名记录可能需要调整");
+                log.info("联动：赛道 {} 从活跃变为停用", saidao.getSaidaoMingcheng());
+            }
+            
             saidaoService.updateById(saidao);
             log.info("更新赛道成功，ID: {}", saidao.getId());
-            return R.ok("更新成功");
+            return R.ok(msg.toString());
         } catch (Exception e) {
             log.error("更新赛道异常", e);
             return R.error("更新失败，请重试");
@@ -77,9 +147,52 @@ public class JingsaiSaidaoController {
                 return R.error("请选择要删除的赛道");
             }
             
+            StringBuilder msg = new StringBuilder("删除成功");
+            
+            // 联动：删除赛道前，清理报名记录中的saidaoId引用
+            for (Long id : ids) {
+                try {
+                    JingsaiSaidaoEntity saidao = saidaoService.selectById(id);
+                    if (saidao == null) continue;
+                    
+                    // 清理报名记录中的saidaoId引用
+                    EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
+                    baomingEw.eq("saidao_id", id);
+                    List<JingsaibaomingEntity> baomingList = jingsaibaomingService.selectList(baomingEw);
+                    if (baomingList != null && !baomingList.isEmpty()) {
+                        for (JingsaibaomingEntity baoming : baomingList) {
+                            baoming.setSaidaoId(null);
+                            jingsaibaomingService.updateById(baoming);
+                        }
+                        msg.append("，清理报名记录赛道引用(" + baomingList.size() + "条)");
+                        log.info("联动：删除赛道时清理报名记录saidaoId，赛道ID: {}，清理{}条", id, baomingList.size());
+                    }
+                    
+                    // 联动：检查该竞赛是否还有其他赛道，如果没有则更新竞赛的“是否有赛道”标志
+                    if (saidao.getJingsaiId() != null) {
+                        EntityWrapper<JingsaiSaidaoEntity> remainingEw = new EntityWrapper<>();
+                        remainingEw.eq("jingsai_id", saidao.getJingsaiId());
+                        remainingEw.notIn("id", Arrays.asList(ids));
+                        int remainingCount = saidaoService.selectCount(remainingEw);
+                        if (remainingCount <= 0) {
+                            JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(saidao.getJingsaiId());
+                            if (jingsai != null && "是".equals(jingsai.getShifouYouSaidao())) {
+                                jingsai.setShifouYouSaidao("否");
+                                jingsaixinxiService.updateById(jingsai);
+                                msg.append("，竞赛的赛道标志已自动更新为“否”");
+                                log.info("联动：竞赛无剩余赛道，更新标志为“否”，竞赛ID: {}", saidao.getJingsaiId());
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("联动处理赛道删除失败，赛道ID: {}", id, e);
+                    msg.append("（联动处理失败）");
+                }
+            }
+            
             saidaoService.deleteBatchIds(java.util.Arrays.asList(ids));
             log.info("删除赛道成功，IDs: {}", (Object) ids);
-            return R.ok("删除成功");
+            return R.ok(msg.toString());
         } catch (Exception e) {
             log.error("删除赛道异常", e);
             return R.error("删除失败，请重试");

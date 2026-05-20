@@ -79,6 +79,34 @@
           </el-form-item>
         </div>
       </el-col>
+      <el-col :span="12">
+        <el-form-item class="select" v-if="type!='info'"  label="有赛道" prop="shifouYouSaidao">
+          <el-select v-model="ruleForm.shifouYouSaidao" placeholder="请选择">
+            <el-option label="是" value="是"></el-option>
+            <el-option label="否" value="否"></el-option>
+          </el-select>
+        </el-form-item>
+        <div v-else>
+          <el-form-item class="input" label="有赛道" prop="shifouYouSaidao">
+              <el-input v-model="ruleForm.shifouYouSaidao" 
+                placeholder="有赛道" readonly></el-input>
+          </el-form-item>
+        </div>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item class="select" v-if="type!='info'"  label="需晋级" prop="shifouXuyaoJinji">
+          <el-select v-model="ruleForm.shifouXuyaoJinji" placeholder="请选择">
+            <el-option label="是" value="是"></el-option>
+            <el-option label="否" value="否"></el-option>
+          </el-select>
+        </el-form-item>
+        <div v-else>
+          <el-form-item class="input" label="需晋级" prop="shifouXuyaoJinji">
+              <el-input v-model="ruleForm.shifouXuyaoJinji" 
+                placeholder="需晋级" readonly></el-input>
+          </el-form-item>
+        </div>
+      </el-col>
       <el-col :span="24">  
         <el-form-item class="upload" v-if="type!='info' && !ro.fengmiantupian" label="封面图片" prop="fengmiantupian">
           <file-upload
@@ -263,6 +291,8 @@ export default {
         fengmiantupian: '',
         gonghao: '',
         jiaoshixingming: '',
+        shifouYouSaidao: '否',  // 默认无赛道
+        shifouXuyaoJinji: '否',  // 默认不需晋级
       },
           moshiOptions: [],
       rules: {

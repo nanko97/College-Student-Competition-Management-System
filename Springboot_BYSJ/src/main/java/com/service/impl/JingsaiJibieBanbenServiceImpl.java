@@ -63,7 +63,7 @@ public class JingsaiJibieBanbenServiceImpl extends ServiceImpl<JingsaiJibieBanbe
      * 创建级别版本（自动处理旧版本）
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R saveBanben(JingsaiJibieBanbenEntity banben, String caozuoRen) {
         try {
             // 1. 将该竞赛的其他版本 is_current 设为"否"

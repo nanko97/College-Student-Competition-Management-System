@@ -2,28 +2,30 @@
   <el-dialog :title="!dataForm.id ? '新增' : '修改'" :close-on-click-modal="false" :visible.sync="visible" width="600px">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="120px">
       <el-form-item label="父竞赛" prop="fuJingsaiId">
-        <el-select v-model="dataForm.fuJingsaiId" placeholder="请选择父竞赛" filterable style="width: 100%">
+        <el-select v-model="dataForm.fuJingsaiId" placeholder="请选择父竞赛" filterable @change="fuJingsaiChange" style="width: 100%">
           <el-option v-for="item in jingsaiList" :key="item.id" :label="item.jingsaimingcheng" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="父级别" prop="fuJibie">
-        <el-select v-model="dataForm.fuJibie" placeholder="请选择级别">
+        <el-select v-model="dataForm.fuJibie" placeholder="请选择级别（或自动填充）">
           <el-option label="校级" value="校级"></el-option>
           <el-option label="省级" value="省级"></el-option>
           <el-option label="国家级" value="国家级"></el-option>
         </el-select>
+        <span v-if="autoFuJibie" style="color: #409EFF; font-size: 12px; margin-left: 10px;">已自动识别</span>
       </el-form-item>
       <el-form-item label="子竞赛" prop="ziJingsaiId">
-        <el-select v-model="dataForm.ziJingsaiId" placeholder="请选择子竞赛" filterable style="width: 100%">
+        <el-select v-model="dataForm.ziJingsaiId" placeholder="请选择子竞赛" filterable @change="ziJingsaiChange" style="width: 100%">
           <el-option v-for="item in jingsaiList" :key="item.id" :label="item.jingsaimingcheng" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="子级别" prop="ziJibie">
-        <el-select v-model="dataForm.ziJibie" placeholder="请选择级别">
+        <el-select v-model="dataForm.ziJibie" placeholder="请选择级别（或自动填充）">
           <el-option label="省级" value="省级"></el-option>
           <el-option label="国家级" value="国家级"></el-option>
           <el-option label="国际级" value="国际级"></el-option>
         </el-select>
+        <span v-if="autoZiJibie" style="color: #409EFF; font-size: 12px; margin-left: 10px;">已自动识别</span>
       </el-form-item>
       <el-form-item label="最低分数">
         <el-input-number v-model="dataForm.zuidiFenshu" :min="0" :max="100" :precision="0" style="width: 100%"></el-input-number>
@@ -61,6 +63,8 @@ export default {
         zuidiMingci: null,
         isActive: '是'
       },
+      autoFuJibie: false,
+      autoZiJibie: false,
       dataRule: {
         fuJingsaiId: [{ required: true, message: '请选择父竞赛', trigger: 'change' }],
         fuJibie: [{ required: true, message: '请选择父级别', trigger: 'change' }],
@@ -129,6 +133,24 @@ export default {
         this.$message.error('获取竞赛列表失败：' + (err.message || '请检查后端服务'))
       })
     },
+    fuJingsaiChange(val) {
+      const jingsai = this.jingsaiList.find(item => item.id === val)
+      if (jingsai && jingsai.jingsaiJibie) {
+        this.dataForm.fuJibie = jingsai.jingsaiJibie
+        this.autoFuJibie = true
+      } else {
+        this.autoFuJibie = false
+      }
+    },
+    ziJingsaiChange(val) {
+      const jingsai = this.jingsaiList.find(item => item.id === val)
+      if (jingsai && jingsai.jingsaiJibie) {
+        this.dataForm.ziJibie = jingsai.jingsaiJibie
+        this.autoZiJibie = true
+      } else {
+        this.autoZiJibie = false
+      }
+    },
     dataFormSubmit() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
@@ -148,9 +170,9 @@ export default {
           }).then(({data}) => {
             if (data && data.code === 0) {
               this.$message({
-                message: '操作成功',
+                message: data.msg || '操作成功',
                 type: 'success',
-                duration: 1500,
+                duration: 2000,
                 onClose: () => {
                   this.visible = false
                   this.$emit('refreshDataList')

@@ -48,6 +48,9 @@ public class ZuopindafenFuheController {
     @Autowired
     private JingsaixinxiService jingsaixinxiService;
 
+    @Autowired
+    private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
+
     /**
      * 后端列表
      */
@@ -230,6 +233,37 @@ public class ZuopindafenFuheController {
         
         // 首次提交或驳回后重新提交，创建新记录
         zuopindafenFuheService.insert(zuopindafenFuhe);
+
+        // 发送复核申请通知给负责教师
+        try {
+            if (zuopindafenFuhe.getZuopindafenId() != null) {
+                ZuopindafenEntity zuopindafen2 = zuopindafenService.selectById(zuopindafenFuhe.getZuopindafenId());
+                if (zuopindafen2 != null) {
+                    String jingsaiName = zuopindafen2.getJingsaimingcheng();
+                    if (jingsaiName != null && !jingsaiName.isEmpty()) {
+                        JingsaixinxiEntity jingsai = jingsaixinxiService.selectOne(
+                            new EntityWrapper<JingsaixinxiEntity>().eq("jingsaimingcheng", jingsaiName)
+                        );
+                        if (jingsai != null && StringUtils.isNotBlank(jingsai.getGonghao())) {
+                            String teacherGonghao = jingsai.getGonghao();
+                            String studentName = zuopindafenFuhe.getXueshengxingming() != null ? zuopindafenFuhe.getXueshengxingming() : zuopindafenFuhe.getXuehao();
+                            String competitionName = jingsai.getJingsaimingcheng();
+                            String title = "成绩复核申请";
+                            String content = String.format("学生「%s」对「%s」竞赛的成绩提交了复核申请，请及时审核。", studentName, competitionName);
+                            xiaoxiTongzhiService.sendTongzhi(
+                                title, content, "复核申请", "系统",
+                                null, teacherGonghao, "jiaoshi",
+                                zuopindafenFuhe.getId(), "zuopindafenfuhe"
+                            );
+                            logger.info("发送复核申请通知给教师: {}, 复核ID: {}", teacherGonghao, zuopindafenFuhe.getId());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("发送复核申请通知异常", e);
+        }
+
         return R.ok("复核申请已提交，请等待审核");
     }
 
@@ -300,21 +334,67 @@ public class ZuopindafenFuheController {
         }
         
         zuopindafenFuheService.updateById(zuopindafenFuhe);
-        
+
         // 如果审核通过且有新成绩，更新原成绩
         if ("已通过".equals(zuopindafenFuhe.getFuheStatus()) && zuopindafenFuhe.getXinChengji() != null) {
-            ZuopindafenEntity zuopindafen = zuopindafenService.selectById(zuopindafenFuhe.getZuopindafenId());
-            if (zuopindafen != null) {
+            ZuopindafenEntity zuopindafen3 = zuopindafenService.selectById(zuopindafenFuhe.getZuopindafenId());
+            if (zuopindafen3 != null) {
                 try {
-                    zuopindafen.setZuopinpingfen(Integer.parseInt(zuopindafenFuhe.getXinChengji()));
-                    zuopindafenService.updateById(zuopindafen);
+                    zuopindafen3.setZuopinpingfen(Integer.parseInt(zuopindafenFuhe.getXinChengji()));
+                    zuopindafenService.updateById(zuopindafen3);
                     logger.info("成绩已更新：{} -> {}", zuopindafenFuhe.getYuanChengji(), zuopindafenFuhe.getXinChengji());
                 } catch (NumberFormatException e) {
                     logger.error("成绩格式错误：{}", zuopindafenFuhe.getXinChengji());
                 }
             }
         }
-        
+
+        // 发送审核结果通知给学生
+        try {
+            String fuheStatus = zuopindafenFuhe.getFuheStatus();
+            if ("已通过".equals(fuheStatus) || "已驳回".equals(fuheStatus)) {
+                String studentXuehao = zuopindafenFuhe.getXuehao();
+                String shenheTeacher = zuopindafenFuhe.getShenheJiaoshi() != null ? zuopindafenFuhe.getShenheJiaoshi() : "教师";
+                String competitionName = "";
+                if (zuopindafenFuhe.getZuopindafenId() != null) {
+                    ZuopindafenEntity zuopindafen4 = zuopindafenService.selectById(zuopindafenFuhe.getZuopindafenId());
+                    if (zuopindafen4 != null && zuopindafen4.getJingsaimingcheng() != null) {
+                        JingsaixinxiEntity jingsai = jingsaixinxiService.selectOne(
+                            new EntityWrapper<JingsaixinxiEntity>().eq("jingsaimingcheng", zuopindafen4.getJingsaimingcheng())
+                        );
+                        if (jingsai != null) {
+                            competitionName = jingsai.getJingsaimingcheng();
+                        }
+                    }
+                }
+
+                String title;
+                String content;
+                if ("已通过".equals(fuheStatus)) {
+                    title = "成绩复核通过";
+                    content = String.format("您的「%s」竞赛成绩复核已通过审核。", competitionName);
+                    if (zuopindafenFuhe.getXinChengji() != null) {
+                        content += "新成绩：" + zuopindafenFuhe.getXinChengji();
+                    }
+                } else {
+                    title = "成绩复核未通过";
+                    content = String.format("您的「%s」竞赛成绩复核未通过审核。", competitionName);
+                    if (zuopindafenFuhe.getShenheYijian() != null && !zuopindafenFuhe.getShenheYijian().isEmpty()) {
+                        content += "审核意见：" + zuopindafenFuhe.getShenheYijian();
+                    }
+                }
+
+                xiaoxiTongzhiService.sendTongzhi(
+                    title, content, "复核结果", shenheTeacher,
+                    studentXuehao, null, "xuesheng",
+                    zuopindafenFuhe.getId(), "zuopindafenfuhe"
+                );
+                logger.info("发送复核审核结果通知给学生: {}, 复核ID: {}, 结果: {}", studentXuehao, zuopindafenFuhe.getId(), fuheStatus);
+            }
+        } catch (Exception e) {
+            logger.error("发送复核审核结果通知异常", e);
+        }
+
         return R.ok();
     }
 }

@@ -1,3 +1,14 @@
+
+
+
+
+
+
+
+
+
+
+
 package com.controller;
 
 import com.annotation.OperationLog;
@@ -39,6 +50,9 @@ public class ZuopinController {
     
     @Autowired
     private JingsaixinxiService jingsaixinxiService;
+
+    @Autowired
+    private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
 
     /**
      * 分页查询作品列表（前端标准接口）

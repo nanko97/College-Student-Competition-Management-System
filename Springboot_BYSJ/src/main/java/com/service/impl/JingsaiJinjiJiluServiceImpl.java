@@ -87,7 +87,7 @@ public class JingsaiJinjiJiluServiceImpl extends ServiceImpl<JingsaiJinjiJiluDao
      * 发起晋级
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R initiateJinji(Long baomingId, Long xinJingsaiId, String jinjiYuanyin, String caozuoRen) {
         try {
             // 1. 查询原报名记录
@@ -194,7 +194,7 @@ public class JingsaiJinjiJiluServiceImpl extends ServiceImpl<JingsaiJinjiJiluDao
      * 批量发起晋级
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R batchInitiateJinji(List<Long> baomingIds, Long xinJingsaiId, String jinjiYuanyin, String caozuoRen) {
         int successCount = 0;
         int failCount = 0;
@@ -231,12 +231,17 @@ public class JingsaiJinjiJiluServiceImpl extends ServiceImpl<JingsaiJinjiJiluDao
      * 审核晋级
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R shenheJinji(Long jinjiId, String zhuangtai, String shenheRen) {
         try {
             JingsaiJinjiJiluEntity jinji = this.selectById(jinjiId);
             if (jinji == null) {
                 return R.error("晋级记录不存在");
+            }
+
+            // 幂等保护：防止重复审核
+            if (!"待审核".equals(jinji.getJinjiZhuangtai())) {
+                return R.error("该晋级申请已审核，请勿重复操作");
             }
 
             // 更新晋级记录

@@ -85,13 +85,13 @@
       <!-- 操作按钮区域 -->
       <div class="action-wrapper">
         <el-button
-          v-if="isAuth('jingsaixinxi','新增')"
+          v-if="isAuth('jingsaixinxi_my','新增')"
           type="success"
           icon="el-icon-plus"
           @click="addOrUpdateHandler()"
         >新增竞赛</el-button>
         <el-button
-          v-if="isAuth('jingsaixinxi','删除') && contents.tableSelection"
+          v-if="isAuth('jingsaixinxi_my','删除') && contents.tableSelection"
           :disabled="dataListSelections.length <= 0"
           type="danger"
           icon="el-icon-delete"
@@ -115,7 +115,7 @@
           :data="dataList"
           v-loading="dataListLoading"
           @selection-change="selectionChangeHandler"
-          v-if="isAuth('jingsaixinxi','查看')">
+          v-if="isAuth('jingsaixinxi_my','查看')">
             <el-table-column v-if="contents.tableSelection"
                 type="selection"
                 header-align="center"
@@ -242,13 +242,13 @@
                 <template slot-scope="scope">
                   <!-- 教师/管理员显示详情、修改、删除 -->
                   <!-- 我的竞赛页面：因为只查询自己的竞赛，所以可以直接编辑/删除 -->
-                  <el-button v-if="isAuth('jingsaixinxi','查看')" 
+                  <el-button v-if="isAuth('jingsaixinxi_my','查看')" 
                     type="primary" icon="el-icon-view" size="mini" 
                     @click="addOrUpdateHandler(scope.row.id,'info')">详情</el-button>
-                  <el-button v-if="isAuth('jingsaixinxi','修改')" 
+                  <el-button v-if="isAuth('jingsaixinxi_my','修改')" 
                     type="success" icon="el-icon-edit" size="mini" 
                     @click="addOrUpdateHandler(scope.row.id)">修改</el-button>
-                  <el-button v-if="isAuth('jingsaixinxi','删除')" 
+                  <el-button v-if="isAuth('jingsaixinxi_my','删除')" 
                     type="danger" icon="el-icon-delete" size="mini" 
                     @click="deleteHandler(scope.row.id)">删除</el-button>
                 </template>
@@ -277,6 +277,7 @@
 
 <script>
 import AddOrUpdate from "./add-or-update";
+import { getCurDateTime } from "@/utils/utils";
 export default {
   data() {
     return {
@@ -335,6 +336,10 @@ export default {
     search() {
       this.pageIndex = 1;
       this.getDataList();
+    },
+    // 获取当前时间
+    getCurDateTime() {
+      return getCurDateTime();
     },
     getDataList() {
       this.dataListLoading = true;
@@ -433,7 +438,8 @@ export default {
       });
     },
     deleteHandler(id) {
-      var ids = id ? [Number(id)] : this.dataListSelections.map(item => Number(item.id));
+      // 直接使用原始 ID，避免 Number() 转换导致 19 位雪花算法 ID 精度丢失
+      var ids = id ? [id] : this.dataListSelections.map(item => item.id);
       this.$confirm(`确定进行[${id ? "删除" : "批量删除"}]操作?`, "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -441,7 +447,7 @@ export default {
       }).then(() => {
         this.$http({ url: "jingsaixinxi/delete", method: "post", data: ids }).then(({ data }) => {
           if (data && data.code === 0) {
-            this.$message({ message: "操作成功", type: "success", duration: 1500, onClose: () => { this.search(); }});
+            this.$message({ message: data.msg || "操作成功", type: "success", duration: 2000, onClose: () => { this.search(); this.getStatistics(); }});
           } else {
             this.$message.error(data.msg);
           }

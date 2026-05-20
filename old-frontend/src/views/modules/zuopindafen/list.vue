@@ -284,6 +284,7 @@
 
 <script>
 import AddOrUpdate from "./add-or-update";
+import { getCurDateTime } from "@/utils/utils";
 export default {
   data() {
     return {
@@ -380,6 +381,10 @@ export default {
       this.pageIndex = 1;
       this.getDataList();
     },
+    // 获取当前时间
+    getCurDateTime() {
+      return getCurDateTime();
+    },
     getDataList() {
       this.dataListLoading = true;
       let params = { page: this.pageIndex, limit: this.pageSize, sort: 'id' }
@@ -417,7 +422,8 @@ export default {
       });
     },
     deleteHandler(id) {
-      var ids = id ? [Number(id)] : this.dataListSelections.map(item => Number(item.id));
+      // 直接使用原始 ID，避免 Number() 转换导致 19 位雪花算法 ID 精度丢失
+      var ids = id ? [id] : this.dataListSelections.map(item => item.id);
       this.$confirm(`确定进行[${id ? "删除" : "批量删除"}]操作?`, "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",

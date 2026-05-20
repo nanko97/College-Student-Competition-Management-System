@@ -141,9 +141,9 @@ export default {
           }).then(({data}) => {
             if (data && data.code === 0) {
               this.$message({
-                message: '操作成功',
+                message: data.msg || '操作成功',
                 type: 'success',
-                duration: 1500,
+                duration: 2000,
                 onClose: () => {
                   this.visible = false
                   this.$emit('refreshDataList')

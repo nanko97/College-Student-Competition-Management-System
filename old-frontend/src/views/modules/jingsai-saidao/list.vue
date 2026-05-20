@@ -246,7 +246,7 @@ export default {
           data: ids
         }).then(({data}) => {
           if (data && data.code === 0) {
-            this.$message.success('操作成功')
+            this.$message.success(data.msg || '操作成功')
             this.getDataList();
             this.getStatistics();
           } else {

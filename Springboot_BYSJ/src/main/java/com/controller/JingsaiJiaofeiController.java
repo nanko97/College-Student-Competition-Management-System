@@ -56,6 +56,9 @@ public class JingsaiJiaofeiController {
 
     @Autowired
     private JiaoshiDao jiaoshiDao;
+    
+    @Autowired
+    private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
 
     /**
      * 配置竞赛费用
@@ -294,7 +297,41 @@ public class JingsaiJiaofeiController {
             }
             log.info("审核通过缴费 - 工号: {}, 姓名: {}", gonghao, shenheRen);
 
+            // 先查询缴费记录，用于发送通知
+            JingsaiJiaofeiJiluEntity jiaofeiJilu = jingsaiJiaofeiJiluService.selectById(jiaofeiId);
+
             R result = jingsaiJiaofeiJiluService.shenheJiaofei(jiaofeiId, "已通过", yijian, shenheRen);
+            
+            // 发送审核通过消息给学生
+            if ((Integer) result.get("code") == 0 && jiaofeiJilu != null) {
+                try {
+                    String studentXuehao = jiaofeiJilu.getXuehao();
+                    String studentName = jiaofeiJilu.getXueshengxingming();
+                    String competitionName = jiaofeiJilu.getJingsaimingcheng();
+                    
+                    String title = "缴费审核通过";
+                    String content = String.format("您的「%s」竞赛缴费已审核通过。", competitionName);
+                    if (yijian != null && !yijian.isEmpty()) {
+                        content += "审核意见：" + yijian;
+                    }
+                    
+                    xiaoxiTongzhiService.sendTongzhi(
+                        title,
+                        content,
+                        "缴费审核",
+                        shenheRen,
+                        studentXuehao,
+                        null,
+                        "xuesheng",
+                        jiaofeiId,
+                        "jiaofei"
+                    );
+                    log.info("✓ 发送缴费审核通过消息给学生: {}, 缴费ID: {}", studentXuehao, jiaofeiId);
+                } catch (Exception e) {
+                    log.error("发送缴费审核通知异常", e);
+                }
+            }
+            
             return result;
         } catch (Exception e) {
             log.error("审核缴费异常", e);
@@ -321,7 +358,39 @@ public class JingsaiJiaofeiController {
             }
             log.info("审核驳回缴费 - 工号: {}, 姓名: {}", gonghao, shenheRen);
 
+            // 先查询缴费记录，用于发送通知
+            JingsaiJiaofeiJiluEntity jiaofeiJilu = jingsaiJiaofeiJiluService.selectById(jiaofeiId);
+
             R result = jingsaiJiaofeiJiluService.shenheJiaofei(jiaofeiId, "已驳回", yijian, shenheRen);
+            
+            // 发送审核驳回消息给学生
+            if ((Integer) result.get("code") == 0 && jiaofeiJilu != null) {
+                try {
+                    String studentXuehao = jiaofeiJilu.getXuehao();
+                    String studentName = jiaofeiJilu.getXueshengxingming();
+                    String competitionName = jiaofeiJilu.getJingsaimingcheng();
+                    
+                    String title = "缴费审核未通过";
+                    String content = String.format("您的「%s」竞赛缴费审核未通过，请重新上传。", competitionName);
+                    content += "审核意见：" + yijian;
+                    
+                    xiaoxiTongzhiService.sendTongzhi(
+                        title,
+                        content,
+                        "缴费审核",
+                        shenheRen,
+                        studentXuehao,
+                        null,
+                        "xuesheng",
+                        jiaofeiId,
+                        "jiaofei"
+                    );
+                    log.info("✓ 发送缴费审核驳回消息给学生: {}, 缴费ID: {}", studentXuehao, jiaofeiId);
+                } catch (Exception e) {
+                    log.error("发送缴费审核通知异常", e);
+                }
+            }
+            
             return result;
         } catch (Exception e) {
             log.error("驳回缴费异常", e);
@@ -405,6 +474,32 @@ public class JingsaiJiaofeiController {
 
             log.info("学生 {} 上传缴费凭证成功，竞赛：{}，文件：{}",
                     jiaofeiJilu.getXuehao(), jiaofeiJilu.getJingsaimingcheng(), fileName);
+
+            // 发送缴费凭证上传通知给负责教师
+            try {
+                JingsaibaomingEntity baoming2 = jingsaibaomingService.selectById(jiaofeiJilu.getBaomingId());
+                if (baoming2 != null) {
+                    EntityWrapper<JingsaixinxiEntity> jingsaiEw2 = new EntityWrapper<>();
+                    jingsaiEw2.eq("jingsaimingcheng", baoming2.getJingsaimingcheng());
+                    JingsaixinxiEntity jingsai2 = jingsaixinxiService.selectOne(jingsaiEw2);
+                    if (jingsai2 != null && jingsai2.getGonghao() != null && !jingsai2.getGonghao().isEmpty()) {
+                        String teacherGonghao = jingsai2.getGonghao();
+                        String studentName = jiaofeiJilu.getXueshengxingming() != null ? jiaofeiJilu.getXueshengxingming() : jiaofeiJilu.getXuehao();
+                        String competitionName = jiaofeiJilu.getJingsaimingcheng();
+                        String title = "缴费凭证提交";
+                        String content = String.format("学生「%s」提交了「%s」竞赛的缴费凭证，请及时审核。", studentName, competitionName);
+                        xiaoxiTongzhiService.sendTongzhi(
+                            title, content, "缴费审核", "系统",
+                            null, teacherGonghao, "jiaoshi",
+                            jiaofeiId, "jiaofei"
+                        );
+                        log.info("发送缴费凭证上传通知给教师: {}, 缴费ID: {}", teacherGonghao, jiaofeiId);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("发送缴费凭证上传通知异常", e);
+            }
+
             return R.ok("缴费凭证上传成功，等待审核");
         } catch (Exception e) {
             log.error("上传缴费凭证异常", e);

@@ -70,30 +70,15 @@ public class XiaoxiTongzhiController {
             String tableName = (String) request.getSession().getAttribute("tableName");
             String username = (String) request.getSession().getAttribute("username");
             
-            // 使用内存过滤方式，避免 selectCount 问题
-            List<XiaoxiTongzhiEntity> allMessages = xiaoxiTongzhiService.selectList(null);
-            int count = 0;
-            
-            if (allMessages != null) {
-                for (XiaoxiTongzhiEntity msg : allMessages) {
-                    // 过滤未读消息
-                    if ("未读".equals(msg.getIsRead())) {
-                        // 根据角色过滤
-                        if ("xuesheng".equals(tableName)) {
-                            if (username.equals(msg.getJieshourenXuehao())) {
-                                count++;
-                            }
-                        } else if ("jiaoshi".equals(tableName)) {
-                            if (username.equals(msg.getJieshourenGonghao())) {
-                                count++;
-                            }
-                        } else {
-                            // 管理员查看所有
-                            count++;
-                        }
-                    }
-                }
+            // 使用 EntityWrapper + selectCount 避免全表扫描
+            EntityWrapper<XiaoxiTongzhiEntity> ew = new EntityWrapper<>();
+            ew.eq("is_read", "未读");
+            if ("xuesheng".equals(tableName)) {
+                ew.eq("jieshouren_xuehao", username);
+            } else if ("jiaoshi".equals(tableName)) {
+                ew.eq("jieshouren_gonghao", username);
             }
+            int count = xiaoxiTongzhiService.selectCount(ew);
             
             log.info("未读消息数量：{}", count);
             return R.ok().put("count", count);
@@ -168,30 +153,23 @@ public class XiaoxiTongzhiController {
             String tableName = (String) request.getSession().getAttribute("tableName");
             String username = (String) request.getSession().getAttribute("username");
             
-            // 使用内存过滤方式
-            List<XiaoxiTongzhiEntity> allMessages = xiaoxiTongzhiService.selectList(null);
-            int count = 0;
+            // 使用 EntityWrapper 查询未读消息，避免全表扫描
+            EntityWrapper<XiaoxiTongzhiEntity> ew = new EntityWrapper<>();
+            ew.eq("is_read", "未读");
+            if ("xuesheng".equals(tableName)) {
+                ew.eq("jieshouren_xuehao", username);
+            } else if ("jiaoshi".equals(tableName)) {
+                ew.eq("jieshouren_gonghao", username);
+            }
             
-            for (XiaoxiTongzhiEntity entity : allMessages) {
-                if ("未读".equals(entity.getIsRead())) {
-                    // 根据角色过滤
-                    boolean shouldUpdate = false;
-                    if ("xuesheng".equals(tableName)) {
-                        shouldUpdate = username.equals(entity.getJieshourenXuehao());
-                    } else if ("jiaoshi".equals(tableName)) {
-                        shouldUpdate = username.equals(entity.getJieshourenGonghao());
-                    } else {
-                        // 管理员可以标记所有
-                        shouldUpdate = true;
-                    }
-                    
-                    if (shouldUpdate) {
-                        entity.setIsRead("已读");
-                        entity.setReadTime(new Date());
-                        xiaoxiTongzhiService.updateById(entity);
-                        count++;
-                    }
-                }
+            List<XiaoxiTongzhiEntity> unreadMessages = xiaoxiTongzhiService.selectList(ew);
+            int count = 0;
+            Date now = new Date();
+            for (XiaoxiTongzhiEntity entity : unreadMessages) {
+                entity.setIsRead("已读");
+                entity.setReadTime(now);
+                xiaoxiTongzhiService.updateById(entity);
+                count++;
             }
             
             log.info("✓ 批量标记消息已读成功，数量: {}", count);
@@ -264,43 +242,42 @@ public class XiaoxiTongzhiController {
             String tableName = (String) request.getSession().getAttribute("tableName");
             String username = (String) request.getSession().getAttribute("username");
             
-            // 使用更可靠的查询方式：先查询所有，再过滤
-            List<XiaoxiTongzhiEntity> allMessages = xiaoxiTongzhiService.selectList(null);
-            
-            // 根据角色过滤
+            // 使用 EntityWrapper + selectCount 避免全表扫描
+            EntityWrapper<XiaoxiTongzhiEntity> baseEw = new EntityWrapper<>();
             if ("xuesheng".equals(tableName)) {
-                final String finalUsername = username;
-                allMessages = allMessages.stream()
-                    .filter(m -> finalUsername.equals(m.getJieshourenXuehao()))
-                    .collect(java.util.stream.Collectors.toList());
+                baseEw.eq("jieshouren_xuehao", username);
             } else if ("jiaoshi".equals(tableName)) {
-                final String finalUsername = username;
-                allMessages = allMessages.stream()
-                    .filter(m -> finalUsername.equals(m.getJieshourenGonghao()))
-                    .collect(java.util.stream.Collectors.toList());
+                baseEw.eq("jieshouren_gonghao", username);
             }
             
             // 1. 统计总消息数
-            int totalCount = allMessages != null ? allMessages.size() : 0;
+            int totalCount = xiaoxiTongzhiService.selectCount(baseEw);
             log.info("消息总数：{}", totalCount);
             stats.put("total", totalCount);
             
-            // 2. 统计未读和已读消息数
-            int unreadCount = 0;
-            int readCount = 0;
-            if (allMessages != null) {
-                for (XiaoxiTongzhiEntity message : allMessages) {
-                    if ("未读".equals(message.getIsRead())) {
-                        unreadCount++;
-                    } else if ("已读".equals(message.getIsRead())) {
-                        readCount++;
-                    }
-                }
+            // 2. 统计未读消息数
+            EntityWrapper<XiaoxiTongzhiEntity> unreadEw = new EntityWrapper<>();
+            unreadEw.eq("is_read", "未读");
+            if ("xuesheng".equals(tableName)) {
+                unreadEw.eq("jieshouren_xuehao", username);
+            } else if ("jiaoshi".equals(tableName)) {
+                unreadEw.eq("jieshouren_gonghao", username);
             }
-            log.info("未读：{}，已读：{}", unreadCount, readCount);
+            int unreadCount = xiaoxiTongzhiService.selectCount(unreadEw);
             stats.put("unread", unreadCount);
+            
+            // 3. 统计已读消息数
+            EntityWrapper<XiaoxiTongzhiEntity> readEw = new EntityWrapper<>();
+            readEw.eq("is_read", "已读");
+            if ("xuesheng".equals(tableName)) {
+                readEw.eq("jieshouren_xuehao", username);
+            } else if ("jiaoshi".equals(tableName)) {
+                readEw.eq("jieshouren_gonghao", username);
+            }
+            int readCount = xiaoxiTongzhiService.selectCount(readEw);
             stats.put("read", readCount);
             
+            log.info("未读：{}，已读：{}", unreadCount, readCount);
             log.info("消息统计数据查询成功，角色：{}", tableName);
             return R.ok().put("data", stats);
             

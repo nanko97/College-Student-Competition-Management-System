@@ -57,7 +57,7 @@ public class JingsaiTuanduiChengyuanServiceImpl extends ServiceImpl<JingsaiTuand
      * 添加团队成员
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R addChengyuan(JingsaiTuanduiChengyuanEntity chengyuan) {
         try {
             // 1. 验证团队存在

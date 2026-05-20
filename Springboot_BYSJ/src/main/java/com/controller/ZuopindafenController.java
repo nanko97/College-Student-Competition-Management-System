@@ -56,6 +56,9 @@ public class ZuopindafenController {
     @Autowired
     private JingsaixinxiService jingsaixinxiService;
 
+    @Autowired
+    private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
+
     /**
      * 后端分页列表查询
      * 功能：带权限控制的作品打分信息查询
@@ -420,7 +423,27 @@ public class ZuopindafenController {
             // 5. 生成唯一 ID 并保存
             zuopindafen.setId(IdWorker.getId());
             zuopindafenService.insert(zuopindafen);
-            
+
+            // 发送打分通知给学生
+            try {
+                String studentXuehao = zuopindafen.getXuehao();
+                String jingsaiName = zuopindafen.getJingsaimingcheng();
+                Integer score = zuopindafen.getZuopinpingfen();
+                String teacherName = zuopindafen.getJiaoshixingming() != null ? zuopindafen.getJiaoshixingming() : zuopindafen.getGonghao();
+                if (studentXuehao != null && !studentXuehao.isEmpty()) {
+                    String title = "作品评分通知";
+                    String content = String.format("您的「%s」竞赛作品已被教师「%s」评分，得分：%d分。", jingsaiName, teacherName, score);
+                    xiaoxiTongzhiService.sendTongzhi(
+                        title, content, "成绩通知", teacherName,
+                        studentXuehao, null, "xuesheng",
+                        zuopindafen.getId(), "zuopindafen"
+                    );
+                    log.info("发送打分通知给学生: {}, 评分ID: {}", studentXuehao, zuopindafen.getId());
+                }
+            } catch (Exception e) {
+                log.error("发送打分通知异常", e);
+            }
+
             log.info("保存作品评分成功，ID: {}, 学号：{}, 分数：{}", 
                      zuopindafen.getId(), 
                      zuopindafen.getXuehao(), 
@@ -489,7 +512,27 @@ public class ZuopindafenController {
             // 5. 生成唯一 ID 并保存
             zuopindafen.setId(IdWorker.getId());
             zuopindafenService.insert(zuopindafen);
-            
+
+            // 发送打分通知给学生
+            try {
+                String studentXuehao2 = zuopindafen.getXuehao();
+                String jingsaiName2 = zuopindafen.getJingsaimingcheng();
+                Integer score2 = zuopindafen.getZuopinpingfen();
+                String teacherName2 = zuopindafen.getJiaoshixingming() != null ? zuopindafen.getJiaoshixingming() : zuopindafen.getGonghao();
+                if (studentXuehao2 != null && !studentXuehao2.isEmpty()) {
+                    String title2 = "作品评分通知";
+                    String content2 = String.format("您的「%s」竞赛作品已被教师「%s」评分，得分：%d分。", jingsaiName2, teacherName2, score2);
+                    xiaoxiTongzhiService.sendTongzhi(
+                        title2, content2, "成绩通知", teacherName2,
+                        studentXuehao2, null, "xuesheng",
+                        zuopindafen.getId(), "zuopindafen"
+                    );
+                    log.info("发送打分通知给学生: {}, 评分ID: {}", studentXuehao2, zuopindafen.getId());
+                }
+            } catch (Exception e) {
+                log.error("发送打分通知异常", e);
+            }
+
             log.info("添加作品评分成功，ID: {}, 学号：{}, 分数：{}", 
                      zuopindafen.getId(), 
                      zuopindafen.getXuehao(), 
@@ -605,9 +648,7 @@ public class ZuopindafenController {
     @RequestMapping("/delete")
     @OperationLog("删除作品评分")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
-    public R delete(@RequestBody Long[] ids, HttpServletRequest request) {
-        log.debug("删除请求接收到的 IDs: {}", Arrays.toString(ids));
-        
+    public R delete(@RequestBody String[] ids, HttpServletRequest request) {
         // 1. 参数校验
         if (ids == null || ids.length == 0) {
             log.warn("删除评分失败：ID 数组为空");
@@ -615,6 +656,19 @@ public class ZuopindafenController {
         }
         
         try {
+            // 将 String[] 转换为 Long[]，避免前端传递大数字时的精度丢失问题
+            Long[] longIds = new Long[ids.length];
+            for (int i = 0; i < ids.length; i++) {
+                try {
+                    longIds[i] = Long.parseLong(ids[i]);
+                } catch (NumberFormatException e) {
+                    log.error("ID 格式错误: {}", ids[i]);
+                    return R.error("评分 ID 格式错误: " + ids[i]);
+                }
+            }
+            
+            log.info("接收到的删除请求，原始 IDs: {}，转换后 Long IDs: {}", Arrays.toString(ids), Arrays.toString(longIds));
+            
             // 2. 权限控制：只有教师和管理员可以删除评分
             String tableName = (String) request.getSession().getAttribute("tableName");
             log.debug("当前用户表名：{}", tableName);
@@ -634,7 +688,7 @@ public class ZuopindafenController {
                 String gonghao = (String) request.getSession().getAttribute("username");
                 log.debug("当前教师工号：{}", gonghao);
                 
-                for (Long id : ids) {
+                for (Long id : longIds) {
                     ZuopindafenEntity zuopindafen = zuopindafenService.selectById(id);
                     if (zuopindafen == null) {
                         log.warn("删除评分失败：评分记录不存在，ID: {}", id);
@@ -649,10 +703,10 @@ public class ZuopindafenController {
             }
             
             // 4. 批量删除
-            int count = ids.length;
-            zuopindafenService.deleteBatchIds(Arrays.asList(ids));
+            int count = longIds.length;
+            zuopindafenService.deleteBatchIds(Arrays.asList(longIds));
             
-            log.info("删除作品评分成功，用户：{}, 删除 IDs: {}, 数量：{}", tableName, Arrays.toString(ids), count);
+            log.info("删除作品评分成功，用户：{}, 删除 IDs: {}, 数量：{}", tableName, Arrays.toString(longIds), count);
             return R.ok("删除成功");
             
         } catch (Exception e) {

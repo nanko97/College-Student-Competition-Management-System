@@ -64,12 +64,17 @@ public class JingsaiJiaofeiJiluServiceImpl extends ServiceImpl<JingsaiJiaofeiJil
      * 审核缴费
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R shenheJiaofei(Long jiaofeiId, String zhuangtai, String yijian, String shenheRen) {
         try {
             JingsaiJiaofeiJiluEntity jiaofei = this.selectById(jiaofeiId);
             if (jiaofei == null) {
                 return R.error("缴费记录不存在");
+            }
+
+            // 幂等保护：防止重复审核
+            if (!"待审核".equals(jiaofei.getJiaofeiZhuangtai()) && !"审核中".equals(jiaofei.getJiaofeiZhuangtai())) {
+                return R.error("该缴费记录已审核，请勿重复操作");
             }
 
             // 更新审核信息

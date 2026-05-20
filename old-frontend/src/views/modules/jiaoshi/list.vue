@@ -267,7 +267,7 @@ export default {
       });
     },
     deleteHandler(id) {
-      var ids = id ? [Number(id)] : this.dataListSelections.map(item => Number(item.id));
+      var ids = id ? [id] : this.dataListSelections.map(item => item.id);
       this.$confirm(`确定进行[${id ? "删除" : "批量删除"}]操作?`, "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",

@@ -102,8 +102,9 @@
           <el-table-column fixed="right" header-align="center" align="center" width="220" label="操作">
             <template slot-scope="scope">
               <el-button type="primary" icon="el-icon-view" size="mini" @click="viewDetail(scope.row)">详情</el-button>
-              <el-button type="success" icon="el-icon-check" size="mini" @click="shenheHandler(scope.row, '已通过')">通过</el-button>
-              <el-button type="danger" icon="el-icon-close" size="mini" @click="shenheHandler(scope.row, '已驳回')">驳回</el-button>
+              <el-button v-if="scope.row.shenheZhuangtai === '待审核'" type="success" icon="el-icon-check" size="mini" @click="shenheHandler(scope.row, '已通过')">通过</el-button>
+              <el-button v-if="scope.row.shenheZhuangtai === '待审核'" type="danger" icon="el-icon-close" size="mini" @click="shenheHandler(scope.row, '已驳回')">驳回</el-button>
+              <el-tag v-if="scope.row.shenheZhuangtai !== '待审核'" size="small" :type="scope.row.shenheZhuangtai === '已通过' ? 'success' : 'danger'">已审核</el-tag>
             </template>
           </el-table-column>
         </el-table>

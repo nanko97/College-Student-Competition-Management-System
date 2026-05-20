@@ -79,7 +79,7 @@ public class JingsaiRenyuanBianguengServiceImpl extends ServiceImpl<JingsaiRenyu
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R applyBiangueng(JingsaiRenyuanBianguengEntity biangueng, String caozuoRen) {
         try {
             biangueng.setId(IdWorker.getId());
@@ -93,12 +93,17 @@ public class JingsaiRenyuanBianguengServiceImpl extends ServiceImpl<JingsaiRenyu
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R shenheBiangueng(Long bianguengId, String zhuangtai, String shenheRen) {
         try {
             JingsaiRenyuanBianguengEntity biangueng = this.selectById(bianguengId);
             if (biangueng == null) {
                 return R.error("变更记录不存在");
+            }
+
+            // 幂等保护：防止重复审核
+            if (!"待审核".equals(biangueng.getShenheZhuangtai())) {
+                return R.error("该变更申请已审核，请勿重复操作");
             }
 
             biangueng.setShenheZhuangtai(zhuangtai);

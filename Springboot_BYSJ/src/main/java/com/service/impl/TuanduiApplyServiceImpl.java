@@ -35,6 +35,9 @@ public class TuanduiApplyServiceImpl extends ServiceImpl<TuanduiApplyDao, Tuandu
     @Autowired
     private JingsaiTuanduiChengyuanService chengyuanService;
 
+    @Autowired
+    private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
+
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         Page<TuanduiApplyEntity> page = this.selectPage(
@@ -54,7 +57,7 @@ public class TuanduiApplyServiceImpl extends ServiceImpl<TuanduiApplyDao, Tuandu
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R applyJoin(TuanduiApplyEntity apply) {
         try {
             // 1. 验证团队是否存在
@@ -93,6 +96,25 @@ public class TuanduiApplyServiceImpl extends ServiceImpl<TuanduiApplyDao, Tuandu
             // 5. 保存申请
             this.insert(apply);
 
+            // 6. 发送申请加入通知给团队负责人
+            try {
+                String fuzerenXuehao = tuandui.getFuzerenXuehao();
+                if (fuzerenXuehao != null && !fuzerenXuehao.isEmpty()) {
+                    String studentName = apply.getXueshengxingming() != null ? apply.getXueshengxingming() : apply.getXuehao();
+                    String tuanduiMingcheng = tuandui.getTuanduiMingcheng();
+                    String title = "团队加入申请";
+                    String content = String.format("学生「%s」申请加入您的团队「%s」，请及时审核。", studentName, tuanduiMingcheng);
+                    xiaoxiTongzhiService.sendTongzhi(
+                        title, content, "团队申请", "系统",
+                        fuzerenXuehao, null, "xuesheng",
+                        apply.getId(), "tuanduiapply"
+                    );
+                    log.info("发送团队加入申请通知给负责人: {}, 申请ID: {}", fuzerenXuehao, apply.getId());
+                }
+            } catch (Exception e) {
+                log.error("发送团队加入申请通知异常", e);
+            }
+
             log.info("学生 {} 申请加入团队 {}", apply.getXueshengxingming(), tuandui.getTuanduiMingcheng());
             return R.ok("申请已提交，等待负责人审核");
 
@@ -103,7 +125,7 @@ public class TuanduiApplyServiceImpl extends ServiceImpl<TuanduiApplyDao, Tuandu
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R applyQuit(TuanduiApplyEntity apply) {
         try {
             // 1. 验证团队是否存在
@@ -151,6 +173,25 @@ public class TuanduiApplyServiceImpl extends ServiceImpl<TuanduiApplyDao, Tuandu
             // 6. 保存申请
             this.insert(apply);
 
+            // 7. 发送申请退出通知给团队负责人
+            try {
+                String fuzerenXuehao = tuandui.getFuzerenXuehao();
+                if (fuzerenXuehao != null && !fuzerenXuehao.isEmpty()) {
+                    String studentName = apply.getXueshengxingming() != null ? apply.getXueshengxingming() : apply.getXuehao();
+                    String tuanduiMingcheng = tuandui.getTuanduiMingcheng();
+                    String title = "团队退出申请";
+                    String content = String.format("学生「%s」申请退出您的团队「%s」，请及时审核。", studentName, tuanduiMingcheng);
+                    xiaoxiTongzhiService.sendTongzhi(
+                        title, content, "团队申请", "系统",
+                        fuzerenXuehao, null, "xuesheng",
+                        apply.getId(), "tuanduiapply"
+                    );
+                    log.info("发送团队退出申请通知给负责人: {}, 申请ID: {}", fuzerenXuehao, apply.getId());
+                }
+            } catch (Exception e) {
+                log.error("发送团队退出申请通知异常", e);
+            }
+
             log.info("学生 {} 申请退出团队 {}", apply.getXueshengxingming(), tuandui.getTuanduiMingcheng());
             return R.ok("申请已提交，等待负责人审核");
 
@@ -161,7 +202,7 @@ public class TuanduiApplyServiceImpl extends ServiceImpl<TuanduiApplyDao, Tuandu
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R shenheApply(Long applyId, String zhuangtai, String shenheYijian, String shenheXuehao, String shenheXingming) {
         try {
             // 1. 查询申请记录
@@ -195,6 +236,36 @@ public class TuanduiApplyServiceImpl extends ServiceImpl<TuanduiApplyDao, Tuandu
             }
 
             log.info("团队申请审核完成 - ID: {}, 类型: {}, 结果: {}", applyId, apply.getApplyType(), zhuangtai);
+
+            // 发送审核结果通知给申请人
+            try {
+                String applicantXuehao = apply.getXuehao();
+                if (applicantXuehao != null && !applicantXuehao.isEmpty()) {
+                    String tuanduiMingcheng = apply.getTuanduiMingcheng() != null ? apply.getTuanduiMingcheng() : "";
+                    String applyType = apply.getApplyType(); // 加入/退出
+                    String title;
+                    String content;
+                    if ("已通过".equals(zhuangtai)) {
+                        title = String.format("团队%s申请通过", applyType);
+                        content = String.format("您申请%s团队「%s」已通过审核。", applyType, tuanduiMingcheng);
+                    } else {
+                        title = String.format("团队%s申请未通过", applyType);
+                        content = String.format("您申请%s团队「%s」未通过审核。", applyType, tuanduiMingcheng);
+                        if (shenheYijian != null && !shenheYijian.isEmpty()) {
+                            content += "审核意见：" + shenheYijian;
+                        }
+                    }
+                    xiaoxiTongzhiService.sendTongzhi(
+                        title, content, "团队申请", shenheXingming,
+                        applicantXuehao, null, "xuesheng",
+                        applyId, "tuanduiapply"
+                    );
+                    log.info("发送团队申请审核结果通知给申请人: {}, 申请ID: {}, 结果: {}", applicantXuehao, applyId, zhuangtai);
+                }
+            } catch (Exception e) {
+                log.error("发送团队申请审核结果通知异常", e);
+            }
+
             return R.ok("审核完成");
 
         } catch (Exception e) {

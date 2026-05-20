@@ -72,10 +72,16 @@
               <span v-else style="color: #909399;">无</span>
             </template>
           </el-table-column>
+          <el-table-column prop="jiaofeiZhuangtai" header-align="center" align="center" label="审核状态" width="100">
+            <template slot-scope="scope">
+              <el-tag :type="getStatusType(scope.row.jiaofeiZhuangtai)" size="small">{{ scope.row.jiaofeiZhuangtai }}</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column fixed="right" header-align="center" align="center" width="200" label="操作">
             <template slot-scope="scope">
-              <el-button type="success" icon="el-icon-check" size="mini" @click="approveHandler(scope.row)">通过</el-button>
-              <el-button type="danger" icon="el-icon-close" size="mini" @click="rejectHandler(scope.row)">驳回</el-button>
+              <el-button v-if="scope.row.jiaofeiZhuangtai === '已缴费'" type="success" icon="el-icon-check" size="mini" @click="approveHandler(scope.row)">通过</el-button>
+              <el-button v-if="scope.row.jiaofeiZhuangtai === '已缴费'" type="danger" icon="el-icon-close" size="mini" @click="rejectHandler(scope.row)">驳回</el-button>
+              <el-tag v-else size="small" :type="scope.row.jiaofeiZhuangtai === '已通过' ? 'success' : 'danger'">已审核</el-tag>
             </template>
           </el-table-column>
         </el-table>
@@ -227,7 +233,13 @@ export default {
         console.error('审核操作失败:', err)
         this.$message.error('操作失败：' + (err.message || '请重试'))
       })
-    }
+    },
+    getStatusType(status) {
+      if (status === '已缴费') return 'warning'
+      if (status === '已通过') return 'success'
+      if (status === '已驳回') return 'danger'
+      return 'info'
+    },
   }
 }
 </script>

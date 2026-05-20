@@ -9,11 +9,19 @@ import com.entity.JingsaiTuanduiEntity;
 import com.entity.JingsaixinxiEntity;
 import com.entity.ZuopindafenEntity;
 import com.entity.ZuopindafenFuheEntity;
+import com.entity.JingsaiSaidaoEntity;
+import com.entity.JingsaiJibieBanbenEntity;
+import com.entity.JingsaiJinjiGuanxiEntity;
+import com.entity.JiaoshiEntity;
 import com.entity.view.JingsaixinxiView;
 import com.service.JingsaibaomingService;
 import com.service.JingsaiJiaofeiJiluService;
 import com.service.JingsaiTuanduiService;
 import com.service.JingsaixinxiService;
+import com.service.JingsaiSaidaoService;
+import com.service.JingsaiJibieBanbenService;
+import com.service.JingsaiJinjiGuanxiService;
+import com.service.JiaoshiService;
 import com.service.ZuopindafenFuheService;
 import com.service.ZuopindafenService;
 import com.utils.IdWorker;
@@ -74,6 +82,18 @@ public class JingsaixinxiController {
     
     @Autowired
     private ZuopindafenFuheService zuopindafenFuheService;
+    
+    @Autowired
+    private JingsaiSaidaoService jingsaiSaidaoService;
+    
+    @Autowired
+    private JingsaiJibieBanbenService jingsaiJibieBanbenService;
+    
+    @Autowired
+    private JingsaiJinjiGuanxiService jingsaiJinjiGuanxiService;
+    
+    @Autowired
+    private JiaoshiService jiaoshiService;
 
     /**
      * 后端分页列表查询
@@ -320,13 +340,14 @@ public class JingsaixinxiController {
 
     /**
      * 保存竞赛信息 (后台管理)
-     * 功能：发布新的竞赛信息
+     * 功能：发布新的竞赛信息，自动创建关联数据
      * 
      * 业务逻辑：
      * 1. 验证必填字段
      * 2. 自动填充工号 (如果是教师发布)
      * 3. 生成唯一 ID
      * 4. 保存到数据库
+     * 5. 自动创建关联数据（赛道、级别版本、晋级关系占位符）
      * 
      * @param jingsaixinxi 竞赛信息实体
      * @param request HTTP 请求 (获取会话信息)
@@ -351,10 +372,21 @@ public class JingsaixinxiController {
         try {
             // 2. 自动填充创建人工号 (如果是教师创建)
             String tableName = (String) request.getSession().getAttribute("tableName");
+            String gonghao = null;
+            String jiaoshixingming = null;
+            
             if ("jiaoshi".equals(tableName)) {
-                String gonghao = (String) request.getSession().getAttribute("username");
+                gonghao = (String) request.getSession().getAttribute("username");
                 if (StringUtils.hasText(gonghao)) {
                     jingsaixinxi.setGonghao(gonghao);
+                    // 查询教师姓名
+                    EntityWrapper<JiaoshiEntity> jiaoshiEw = new EntityWrapper<>();
+                    jiaoshiEw.eq("gonghao", gonghao);
+                    JiaoshiEntity jiaoshi = jiaoshiService.selectOne(jiaoshiEw);
+                    if (jiaoshi != null) {
+                        jiaoshixingming = jiaoshi.getJiaoshixingming();
+                        jingsaixinxi.setJiaoshixingming(jiaoshixingming);
+                    }
                     log.info("教师 {} 发布新竞赛：{}, 数据：{}", gonghao, 
                             jingsaixinxi.getJingsaimingcheng(), jingsaixinxi);
                 } else {
@@ -372,18 +404,79 @@ public class JingsaixinxiController {
             jingsaixinxi.setId(IdWorker.getId());
             boolean result = jingsaixinxiService.insert(jingsaixinxi);
             
-            log.info("保存竞赛信息{}，ID: {}, 名称：{}, 工号：{}", 
-                    result ? "成功" : "失败",
+            if (!result) {
+                log.error("数据库插入返回 false");
+                return R.error("保存失败，数据库操作异常");
+            }
+            
+            log.info("保存竞赛信息成功，ID: {}, 名称：{}, 工号：{}", 
                     jingsaixinxi.getId(), 
                     jingsaixinxi.getJingsaimingcheng(),
                     jingsaixinxi.getGonghao());
             
-            if (result) {
-                return R.ok("保存成功");
-            } else {
-                log.error("数据库插入返回 false");
-                return R.error("保存失败，数据库操作异常");
+            // 5. 自动创建关联数据
+            Long jingsaiId = jingsaixinxi.getId();
+            StringBuilder msg = new StringBuilder("保存成功");
+            
+            // 5.1 如果"有赛道=是"，自动创建默认赛道
+            if ("是".equals(jingsaixinxi.getShifouYouSaidao())) {
+                try {
+                    JingsaiSaidaoEntity saidao = new JingsaiSaidaoEntity();
+                    saidao.setId(IdWorker.getId());
+                    saidao.setJingsaiId(jingsaiId);
+                    saidao.setJingsaimingcheng(jingsaixinxi.getJingsaimingcheng());
+                    saidao.setSaidaoMingcheng("默认赛道");
+                    saidao.setSaidaoBianma("SD001");
+                    saidao.setCansaiLeixing("个人赛");
+                    saidao.setTuanduiRenshuMin(1);
+                    saidao.setTuanduiRenshuMax(1);
+                    saidao.setBaomingShuoming("默认赛道，支持个人参赛");
+                    saidao.setPingshenBiaozhun("按作品评分");
+                    saidao.setIsActive("是");
+                    saidao.setSortOrder(1);
+                    saidao.setAddtime(new Date());
+                    
+                    jingsaiSaidaoService.insert(saidao);
+                    msg.append("，已自动创建默认赛道");
+                    log.info("自动创建默认赛道成功，竞赛ID: {}, 赛道ID: {}", jingsaiId, saidao.getId());
+                } catch (Exception e) {
+                    log.error("自动创建赛道失败", e);
+                    msg.append("（赛道创建失败，请手动创建）");
+                }
             }
+            
+            // 5.2 自动创建级别版本记录
+            if (StringUtils.hasText(jingsaixinxi.getJingsaiJibie())) {
+                try {
+                    JingsaiJibieBanbenEntity jibie = new JingsaiJibieBanbenEntity();
+                    jibie.setId(IdWorker.getId());
+                    jibie.setJingsaiId(jingsaiId);
+                    jibie.setJingsaimingcheng(jingsaixinxi.getJingsaimingcheng());
+                    jibie.setJingsaiNianfen(jingsaixinxi.getNianfen());
+                    jibie.setJibie(jingsaixinxi.getJingsaiJibie());
+                    jibie.setRenzhengJigou("系统自动生成");
+                    jibie.setWenjianHao("AUTO-" + System.currentTimeMillis());
+                    jibie.setShengxiaoRiqi(new Date());
+                    jibie.setIsCurrent("是");
+                    jibie.setCaozuoRen(gonghao != null ? gonghao : "system");
+                    jibie.setAddtime(new Date());
+                    
+                    jingsaiJibieBanbenService.insert(jibie);
+                    msg.append("，已自动创建级别版本");
+                    log.info("自动创建级别版本成功，竞赛ID: {}, 级别版本ID: {}", jingsaiId, jibie.getId());
+                } catch (Exception e) {
+                    log.error("自动创建级别版本失败", e);
+                    msg.append("（级别版本创建失败，请手动创建）");
+                }
+            }
+            
+            // 5.3 如果"需晋级=是"，记录日志提示教师配置晋级关系
+            if ("是".equals(jingsaixinxi.getShifouXuyaoJinji())) {
+                msg.append("，请到晋级管理配置晋级规则");
+                log.info("竞赛需晋级，请在晋级管理中配置晋级规则，竞赛ID: {}", jingsaiId);
+            }
+            
+            return R.ok(msg.toString());
             
         } catch (Exception e) {
             log.error("保存竞赛信息异常：", e);
@@ -408,32 +501,103 @@ public class JingsaixinxiController {
             log.warn("添加竞赛失败：竞赛名称为空");
             return R.error("竞赛名称不能为空");
         }
-        
+            
         try {
             // 2. 自动填充创建人工号 (如果是教师创建)
             String tableName = (String) request.getSession().getAttribute("tableName");
+            String gonghao = null;
+            String jiaoshixingming = null;
+                
             if ("jiaoshi".equals(tableName)) {
-                String gonghao = (String) request.getSession().getAttribute("username");
+                gonghao = (String) request.getSession().getAttribute("username");
                 if (StringUtils.hasText(gonghao)) {
                     jingsaixinxi.setGonghao(gonghao);
-                    log.info("教师 {} 添加新竞赛：{}", gonghao, jingsaixinxi.getJingsaimingcheng());
+                    // 查询教师姓名
+                    EntityWrapper<JiaoshiEntity> jiaoshiEw = new EntityWrapper<>();
+                    jiaoshiEw.eq("gonghao", gonghao);
+                    JiaoshiEntity jiaoshi = jiaoshiService.selectOne(jiaoshiEw);
+                    if (jiaoshi != null) {
+                        jiaoshixingming = jiaoshi.getJiaoshixingming();
+                        jingsaixinxi.setJiaoshixingming(jiaoshixingming);
+                    }
+                    log.info("教师 {} 添加新竞赛：{}, 数据：{}", gonghao, jingsaixinxi.getJingsaimingcheng(), jingsaixinxi);
                 } else {
                     log.error("教师工号为空，无法添加竞赛");
                     return R.error("请先登录");
                 }
             }
-            
+                
             // 3. 实体校验
             ValidatorUtils.validateEntity(jingsaixinxi);
-            
+                
             // 4. 生成唯一 ID 并保存
             jingsaixinxi.setId(IdWorker.getId());
             jingsaixinxiService.insert(jingsaixinxi);
-            
-            log.info("添加竞赛信息成功，ID: {}, 名称：{}", 
-                     jingsaixinxi.getId(), jingsaixinxi.getJingsaimingcheng());
-            return R.ok("添加成功");
-            
+                
+            log.info("添加竞赛信息成功，ID: {}, 名称：{}", jingsaixinxi.getId(), jingsaixinxi.getJingsaimingcheng());
+                
+            // 5. 自动创建关联数据（与 /save 方法逻辑一致）
+            Long jingsaiId = jingsaixinxi.getId();
+            StringBuilder msg = new StringBuilder("添加成功");
+                
+            // 5.1 如果"有赛道=是"，自动创建默认赛道
+            if ("是".equals(jingsaixinxi.getShifouYouSaidao())) {
+                try {
+                    JingsaiSaidaoEntity saidao = new JingsaiSaidaoEntity();
+                    saidao.setId(IdWorker.getId());
+                    saidao.setJingsaiId(jingsaiId);
+                    saidao.setJingsaimingcheng(jingsaixinxi.getJingsaimingcheng());
+                    saidao.setSaidaoMingcheng("默认赛道");
+                    saidao.setSaidaoBianma("SD001");
+                    saidao.setCansaiLeixing("个人赛");
+                    saidao.setTuanduiRenshuMin(1);
+                    saidao.setTuanduiRenshuMax(1);
+                    saidao.setBaomingShuoming("默认赛道，支持个人参赛");
+                    saidao.setPingshenBiaozhun("按作品评分");
+                    saidao.setIsActive("是");
+                    saidao.setSortOrder(1);
+                    saidao.setAddtime(new Date());
+                    jingsaiSaidaoService.insert(saidao);
+                    msg.append("，已自动创建默认赛道");
+                    log.info("添加竞赛时自动创建默认赛道，竞赛ID: {}", jingsaiId);
+                } catch (Exception e) {
+                    log.error("添加竞赛时自动创建赛道失败", e);
+                    msg.append("（赛道创建失败，请手动创建）");
+                }
+            }
+                
+            // 5.2 自动创建级别版本记录
+            if (StringUtils.hasText(jingsaixinxi.getJingsaiJibie())) {
+                try {
+                    JingsaiJibieBanbenEntity jibie = new JingsaiJibieBanbenEntity();
+                    jibie.setId(IdWorker.getId());
+                    jibie.setJingsaiId(jingsaiId);
+                    jibie.setJingsaimingcheng(jingsaixinxi.getJingsaimingcheng());
+                    jibie.setJingsaiNianfen(jingsaixinxi.getNianfen());
+                    jibie.setJibie(jingsaixinxi.getJingsaiJibie());
+                    jibie.setRenzhengJigou("系统自动生成");
+                    jibie.setWenjianHao("AUTO-" + System.currentTimeMillis());
+                    jibie.setShengxiaoRiqi(new Date());
+                    jibie.setIsCurrent("是");
+                    jibie.setCaozuoRen(gonghao != null ? gonghao : "system");
+                    jibie.setAddtime(new Date());
+                    jingsaiJibieBanbenService.insert(jibie);
+                    msg.append("，已自动创建级别版本");
+                    log.info("添加竞赛时自动创建级别版本，竞赛ID: {}", jingsaiId);
+                } catch (Exception e) {
+                    log.error("添加竞赛时自动创建级别版本失败", e);
+                    msg.append("（级别版本创建失败，请手动创建）");
+                }
+            }
+                
+            // 5.3 如果"需晋级=是"，提示教师配置晋级关系
+            if ("是".equals(jingsaixinxi.getShifouXuyaoJinji())) {
+                msg.append("，请到晋级管理配置晋级规则");
+                log.info("竞赛需晋级，请在晋级管理中配置晋级规则，竞赛ID: {}", jingsaiId);
+            }
+                
+            return R.ok(msg.toString());
+                
         } catch (Exception e) {
             log.error("添加竞赛信息异常：", e);
             return R.error("添加失败，请联系管理员");
@@ -471,37 +635,220 @@ public class JingsaixinxiController {
         }
         
         try {
-            // 2. 权限验证：教师只能修改自己创建的竞赛
+            // 2. 查询原竞赛信息（用于对比变更）
+            JingsaixinxiEntity existingJingsai = jingsaixinxiService.selectById(jingsaixinxi.getId());
+            if (existingJingsai == null) {
+                return R.error("竞赛信息不存在");
+            }
+            
+            // 3. 权限验证：教师只能修改自己创建的竞赛
             String tableName = (String) request.getSession().getAttribute("tableName");
             String role = (String) request.getSession().getAttribute("role");
+            String gonghao = (String) request.getSession().getAttribute("username");
             
             if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
-                String gonghao = (String) request.getSession().getAttribute("username");
-                
-                // 查询竞赛信息，验证归属
-                JingsaixinxiEntity existingJingsai = jingsaixinxiService.selectById(jingsaixinxi.getId());
-                if (existingJingsai == null) {
-                    return R.error("竞赛信息不存在");
-                }
-                
                 if (!gonghao.equals(existingJingsai.getGonghao())) {
-                    log.warn("教师 {} 尝试修改不属于自己的竞赛 ID: {}，竞赛创建者: {}", 
+                    log.warn("教师 {} 尝试修改不属于自己的竞赛 ID: {}，竞赛创建者: {}",
                             gonghao, jingsaixinxi.getId(), existingJingsai.getGonghao());
                     return R.error("只能修改自己创建的竞赛");
                 }
-                
                 log.info("教师 {} 修改自己的竞赛 ID: {}", gonghao, jingsaixinxi.getId());
             }
             
-            // 3. 实体校验
+            // 4. 实体校验
             ValidatorUtils.validateEntity(jingsaixinxi);
             
-            // 4. 执行更新
+            // 5. 执行更新
             jingsaixinxiService.updateById(jingsaixinxi);
             
-            log.info("修改竞赛信息成功，ID: {}, 名称：{}", 
-                     jingsaixinxi.getId(), jingsaixinxi.getJingsaimingcheng());
-            return R.ok("修改成功");
+            // 6. 联动更新关联数据
+            StringBuilder msg = new StringBuilder("修改成功");
+            Long jingsaiId = jingsaixinxi.getId();
+            String newName = jingsaixinxi.getJingsaimingcheng();
+            String oldName = existingJingsai.getJingsaimingcheng();
+            boolean nameChanged = !newName.equals(oldName);
+            
+            // 6.1 竞赛名称变更时，同步更新赛道和级别版本中的竞赛名称
+            if (nameChanged) {
+                try {
+                    // 更新赛道表中的竞赛名称
+                    EntityWrapper<JingsaiSaidaoEntity> saidaoEw = new EntityWrapper<>();
+                    saidaoEw.eq("jingsai_id", jingsaiId);
+                    List<JingsaiSaidaoEntity> saidaoList = jingsaiSaidaoService.selectList(saidaoEw);
+                    if (saidaoList != null && !saidaoList.isEmpty()) {
+                        for (JingsaiSaidaoEntity saidao : saidaoList) {
+                            saidao.setJingsaimingcheng(newName);
+                            jingsaiSaidaoService.updateById(saidao);
+                        }
+                        msg.append("，赛道名称已同步更新");
+                        log.info("同步更新赛道竞赛名称，竞赛ID: {}，旧名称: {} -> 新名称: {}", jingsaiId, oldName, newName);
+                    }
+                } catch (Exception e) {
+                    log.error("同步更新赛道竞赛名称失败", e);
+                    msg.append("（赛道名称同步失败）");
+                }
+                
+                try {
+                    // 更新级别版本表中的竞赛名称
+                    EntityWrapper<JingsaiJibieBanbenEntity> jibieEw = new EntityWrapper<>();
+                    jibieEw.eq("jingsai_id", jingsaiId);
+                    List<JingsaiJibieBanbenEntity> jibieList = jingsaiJibieBanbenService.selectList(jibieEw);
+                    if (jibieList != null && !jibieList.isEmpty()) {
+                        for (JingsaiJibieBanbenEntity jibie : jibieList) {
+                            jibie.setJingsaimingcheng(newName);
+                            jingsaiJibieBanbenService.updateById(jibie);
+                        }
+                        msg.append("，级别版本名称已同步更新");
+                        log.info("同步更新级别版本竞赛名称，竞赛ID: {}，旧名称: {} -> 新名称: {}", jingsaiId, oldName, newName);
+                    }
+                } catch (Exception e) {
+                    log.error("同步更新级别版本竞赛名称失败", e);
+                    msg.append("（级别版本名称同步失败）");
+                }
+            }
+            
+            // 6.2 "是否有赛道"标志变更
+            String newShifouYouSaidao = jingsaixinxi.getShifouYouSaidao();
+            String oldShifouYouSaidao = existingJingsai.getShifouYouSaidao();
+            if (newShifouYouSaidao != null && !newShifouYouSaidao.equals(oldShifouYouSaidao)) {
+                // 从"否"改为"是"：自动创建默认赛道
+                if ("是".equals(newShifouYouSaidao) && "否".equals(oldShifouYouSaidao)) {
+                    try {
+                        JingsaiSaidaoEntity saidao = new JingsaiSaidaoEntity();
+                        saidao.setId(IdWorker.getId());
+                        saidao.setJingsaiId(jingsaiId);
+                        saidao.setJingsaimingcheng(newName);
+                        saidao.setSaidaoMingcheng("默认赛道");
+                        saidao.setSaidaoBianma("SD001");
+                        saidao.setCansaiLeixing("个人赛");
+                        saidao.setTuanduiRenshuMin(1);
+                        saidao.setTuanduiRenshuMax(1);
+                        saidao.setBaomingShuoming("默认赛道，支持个人参赛");
+                        saidao.setPingshenBiaozhun("按作品评分");
+                        saidao.setIsActive("是");
+                        saidao.setSortOrder(1);
+                        saidao.setAddtime(new Date());
+                        jingsaiSaidaoService.insert(saidao);
+                        msg.append("，已自动创建默认赛道");
+                        log.info("修改竞赛时自动创建默认赛道，竞赛ID: {}", jingsaiId);
+                    } catch (Exception e) {
+                        log.error("修改竞赛时自动创建赛道失败", e);
+                        msg.append("（赛道创建失败，请手动创建）");
+                    }
+                }
+                // 从"是"改为"否"：删除所有关联赛道
+                if ("否".equals(newShifouYouSaidao) && "是".equals(oldShifouYouSaidao)) {
+                    try {
+                        EntityWrapper<JingsaiSaidaoEntity> saidaoEw = new EntityWrapper<>();
+                        saidaoEw.eq("jingsai_id", jingsaiId);
+                        int saidaoCountBefore = jingsaiSaidaoService.selectCount(saidaoEw);
+                        boolean deletedSaidao = jingsaiSaidaoService.delete(saidaoEw);
+                        if (deletedSaidao && saidaoCountBefore > 0) {
+                            msg.append("，已删除关联赛道(" + saidaoCountBefore + "条)");
+                            log.info("修改竞赛时删除关联赛道，竞赛ID: {}，删除{}条", jingsaiId, saidaoCountBefore);
+                        }
+                    } catch (Exception e) {
+                        log.error("修改竞赛时删除赛道失败", e);
+                        msg.append("（赛道删除失败）");
+                    }
+                }
+            }
+            
+            // 6.3 竞赛级别变更时，更新级别版本
+            String newJibie = jingsaixinxi.getJingsaiJibie();
+            String oldJibie = existingJingsai.getJingsaiJibie();
+            if (newJibie != null && !newJibie.equals(oldJibie) && StringUtils.hasText(newJibie)) {
+                try {
+                    EntityWrapper<JingsaiJibieBanbenEntity> jibieEw = new EntityWrapper<>();
+                    jibieEw.eq("jingsai_id", jingsaiId);
+                    jibieEw.eq("is_current", "是");
+                    JingsaiJibieBanbenEntity currentJibie = jingsaiJibieBanbenService.selectOne(jibieEw);
+                    if (currentJibie != null) {
+                        // 更新现有当前级别版本的级别
+                        currentJibie.setJibie(newJibie);
+                        if (jingsaixinxi.getNianfen() != null) {
+                            currentJibie.setJingsaiNianfen(jingsaixinxi.getNianfen());
+                        }
+                        jingsaiJibieBanbenService.updateById(currentJibie);
+                        msg.append("，级别版本已同步更新");
+                        log.info("同步更新级别版本，竞赛ID: {}，旧级别: {} -> 新级别: {}", jingsaiId, oldJibie, newJibie);
+                    } else {
+                        // 没有当前级别版本，自动创建
+                        JingsaiJibieBanbenEntity jibie = new JingsaiJibieBanbenEntity();
+                        jibie.setId(IdWorker.getId());
+                        jibie.setJingsaiId(jingsaiId);
+                        jibie.setJingsaimingcheng(newName);
+                        jibie.setJingsaiNianfen(jingsaixinxi.getNianfen());
+                        jibie.setJibie(newJibie);
+                        jibie.setRenzhengJigou("系统自动生成");
+                        jibie.setWenjianHao("AUTO-" + System.currentTimeMillis());
+                        jibie.setShengxiaoRiqi(new Date());
+                        jibie.setIsCurrent("是");
+                        jibie.setCaozuoRen(gonghao != null ? gonghao : "system");
+                        jibie.setAddtime(new Date());
+                        jingsaiJibieBanbenService.insert(jibie);
+                        msg.append("，已自动创建级别版本");
+                        log.info("修改竞赛时自动创建级别版本，竞赛ID: {}", jingsaiId);
+                    }
+                } catch (Exception e) {
+                    log.error("同步更新级别版本失败", e);
+                    msg.append("（级别版本同步失败）");
+                }
+            }
+            
+            // 6.4 竞赛名称变更时，同步更新报名表中的竞赛名称
+            if (nameChanged) {
+                try {
+                    EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
+                    baomingEw.eq("jingsai_id", jingsaiId);
+                    List<JingsaibaomingEntity> baomingList = jingsaibaomingService.selectList(baomingEw);
+                    if (baomingList != null && !baomingList.isEmpty()) {
+                        for (JingsaibaomingEntity baoming : baomingList) {
+                            baoming.setJingsaimingcheng(newName);
+                            jingsaibaomingService.updateById(baoming);
+                        }
+                        msg.append("，报名记录名称已同步更新(" + baomingList.size() + "条)");
+                        log.info("同步更新报名记录竞赛名称，竞赛ID: {}，旧名称: {} -> 新名称: {}, 更新{}条", jingsaiId, oldName, newName, baomingList.size());
+                    }
+                } catch (Exception e) {
+                    log.error("同步更新报名记录竞赛名称失败", e);
+                    msg.append("（报名记录名称同步失败）");
+                }
+            }
+            
+            // 6.5 工号/教师姓名变更时，同步更新报名表中的工号和教师姓名
+            String newGonghao = jingsaixinxi.getGonghao();
+            String oldGonghao = existingJingsai.getGonghao();
+            String newJiaoshixingming = jingsaixinxi.getJiaoshixingming();
+            String oldJiaoshixingming = existingJingsai.getJiaoshixingming();
+            boolean gonghaoChanged = (newGonghao != null && !newGonghao.equals(oldGonghao));
+            boolean jiaoshiChanged = (newJiaoshixingming != null && !newJiaoshixingming.equals(oldJiaoshixingming));
+            if (gonghaoChanged || jiaoshiChanged) {
+                try {
+                    EntityWrapper<JingsaibaomingEntity> baomingEw2 = new EntityWrapper<>();
+                    baomingEw2.eq("jingsai_id", jingsaiId);
+                    List<JingsaibaomingEntity> baomingList2 = jingsaibaomingService.selectList(baomingEw2);
+                    if (baomingList2 != null && !baomingList2.isEmpty()) {
+                        for (JingsaibaomingEntity baoming : baomingList2) {
+                            if (gonghaoChanged && newGonghao != null) {
+                                baoming.setGonghao(newGonghao);
+                            }
+                            if (jiaoshiChanged && newJiaoshixingming != null) {
+                                baoming.setJiaoshixingming(newJiaoshixingming);
+                            }
+                            jingsaibaomingService.updateById(baoming);
+                        }
+                        msg.append("，报名记录教师信息已同步更新(" + baomingList2.size() + "条)");
+                        log.info("同步更新报名记录教师信息，竞赛ID: {}", jingsaiId);
+                    }
+                } catch (Exception e) {
+                    log.error("同步更新报名记录教师信息失败", e);
+                    msg.append("（报名记录教师信息同步失败）");
+                }
+            }
+            
+            log.info("修改竞赛信息成功，ID: {}, 名称：{}", jingsaixinxi.getId(), jingsaixinxi.getJingsaimingcheng());
+            return R.ok(msg.toString());
             
         } catch (Exception e) {
             log.error("修改竞赛信息 ID{}异常：", jingsaixinxi.getId(), e);
@@ -524,7 +871,7 @@ public class JingsaixinxiController {
     @RequestMapping("/delete")
     @OperationLog("删除竞赛信息")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
-    public R delete(@RequestBody Long[] ids, HttpServletRequest request) {
+    public R delete(@RequestBody String[] ids, HttpServletRequest request) {
         // 1. 参数校验
         if (ids == null || ids.length == 0) {
             log.warn("删除竞赛失败：ID 数组为空");
@@ -532,35 +879,112 @@ public class JingsaixinxiController {
         }
         
         try {
+            // 将 String[] 转换为 Long[]，避免前端传递大数字时的精度丢失问题
+            Long[] longIds = new Long[ids.length];
+            for (int i = 0; i < ids.length; i++) {
+                try {
+                    longIds[i] = Long.parseLong(ids[i]);
+                } catch (NumberFormatException e) {
+                    log.error("ID 格式错误: {}", ids[i]);
+                    return R.error("竞赛 ID 格式错误: " + ids[i]);
+                }
+            }
+            
+            log.info("接收到的删除请求，原始 IDs: {}，转换后 Long IDs: {}", Arrays.toString(ids), Arrays.toString(longIds));
+            
             // 2. 权限验证：教师只能删除自己创建的竞赛
             String tableName = (String) request.getSession().getAttribute("tableName");
             String role = (String) request.getSession().getAttribute("role");
+            String gonghao = (String) request.getSession().getAttribute("username");
             
             if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
-                String gonghao = (String) request.getSession().getAttribute("username");
-                
-                // 验证所有竞赛都属于该教师
-                for (Long id : ids) {
+                for (Long id : longIds) {
                     JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(id);
                     if (jingsai == null) {
+                        log.warn("竞赛不存在，ID: {}", id);
                         return R.error("竞赛 ID " + id + " 不存在");
                     }
                     
                     if (!gonghao.equals(jingsai.getGonghao())) {
-                        log.warn("教师 {} 尝试删除不属于自己的竞赛 ID: {}，竞赛创建者: {}", 
+                        log.warn("教师 {} 尝试删除不属于自己的竞赛 ID: {}，竞赛创建者: {}",
                                 gonghao, id, jingsai.getGonghao());
                         return R.error("只能删除自己创建的竞赛");
                     }
                 }
-                
-                log.info("教师 {} 删除自己的 {} 个竞赛", gonghao, ids.length);
+                log.info("教师 {} 删除自己的 {} 个竞赛", gonghao, longIds.length);
             }
             
-            // 3. 批量删除
-            jingsaixinxiService.deleteBatchIds(Arrays.asList(ids));
+            // 3. 级联删除关联数据（在删除竞赛主记录之前）
+            StringBuilder cascadeMsg = new StringBuilder();
             
-            log.info("删除竞赛信息成功，IDs: {}", Arrays.toString(ids));
-            return R.ok("删除成功");
+            for (Long id : longIds) {
+                // 3.1 删除关联赛道
+                try {
+                    EntityWrapper<JingsaiSaidaoEntity> saidaoEw = new EntityWrapper<>();
+                    saidaoEw.eq("jingsai_id", id);
+                    int saidaoCountBefore = jingsaiSaidaoService.selectCount(saidaoEw);
+                    boolean saidaoDeleted = jingsaiSaidaoService.delete(saidaoEw);
+                    if (saidaoDeleted && saidaoCountBefore > 0) {
+                        log.info("级联删除赛道，竞赛ID: {}，删除{}条", id, saidaoCountBefore);
+                        cascadeMsg.append("，删除赛道" + saidaoCountBefore + "条");
+                    }
+                } catch (Exception e) {
+                    log.error("级联删除赛道失败，竞赛ID: {}", id, e);
+                    cascadeMsg.append("（赛道删除失败）");
+                }
+                
+                // 3.2 删除关联级别版本
+                try {
+                    EntityWrapper<JingsaiJibieBanbenEntity> jibieEw = new EntityWrapper<>();
+                    jibieEw.eq("jingsai_id", id);
+                    int jibieCountBefore = jingsaiJibieBanbenService.selectCount(jibieEw);
+                    boolean jibieDeleted = jingsaiJibieBanbenService.delete(jibieEw);
+                    if (jibieDeleted && jibieCountBefore > 0) {
+                        log.info("级联删除级别版本，竞赛ID: {}，删除{}条", id, jibieCountBefore);
+                        cascadeMsg.append("，删除级别版本" + jibieCountBefore + "条");
+                    }
+                } catch (Exception e) {
+                    log.error("级联删除级别版本失败，竞赛ID: {}", id, e);
+                    cascadeMsg.append("（级别版本删除失败）");
+                }
+                
+                // 3.3 删除关联晋级关系（作为父竞赛或子竞赛）
+                try {
+                    EntityWrapper<JingsaiJinjiGuanxiEntity> jinjiEw = new EntityWrapper<>();
+                    jinjiEw.eq("fu_jingsai_id", id).or().eq("zi_jingsai_id", id);
+                    int jinjiCountBefore = jingsaiJinjiGuanxiService.selectCount(jinjiEw);
+                    boolean jinjiDeleted = jingsaiJinjiGuanxiService.delete(jinjiEw);
+                    if (jinjiDeleted && jinjiCountBefore > 0) {
+                        log.info("级联删除晋级关系，竞赛ID: {}，删除{}条", id, jinjiCountBefore);
+                        cascadeMsg.append("，删除晋级关系" + jinjiCountBefore + "条");
+                    }
+                } catch (Exception e) {
+                    log.error("级联删除晋级关系失败，竞赛ID: {}", id, e);
+                    cascadeMsg.append("（晋级关系删除失败）");
+                }
+                
+                // 3.4 删除关联报名记录
+                try {
+                    EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
+                    baomingEw.eq("jingsai_id", id);
+                    int baomingCountBefore = jingsaibaomingService.selectCount(baomingEw);
+                    boolean baomingDeleted = jingsaibaomingService.delete(baomingEw);
+                    if (baomingDeleted && baomingCountBefore > 0) {
+                        log.info("级联删除报名记录，竞赛ID: {}，删除{}条", id, baomingCountBefore);
+                        cascadeMsg.append("，删除报名" + baomingCountBefore + "条");
+                    }
+                } catch (Exception e) {
+                    log.error("级联删除报名记录失败，竞赛ID: {}", id, e);
+                    cascadeMsg.append("（报名记录删除失败）");
+                }
+            }
+            
+            // 4. 批量删除竞赛主记录
+            jingsaixinxiService.deleteBatchIds(Arrays.asList(longIds));
+            
+            String resultMsg = "删除成功" + cascadeMsg.toString();
+            log.info("删除竞赛信息成功，IDs: {}，级联信息: {}", Arrays.toString(longIds), cascadeMsg);
+            return R.ok(resultMsg);
             
         } catch (Exception e) {
             log.error("删除竞赛 ID{}异常：", Arrays.toString(ids), e);
@@ -650,6 +1074,7 @@ public class JingsaixinxiController {
      * - 首页仪表盘展示
      * - 管理员查看系统概况
      * - 教师查看所发布竞赛的统计
+     * - 学生查看所有竞赛的统计（与列表保持一致）
      * 
      * @param request HTTP 请求
      * @return R 统一返回结果，包含统计数据
@@ -662,42 +1087,13 @@ public class JingsaixinxiController {
             String tableName = (String) request.getSession().getAttribute("tableName");
             log.info("当前用户角色tableName：{}", tableName);
             
-            // 0. 如果是学生，获取该学生报名的竞赛ID列表（用于个人统计）
-            // 注意：教师和管理员都显示所有竞赛的全局统计
-            final List<Long> myJingsaiIds = new ArrayList<>();
+            // 注意：竞赛信息页面的统计数据对所有角色都是全局统计
+            // 学生看到的是所有竞赛的统计，不是只统计自己报名的竞赛
+            // 这样才能与列表数据保持一致（列表显示所有竞赛）
             
-            if ("xuesheng".equals(tableName)) {
-                String xuehao = (String) request.getSession().getAttribute("username");
-                log.info("学生角色，学号：{}", xuehao);
-                
-                // 查询该学生报名的所有竞赛ID（去重）
-                EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
-                baomingEw.eq("xuehao", xuehao);
-                List<JingsaibaomingEntity> myBaomingList = jingsaibaomingService.selectList(baomingEw);
-                
-                if (myBaomingList != null && !myBaomingList.isEmpty()) {
-                    myJingsaiIds.addAll(myBaomingList.stream()
-                            .map(JingsaibaomingEntity::getJingsaiId)
-                            .distinct()
-                            .collect(java.util.stream.Collectors.toList()));
-                    log.info("学生 {} 报名了 {} 个竞赛，IDs: {}", xuehao, myJingsaiIds.size(), myJingsaiIds);
-                } else {
-                    log.info("学生 {} 还没有报名任何竞赛", xuehao);
-                }
-            } else if ("jiaoshi".equals(tableName)) {
-                String gonghao = (String) request.getSession().getAttribute("username");
-                log.info("教师角色，工号：{} - 竞赛信息页面显示所有竞赛的全局统计", gonghao);
-            }
-            
-            // 1. 统计竞赛总数
-            int totalContests = 0;
-            if ("xuesheng".equals(tableName)) {
-                totalContests = myJingsaiIds.size();
-            } else {
-                // 教师和管理员：统计所有竞赛
-                List<JingsaixinxiEntity> allContests = jingsaixinxiService.selectList(null);
-                totalContests = allContests != null ? allContests.size() : 0;
-            }
+            // 1. 统计竞赛总数（所有角色都统计所有竞赛）
+            List<JingsaixinxiEntity> allContests = jingsaixinxiService.selectList(null);
+            int totalContests = allContests != null ? allContests.size() : 0;
             stats.put("totalJingsai", totalContests);
             log.info("竞赛总数：{}", totalContests);
             
@@ -705,200 +1101,72 @@ public class JingsaixinxiController {
             int ongoingCount = 0;
             Date now = new Date();
             
-            if ("xuesheng".equals(tableName)) {
-                // 学生：只统计自己报名的竞赛
-                if (!myJingsaiIds.isEmpty()) {
-                    List<JingsaixinxiEntity> myContests = jingsaixinxiService.selectBatchIds(myJingsaiIds);
-                    for (JingsaixinxiEntity contest : myContests) {
-                        if (contest.getJingsaishijian() != null && contest.getJingsaishijian().after(now)) {
-                            ongoingCount++;
-                        }
-                    }
-                }
-            } else {
-                // 教师和管理员：统计所有竞赛
-                List<JingsaixinxiEntity> allContests = jingsaixinxiService.selectList(null);
-                if (allContests != null) {
-                    for (JingsaixinxiEntity contest : allContests) {
-                        if (contest.getJingsaishijian() != null && contest.getJingsaishijian().after(now)) {
-                            ongoingCount++;
-                        }
+            if (allContests != null) {
+                for (JingsaixinxiEntity contest : allContests) {
+                    if (contest.getJingsaishijian() != null && contest.getJingsaishijian().after(now)) {
+                        ongoingCount++;
                     }
                 }
             }
             stats.put("ongoingJingsai", ongoingCount);
             log.info("进行中竞赛数：{}", ongoingCount);
             
-            // 3. 统计报名记录数
-            int totalApplications = 0;
-            if ("xuesheng".equals(tableName)) {
-                // 学生：只统计自己的报名
-                EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
-                baomingEw.eq("xuehao", (String) request.getSession().getAttribute("username"));
-                List<JingsaibaomingEntity> myBaomings = jingsaibaomingService.selectList(baomingEw);
-                totalApplications = myBaomings != null ? myBaomings.size() : 0;
-            } else {
-                // 教师和管理员：统计所有报名
-                List<JingsaibaomingEntity> allBaomings = jingsaibaomingService.selectList(null);
-                totalApplications = allBaomings != null ? allBaomings.size() : 0;
-            }
+            // 3. 统计报名记录数（所有角色都统计所有报名）
+            List<JingsaibaomingEntity> allBaomings = jingsaibaomingService.selectList(null);
+            int totalApplications = allBaomings != null ? allBaomings.size() : 0;
             stats.put("baomingJingsai", totalApplications);
             log.info("报名记录总数：{}", totalApplications);
             
-            // 4. 统计待审核报名数
-            int pendingApplications = 0;
-            if ("xuesheng".equals(tableName)) {
-                // 学生：只统计自己的待审核报名
-                EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
-                baomingEw.eq("xuehao", (String) request.getSession().getAttribute("username"));
-                baomingEw.eq("sfsh", "待审核");
-                List<JingsaibaomingEntity> pendingBaomings = jingsaibaomingService.selectList(baomingEw);
-                pendingApplications = pendingBaomings != null ? pendingBaomings.size() : 0;
-            } else {
-                // 教师和管理员：统计所有待审核报名
-                EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
-                baomingEw.eq("sfsh", "待审核");
-                List<JingsaibaomingEntity> pendingBaomings = jingsaibaomingService.selectList(baomingEw);
-                pendingApplications = pendingBaomings != null ? pendingBaomings.size() : 0;
-            }
+            // 4. 统计待审核报名数（所有角色都统计所有待审核报名）
+            EntityWrapper<JingsaibaomingEntity> pendingBaomingEw = new EntityWrapper<>();
+            pendingBaomingEw.eq("sfsh", "待审核");
+            List<JingsaibaomingEntity> pendingBaomings = jingsaibaomingService.selectList(pendingBaomingEw);
+            int pendingApplications = pendingBaomings != null ? pendingBaomings.size() : 0;
             stats.put("pendingBaoming", pendingApplications);
             log.info("待审核报名数：{}", pendingApplications);
             
-            // 5. 统计缴费记录数
-            int totalJiaofei = 0;
-            if ("xuesheng".equals(tableName)) {
-                // 学生：只统计自己的缴费
-                EntityWrapper<JingsaiJiaofeiJiluEntity> jiaofeiEw = new EntityWrapper<>();
-                jiaofeiEw.eq("xuehao", (String) request.getSession().getAttribute("username"));
-                List<JingsaiJiaofeiJiluEntity> myJiaofei = jingsaiJiaofeiJiluService.selectList(jiaofeiEw);
-                totalJiaofei = myJiaofei != null ? myJiaofei.size() : 0;
-            } else {
-                // 教师和管理员：统计所有缴费
-                List<JingsaiJiaofeiJiluEntity> allJiaofei = jingsaiJiaofeiJiluService.selectList(null);
-                totalJiaofei = allJiaofei != null ? allJiaofei.size() : 0;
-            }
+            // 5. 统计缴费记录数（所有角色都统计所有缴费）
+            List<JingsaiJiaofeiJiluEntity> allJiaofei = jingsaiJiaofeiJiluService.selectList(null);
+            int totalJiaofei = allJiaofei != null ? allJiaofei.size() : 0;
             stats.put("totalJiaofei", totalJiaofei);
             log.info("缴费记录总数：{}", totalJiaofei);
             
-            // 6. 统计待审核缴费数
-            int pendingJiaofei = 0;
-            if ("jiaoshi".equals(tableName) || "xuesheng".equals(tableName)) {
-                // 教师或学生：只统计自己相关的竞赛缴费
-                if (!myJingsaiIds.isEmpty()) {
-                    EntityWrapper<JingsaiJiaofeiJiluEntity> jiaofeiEw = new EntityWrapper<>();
-                    jiaofeiEw.in("jingsai_id", myJingsaiIds);
-                    jiaofeiEw.eq("jiaofei_zhuangtai", "已缴费");
-                    List<JingsaiJiaofeiJiluEntity> pendingJiaofeiList = jingsaiJiaofeiJiluService.selectList(jiaofeiEw);
-                    pendingJiaofei = pendingJiaofeiList != null ? pendingJiaofeiList.size() : 0;
-                }
-            } else {
-                // 管理员：统计所有待审核缴费
-                EntityWrapper<JingsaiJiaofeiJiluEntity> jiaofeiEw = new EntityWrapper<>();
-                jiaofeiEw.eq("jiaofei_zhuangtai", "已缴费");
-                List<JingsaiJiaofeiJiluEntity> pendingJiaofeiList = jingsaiJiaofeiJiluService.selectList(jiaofeiEw);
-                pendingJiaofei = pendingJiaofeiList != null ? pendingJiaofeiList.size() : 0;
-            }
+            // 6. 统计待审核缴费数（所有角色都统计所有待审核缴费）
+            EntityWrapper<JingsaiJiaofeiJiluEntity> pendingJiaofeiEw = new EntityWrapper<>();
+            pendingJiaofeiEw.eq("jiaofei_zhuangtai", "已缴费");
+            List<JingsaiJiaofeiJiluEntity> pendingJiaofeiList = jingsaiJiaofeiJiluService.selectList(pendingJiaofeiEw);
+            int pendingJiaofei = pendingJiaofeiList != null ? pendingJiaofeiList.size() : 0;
             stats.put("pendingJiaofei", pendingJiaofei);
             log.info("待审核缴费数：{}", pendingJiaofei);
             
-            // 7. 统计作品提交数
-            int totalZuopin = 0;
-            if ("jiaoshi".equals(tableName) || "xuesheng".equals(tableName)) {
-                // 教师或学生：只统计自己相关的竞赛作品
-                if (!myJingsaiIds.isEmpty()) {
-                    EntityWrapper<JingsaibaomingEntity> zuopinEw = new EntityWrapper<>();
-                    zuopinEw.in("jingsai_id", myJingsaiIds);
-                    zuopinEw.isNotNull("cansaizuopin");
-                    zuopinEw.ne("cansaizuopin", "");
-                    List<JingsaibaomingEntity> zuopinBaomings = jingsaibaomingService.selectList(zuopinEw);
-                    totalZuopin = zuopinBaomings != null ? zuopinBaomings.size() : 0;
-                }
-            } else {
-                // 管理员：统计所有作品
-                EntityWrapper<JingsaibaomingEntity> zuopinEw = new EntityWrapper<>();
-                zuopinEw.isNotNull("cansaizuopin");
-                zuopinEw.ne("cansaizuopin", "");
-                List<JingsaibaomingEntity> zuopinBaomings = jingsaibaomingService.selectList(zuopinEw);
-                totalZuopin = zuopinBaomings != null ? zuopinBaomings.size() : 0;
-            }
+            // 7. 统计作品提交数（所有角色都统计所有作品）
+            EntityWrapper<JingsaibaomingEntity> zuopinEw = new EntityWrapper<>();
+            zuopinEw.isNotNull("cansaizuopin");
+            zuopinEw.ne("cansaizuopin", "");
+            List<JingsaibaomingEntity> zuopinBaomings = jingsaibaomingService.selectList(zuopinEw);
+            int totalZuopin = zuopinBaomings != null ? zuopinBaomings.size() : 0;
             stats.put("totalZuopin", totalZuopin);
             log.info("作品提交总数：{}", totalZuopin);
             
-            // 8. 统计团队数量
-            int totalTuandui = 0;
-            if ("jiaoshi".equals(tableName) || "xuesheng".equals(tableName)) {
-                // 教师或学生：只统计自己相关的竞赛团队
-                if (!myJingsaiIds.isEmpty()) {
-                    EntityWrapper<JingsaiTuanduiEntity> tuanduiEw = new EntityWrapper<>();
-                    tuanduiEw.in("jingsai_id", myJingsaiIds);
-                    List<JingsaiTuanduiEntity> myTuandui = jingsaiTuanduiService.selectList(tuanduiEw);
-                    totalTuandui = myTuandui != null ? myTuandui.size() : 0;
-                }
-            } else {
-                // 管理员：统计所有团队
-                List<JingsaiTuanduiEntity> allTuandui = jingsaiTuanduiService.selectList(null);
-                totalTuandui = allTuandui != null ? allTuandui.size() : 0;
-            }
+            // 8. 统计团队数量（所有角色都统计所有团队）
+            List<JingsaiTuanduiEntity> allTuandui = jingsaiTuanduiService.selectList(null);
+            int totalTuandui = allTuandui != null ? allTuandui.size() : 0;
             stats.put("totalTuandui", totalTuandui);
             log.info("团队总数：{}", totalTuandui);
             
-            // 9. 统计待审核团队数
-            int pendingTuandui = 0;
-            if ("jiaoshi".equals(tableName) || "xuesheng".equals(tableName)) {
-                // 教师或学生：只统计自己相关的竞赛团队
-                if (!myJingsaiIds.isEmpty()) {
-                    EntityWrapper<JingsaiTuanduiEntity> tuanduiEw = new EntityWrapper<>();
-                    tuanduiEw.in("jingsai_id", myJingsaiIds);
-                    tuanduiEw.eq("shenhe_zhuangtai", "待审核");
-                    List<JingsaiTuanduiEntity> pendingTuanduiList = jingsaiTuanduiService.selectList(tuanduiEw);
-                    pendingTuandui = pendingTuanduiList != null ? pendingTuanduiList.size() : 0;
-                }
-            } else {
-                // 管理员：统计所有待审核团队
-                EntityWrapper<JingsaiTuanduiEntity> tuanduiEw = new EntityWrapper<>();
-                tuanduiEw.eq("shenhe_zhuangtai", "待审核");
-                List<JingsaiTuanduiEntity> pendingTuanduiList = jingsaiTuanduiService.selectList(tuanduiEw);
-                pendingTuandui = pendingTuanduiList != null ? pendingTuanduiList.size() : 0;
-            }
+            // 9. 统计待审核团队数（所有角色都统计所有待审核团队）
+            EntityWrapper<JingsaiTuanduiEntity> pendingTuanduiEw = new EntityWrapper<>();
+            pendingTuanduiEw.eq("shenhe_zhuangtai", "待审核");
+            List<JingsaiTuanduiEntity> pendingTuanduiList = jingsaiTuanduiService.selectList(pendingTuanduiEw);
+            int pendingTuandui = pendingTuanduiList != null ? pendingTuanduiList.size() : 0;
             stats.put("pendingTuandui", pendingTuandui);
             log.info("待审核团队数：{}", pendingTuandui);
             
-            // 10. 统计待审核复核申请数
-            int pendingFuhe = 0;
-            if ("jiaoshi".equals(tableName) || "xuesheng".equals(tableName)) {
-                // 教师或学生：只统计自己相关的竞赛复核
-                if (!myJingsaiIds.isEmpty()) {
-                    // 先获取这些竞赛的所有作品打分记录
-                    List<ZuopindafenEntity> allZuopindafen = zuopindafenService.selectList(null);
-                    
-                    // 获取我相关的竞赛名称列表
-                    List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectBatchIds(myJingsaiIds);
-                    final List<String> myJingsaiNames = myJingsaiList.stream()
-                            .map(JingsaixinxiEntity::getJingsaimingcheng)
-                            .collect(java.util.stream.Collectors.toList());
-                    
-                    // 过滤出这些竞赛的作品打分ID
-                    final List<Long> myZuopindafenIds = allZuopindafen.stream()
-                            .filter(z -> myJingsaiNames.contains(z.getJingsaimingcheng()))
-                            .map(ZuopindafenEntity::getId)
-                            .collect(java.util.stream.Collectors.toList());
-                    
-                    // 统计这些作品打分的待审核复核申请
-                    if (!myZuopindafenIds.isEmpty()) {
-                        EntityWrapper<ZuopindafenFuheEntity> fuheEw = new EntityWrapper<>();
-                        fuheEw.in("zuopindafen_id", myZuopindafenIds);
-                        fuheEw.eq("fuhe_status", "待审核");
-                        List<ZuopindafenFuheEntity> pendingFuheList = zuopindafenFuheService.selectList(fuheEw);
-                        pendingFuhe = pendingFuheList != null ? pendingFuheList.size() : 0;
-                    }
-                }
-            } else {
-                // 管理员：统计所有待审核复核
-                EntityWrapper<ZuopindafenFuheEntity> fuheEw = new EntityWrapper<>();
-                fuheEw.eq("fuhe_status", "待审核");
-                List<ZuopindafenFuheEntity> pendingFuheList = zuopindafenFuheService.selectList(fuheEw);
-                pendingFuhe = pendingFuheList != null ? pendingFuheList.size() : 0;
-            }
+            // 10. 统计待审核复核申请数（所有角色都统计所有待审核复核）
+            EntityWrapper<ZuopindafenFuheEntity> fuheEw = new EntityWrapper<>();
+            fuheEw.eq("fuhe_status", "待审核");
+            List<ZuopindafenFuheEntity> pendingFuheList = zuopindafenFuheService.selectList(fuheEw);
+            int pendingFuhe = pendingFuheList != null ? pendingFuheList.size() : 0;
             stats.put("pendingFuhe", pendingFuhe);
             log.info("待审核复核申请数：{}", pendingFuhe);
 

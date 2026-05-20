@@ -185,16 +185,19 @@
                 <el-tag :type="getStatusType(scope.row.sfsh)" size="small">{{scope.row.sfsh || '待审核'}}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column width="150" :align="contents.tableAlign"
+            <el-table-column width="280" :align="contents.tableAlign"
                 header-align="center"
                 label="操作">
                 <template slot-scope="scope">
                   <el-button v-if="isAuth('jingsaibaoming','查看')"
                     type="primary" icon="el-icon-view" size="mini"
                     @click="addOrUpdateHandler(scope.row.id,'info')">详情</el-button>
-                  <el-button v-if="isAuth('jingsaibaoming','修改')"
-                    type="success" icon="el-icon-edit" size="mini"
-                    @click="addOrUpdateHandler(scope.row.id)">修改</el-button>
+                  <el-button v-if="isAuth('jingsaibaoming','审核') && (!scope.row.sfsh || scope.row.sfsh === '待审核')"
+                    type="warning" icon="el-icon-check" size="mini"
+                    @click="shenheHandler(scope.row, '是')">通过</el-button>
+                  <el-button v-if="isAuth('jingsaibaoming','审核') && (!scope.row.sfsh || scope.row.sfsh === '待审核')"
+                    type="danger" icon="el-icon-close" size="mini"
+                    @click="shenheHandler(scope.row, '否')">驳回</el-button>
                   <el-button v-if="isAuth('jingsaibaoming','删除')"
                     type="danger" icon="el-icon-delete" size="mini"
                     @click="deleteHandler(scope.row.id)">删除</el-button>
@@ -392,7 +395,8 @@ export default {
       });
     },
     deleteHandler(id) {
-      var ids = id ? [Number(id)] : this.dataListSelections.map(item => Number(item.id));
+      // 直接使用原始 ID，避免 Number() 转换导致 19 位雪花算法 ID 精度丢失
+      var ids = id ? [id] : this.dataListSelections.map(item => item.id);
       this.$confirm(`确定进行[${id ? "删除" : "批量删除"}]操作?`, "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -400,12 +404,37 @@ export default {
       }).then(() => {
         this.$http({ url: "jingsaibaoming/delete", method: "post", data: ids }).then(({ data }) => {
           if (data && data.code === 0) {
-            this.$message({ message: "操作成功", type: "success", duration: 1500, onClose: () => { 
+            this.$message({ message: data.msg || "操作成功", type: "success", duration: 1500, onClose: () => { 
               this.search();
               this.getStatistics();
             }});
           } else {
             this.$message.error(data.msg);
+          }
+        });
+      });
+    },
+    // 审核报名
+    shenheHandler(row, result) {
+      let tip = result === '是' ? '通过' : '驳回';
+      this.$confirm(`确定审核${tip}该报名申请?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // 传入完整的报名数据，包括学号等必填字段
+        let updateData = Object.assign({}, row, { sfsh: result });
+        this.$http({
+          url: 'jingsaibaoming/update',
+          method: 'post',
+          data: updateData
+        }).then(({ data }) => {
+          if (data && data.code === 0) {
+            this.$message.success('审核成功');
+            this.search();
+            this.getStatistics();
+          } else {
+            this.$message.error(data.msg || '审核失败');
           }
         });
       });

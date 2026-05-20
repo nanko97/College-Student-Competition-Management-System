@@ -27,6 +27,7 @@ public class JingsaiRenyuanBianguengController {
     @Autowired private JingsaiRenyuanBianguengService bianguengService;
     @Autowired private JiaoshiDao jiaoshiDao;
     @Autowired private JingsaixinxiService jingsaixinxiService;
+    @Autowired private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
 
     /**
      * 分页查询变更记录（通用）
@@ -132,7 +133,32 @@ public class JingsaiRenyuanBianguengController {
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R apply(@RequestBody JingsaiRenyuanBianguengEntity biangueng, HttpServletRequest request) {
         String caozuoRen = (String) request.getSession().getAttribute("username");
-        return bianguengService.applyBiangueng(biangueng, caozuoRen);
+        R result = bianguengService.applyBiangueng(biangueng, caozuoRen);
+
+        // 发送人员变更申请通知给负责教师
+        try {
+            if ((Integer) result.get("code") == 0 && biangueng.getJingsaiId() != null) {
+                JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(biangueng.getJingsaiId());
+                if (jingsai != null && jingsai.getGonghao() != null && !jingsai.getGonghao().isEmpty()) {
+                    String teacherGonghao = jingsai.getGonghao();
+                    String applicantName = biangueng.getCaozuoRenXingming() != null ? biangueng.getCaozuoRenXingming() : caozuoRen;
+                    String bianguengType = biangueng.getBianguengLeixing();
+                    String tuanduiBianhao = biangueng.getTuanduiBianhao() != null ? biangueng.getTuanduiBianhao() : "";
+                    String title = "人员变更申请";
+                    String content = String.format("学生「%s」提交了团队「%s」的%s申请，请及时审核。", applicantName, tuanduiBianhao, bianguengType);
+                    xiaoxiTongzhiService.sendTongzhi(
+                        title, content, "人员变更", "系统",
+                        null, teacherGonghao, "jiaoshi",
+                        biangueng.getId(), "renyuanbiangueng"
+                    );
+                    log.info("发送人员变更申请通知给教师: {}, 变更ID: {}", teacherGonghao, biangueng.getId());
+                }
+            }
+        } catch (Exception e) {
+            log.error("发送人员变更申请通知异常", e);
+        }
+
+        return result;
     }
 
     /**
@@ -192,7 +218,31 @@ public class JingsaiRenyuanBianguengController {
             shenheRen = jiaoshi.getJiaoshixingming();
         }
         log.info("审核通过 - 工号: {}, 姓名: {}", gonghao, shenheRen);
-        return bianguengService.shenheBiangueng(bianguengId, "已通过", shenheRen);
+        R result = bianguengService.shenheBiangueng(bianguengId, "已通过", shenheRen);
+
+        // 发送审核通过通知给申请人
+        try {
+            if ((Integer) result.get("code") == 0) {
+                JingsaiRenyuanBianguengEntity biangueng2 = bianguengService.selectById(bianguengId);
+                if (biangueng2 != null && biangueng2.getCaozuoRenXuehao() != null) {
+                    String applicantXuehao = biangueng2.getCaozuoRenXuehao();
+                    String bianguengType2 = biangueng2.getBianguengLeixing() != null ? biangueng2.getBianguengLeixing() : "";
+                    String tuanduiBianhao2 = biangueng2.getTuanduiBianhao() != null ? biangueng2.getTuanduiBianhao() : "";
+                    String title = "人员变更审核通过";
+                    String content = String.format("您提交的团队「%s」%s申请已通过审核。", tuanduiBianhao2, bianguengType2);
+                    xiaoxiTongzhiService.sendTongzhi(
+                        title, content, "人员变更", shenheRen,
+                        applicantXuehao, null, "xuesheng",
+                        bianguengId, "renyuanbiangueng"
+                    );
+                    log.info("发送人员变更审核通过通知给申请人: {}, 变更ID: {}", applicantXuehao, bianguengId);
+                }
+            }
+        } catch (Exception e) {
+            log.error("发送人员变更审核通过通知异常", e);
+        }
+
+        return result;
     }
 
     @OperationLog("驳回人员变更申请")
@@ -208,7 +258,31 @@ public class JingsaiRenyuanBianguengController {
             shenheRen = jiaoshi.getJiaoshixingming();
         }
         log.info("审核驳回 - 工号: {}, 姓名: {}", gonghao, shenheRen);
-        return bianguengService.shenheBiangueng(bianguengId, "已驳回", shenheRen);
+        R result = bianguengService.shenheBiangueng(bianguengId, "已驳回", shenheRen);
+
+        // 发送审核驳回通知给申请人
+        try {
+            if ((Integer) result.get("code") == 0) {
+                JingsaiRenyuanBianguengEntity biangueng3 = bianguengService.selectById(bianguengId);
+                if (biangueng3 != null && biangueng3.getCaozuoRenXuehao() != null) {
+                    String applicantXuehao = biangueng3.getCaozuoRenXuehao();
+                    String bianguengType3 = biangueng3.getBianguengLeixing() != null ? biangueng3.getBianguengLeixing() : "";
+                    String tuanduiBianhao3 = biangueng3.getTuanduiBianhao() != null ? biangueng3.getTuanduiBianhao() : "";
+                    String title = "人员变更审核未通过";
+                    String content = String.format("您提交的团队「%s」%s申请未通过审核，请联系教师了解详情。", tuanduiBianhao3, bianguengType3);
+                    xiaoxiTongzhiService.sendTongzhi(
+                        title, content, "人员变更", shenheRen,
+                        applicantXuehao, null, "xuesheng",
+                        bianguengId, "renyuanbiangueng"
+                    );
+                    log.info("发送人员变更审核驳回通知给申请人: {}, 变更ID: {}", applicantXuehao, bianguengId);
+                }
+            }
+        } catch (Exception e) {
+            log.error("发送人员变更审核驳回通知异常", e);
+        }
+
+        return result;
     }
 
     @IgnoreAuth
