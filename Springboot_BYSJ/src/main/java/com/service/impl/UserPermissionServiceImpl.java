@@ -42,6 +42,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/zuopindafen/query",
         "/zuopindafen/my",
         "/zuopindafen/statistics",  // 作品评分统计
+        "/zuopindafen/exportPdf",  // 【论文3.1.1(5)】成绩单PDF导出
         // 成绩复核相关（学生提交复核申请）
         "/zuopindafenfuhe/add",
         "/zuopindafenfuhe/save",
@@ -86,6 +87,9 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/zuopin/delete",
         "/zuopin/statistics",
         "/zuopin/versions",  // 【论文3.1.1(4)】作品版本历史查询
+        "/zuopin/chunkUpload",  // 【论文5.2.3】分片上传
+        "/zuopin/chunkCheck",   // 【论文5.2.3】断点续传检查
+        "/zuopin/chunkMerge",   // 【论文5.2.3】分片合并
         // 团队管理相关（学生）
         "/jingsai/tuandui/list",
         "/jingsai/tuandui/my/list",

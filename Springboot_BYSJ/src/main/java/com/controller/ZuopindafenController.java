@@ -21,6 +21,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -876,5 +878,209 @@ public class ZuopindafenController {
             log.error("统计数据查询异常：", e);
             return R.error("统计查询失败，请重试");
         }
+    }
+
+    /**
+     * 【论文3.1.1(5)】成绩单PDF导出
+     * 功能：学生下载自己的成绩单PDF，教师/管理员下载指定学生的成绩单PDF
+     * 
+     * @param xuehao 学号（可选，管理员/教师可指定）
+     * @param jingsaimingcheng 竞赛名称（可选，指定某竞赛的成绩）
+     * @param request HTTP请求
+     * @param response HTTP响应
+     */
+    @GetMapping("/exportPdf")
+    @OperationLog("导出成绩PDF")
+    public void exportPdf(@RequestParam(required = false) String xuehao,
+                         @RequestParam(required = false) String jingsaimingcheng,
+                         HttpServletRequest request,
+                         HttpServletResponse response) {
+        try {
+            // 1. 权限控制：根据角色确定查询范围
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String queryXuehao = xuehao;
+            
+            if ("xuesheng".equals(tableName)) {
+                // 学生只能导出自己的成绩
+                queryXuehao = (String) request.getSession().getAttribute("username");
+            } else if ("jiaoshi".equals(tableName)) {
+                // 教师导出自己创建的竞赛的成绩
+                if (queryXuehao == null || queryXuehao.isEmpty()) {
+                    // 教师没有指定学号，导出自己竞赛的所有成绩
+                }
+            }
+            // 管理员可以导出任何成绩
+            
+            // 2. 查询成绩数据
+            EntityWrapper<ZuopindafenEntity> ew = new EntityWrapper<>();
+            if (queryXuehao != null && !queryXuehao.isEmpty()) {
+                ew.eq("xuehao", queryXuehao);
+            }
+            if ("jiaoshi".equals(tableName)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", gonghao);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    List<Long> jingsaiIds = myJingsaiList.stream()
+                        .map(JingsaixinxiEntity::getId)
+                        .collect(java.util.stream.Collectors.toList());
+                    ew.in("jingsai_id", jingsaiIds);
+                }
+            }
+            if (jingsaimingcheng != null && !jingsaimingcheng.isEmpty()) {
+                ew.eq("jingsaimingcheng", jingsaimingcheng);
+            }
+            ew.orderBy("pingjiashijian", false);
+            List<ZuopindafenEntity> scoreList = zuopindafenService.selectList(ew);
+            
+            if (scoreList == null || scoreList.isEmpty()) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"code\":1,\"msg\":\"没有成绩数据可导出\"}");
+                return;
+            }
+            
+            // 3. 生成PDF
+            ByteArrayOutputStream baos = generateScorePdf(scoreList, queryXuehao);
+            
+            // 4. 设置响应头，返回PDF文件
+            String fileName = "成绩单_" + (queryXuehao != null ? queryXuehao : "全部") + "_" + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".pdf";
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition", "attachment;filename=" + java.net.URLEncoder.encode(fileName, "UTF-8"));
+            response.setContentLength(baos.size());
+            response.getOutputStream().write(baos.toByteArray());
+            response.getOutputStream().flush();
+            
+            log.info("【PDF导出】用户{}导出成绩PDF，学号：{}，记录数：{}", tableName, queryXuehao, scoreList.size());
+            
+        } catch (Exception e) {
+            log.error("导出成绩PDF异常：", e);
+            try {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"code\":1,\"msg\":\"PDF导出失败，请重试\"}");
+            } catch (Exception ex) {
+                log.error("写入错误响应失败", ex);
+            }
+        }
+    }
+    
+    /**
+     * 生成成绩单PDF
+     * @param scoreList 成绩列表
+     * @param xuehao 学号
+     * @return PDF字节流
+     */
+    private ByteArrayOutputStream generateScorePdf(List<ZuopindafenEntity> scoreList, String xuehao) throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4, 50, 50, 50, 50);
+        com.itextpdf.text.pdf.PdfWriter writer = com.itextpdf.text.pdf.PdfWriter.getInstance(document, baos);
+        document.open();
+        
+        // 使用中文字体
+        com.itextpdf.text.pdf.BaseFont bfChinese = com.itextpdf.text.pdf.BaseFont.createFont("STSong-Light", "UniGB-UCS2-H", com.itextpdf.text.pdf.BaseFont.NOT_EMBEDDED);
+        com.itextpdf.text.Font titleFont = new com.itextpdf.text.Font(bfChinese, 18, com.itextpdf.text.Font.BOLD);
+        com.itextpdf.text.Font headerFont = new com.itextpdf.text.Font(bfChinese, 12, com.itextpdf.text.Font.BOLD);
+        com.itextpdf.text.Font contentFont = new com.itextpdf.text.Font(bfChinese, 10, com.itextpdf.text.Font.NORMAL);
+        com.itextpdf.text.Font smallFont = new com.itextpdf.text.Font(bfChinese, 8, com.itextpdf.text.Font.NORMAL);
+        
+        // 标题
+        String studentName = scoreList.get(0).getXueshengxingming();
+        String titleText = "大学生竞赛管理系统 - 成绩单";
+        if (xuehao != null && !xuehao.isEmpty()) {
+            titleText = studentName + "(" + xuehao + ")的成绩单";
+        }
+        com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph(titleText, titleFont);
+        title.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+        title.setSpacingAfter(20);
+        document.add(title);
+        
+        // 信息行
+        com.itextpdf.text.Paragraph info = new com.itextpdf.text.Paragraph();
+        info.add(new com.itextpdf.text.Chunk("导出时间：" + new SimpleDateFormat("yyyy年MM月dd日 HH:mm").format(new Date()), smallFont));
+        info.setAlignment(com.itextpdf.text.Element.ALIGN_RIGHT);
+        info.setSpacingAfter(15);
+        document.add(info);
+        
+        // 成绩表格
+        com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(5);
+        table.setWidthPercentage(100);
+        table.setSpacingBefore(10);
+        // 设置列宽比例
+        float[] widths = {15f, 15f, 25f, 15f, 30f};
+        table.setWidths(widths);
+        
+        // 表头
+        String[] headers = {"学号", "学生姓名", "竞赛名称", "成绩", "评价内容"};
+        for (String header : headers) {
+            com.itextpdf.text.pdf.PdfPCell headerCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Paragraph(header, headerFont));
+            headerCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+            headerCell.setBackgroundColor(new com.itextpdf.text.BaseColor(220, 220, 220));
+            headerCell.setPadding(8);
+            table.addCell(headerCell);
+        }
+        
+        // 数据行
+        for (ZuopindafenEntity score : scoreList) {
+            com.itextpdf.text.pdf.PdfPCell cellXuehao = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Paragraph(score.getXuehao() != null ? score.getXuehao() : "", contentFont));
+            cellXuehao.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+            cellXuehao.setPadding(5);
+            table.addCell(cellXuehao);
+            
+            com.itextpdf.text.pdf.PdfPCell cellName = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Paragraph(score.getXueshengxingming() != null ? score.getXueshengxingming() : "", contentFont));
+            cellName.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+            cellName.setPadding(5);
+            table.addCell(cellName);
+            
+            com.itextpdf.text.pdf.PdfPCell cellJingsai = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Paragraph(score.getJingsaimingcheng() != null ? score.getJingsaimingcheng() : "", contentFont));
+            cellJingsai.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+            cellJingsai.setPadding(5);
+            table.addCell(cellJingsai);
+            
+            com.itextpdf.text.pdf.PdfPCell cellScore = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Paragraph(score.getZuopinpingfen() != null ? score.getZuopinpingfen().toString() : "", contentFont));
+            cellScore.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+            cellScore.setPadding(5);
+            table.addCell(cellScore);
+            
+            com.itextpdf.text.pdf.PdfPCell cellComment = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Paragraph(score.getPingjianeirong() != null ? score.getPingjianeirong() : "", contentFont));
+            cellComment.setPadding(5);
+            table.addCell(cellComment);
+        }
+        
+        document.add(table);
+        
+        // 统计信息
+        com.itextpdf.text.Paragraph statsTitle = new com.itextpdf.text.Paragraph("统计信息", headerFont);
+        statsTitle.setSpacingBefore(20);
+        statsTitle.setSpacingAfter(10);
+        document.add(statsTitle);
+        
+        double avgScore = 0;
+        int maxScore = 0;
+        int minScore = 100;
+        for (ZuopindafenEntity score : scoreList) {
+            if (score.getZuopinpingfen() != null) {
+                avgScore += score.getZuopinpingfen();
+                if (score.getZuopinpingfen() > maxScore) maxScore = score.getZuopinpingfen();
+                if (score.getZuopinpingfen() < minScore) minScore = score.getZuopinpingfen();
+            }
+        }
+        avgScore = scoreList.size() > 0 ? avgScore / scoreList.size() : 0;
+        
+        com.itextpdf.text.Paragraph statsContent = new com.itextpdf.text.Paragraph();
+        statsContent.add(new com.itextpdf.text.Chunk("记录数：" + scoreList.size() + "  ", contentFont));
+        statsContent.add(new com.itextpdf.text.Chunk("平均分：" + Math.round(avgScore * 10.0) / 10.0 + "  ", contentFont));
+        statsContent.add(new com.itextpdf.text.Chunk("最高分：" + maxScore + "  ", contentFont));
+        statsContent.add(new com.itextpdf.text.Chunk("最低分：" + minScore, contentFont));
+        document.add(statsContent);
+        
+        // 页脚
+        com.itextpdf.text.Paragraph footer = new com.itextpdf.text.Paragraph("— 大学生竞赛管理系统 —", smallFont);
+        footer.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+        footer.setSpacingBefore(30);
+        document.add(footer);
+        
+        document.close();
+        writer.close();
+        return baos;
     }
 }

@@ -106,6 +106,33 @@ spring:
       # 允许未知属性
       fail-on-unknown-properties: false
 
+  # 2.7 邮件配置（论文3.1.1(6)邮件推送通知）
+  # 【需修改】请填写您的SMTP邮箱配置，支持QQ邮箱、163邮箱等
+  # QQ邮箱示例：host=smtp.qq.com, username=你的QQ号@qq.com, password=授权码
+  # 163邮箱示例：host=smtp.163.com, username=你的账号@163.com, password=授权码
+  # 如不使用邮件推送，可将enabled设为false
+  mail:
+    enabled: false                    # 是否启用邮件推送（默认关闭，需配置SMTP后开启）
+    host: smtp.qq.com                 # SMTP服务器地址
+    port: 465                         # SMTP端口（SSL加密用465，非加密用25）
+    username: your_email@qq.com       # 【需修改】发件邮箱账号
+    password: your_auth_code           # 【需修改】邮箱授权码（不是登录密码）
+    protocol: smtp                    # 邮件协议
+    default-encoding: UTF-8           # 部件编码
+    ssl:
+      trust: smtp.qq.com              # SSL信任主机
+    properties:
+      mail:
+        smtp:
+          auth: true                   # 启用SMTP认证
+          starttls:
+            enable: true               # 启用TLS加密
+          ssl:
+            enable: true               # 启用SSL加密
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory  # SSL Socket工厂
+            port: 465                  # SSL端口
+
 # --------------------------------------------
 # 3. MyBatis-Plus 配置
 # --------------------------------------------

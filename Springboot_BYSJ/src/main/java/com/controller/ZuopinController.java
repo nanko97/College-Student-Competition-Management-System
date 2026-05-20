@@ -28,6 +28,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -36,6 +39,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 学生作品管理控制器
@@ -60,6 +64,15 @@ public class ZuopinController {
 
     // 【论文3.1.1(4)】版本控制：保留最近3个版本
     private static final int MAX_VERSIONS = 3;
+    
+    // 【论文5.2.3】分片上传：分片大小 5MB
+    private static final int CHUNK_SIZE = 5 * 1024 * 1024;
+    
+    // 分片上传状态跟踪：fileIdentifier -> 已上传分片索引集合
+    private static final ConcurrentHashMap<String, ConcurrentHashMap<Integer, Boolean>> chunkUploadProgress = new ConcurrentHashMap<>();
+    
+    // 分片上传元数据：fileIdentifier -> 文件信息
+    private static final ConcurrentHashMap<String, Map<String, Object>> chunkUploadMeta = new ConcurrentHashMap<>();
 
     /**
      * 【论文3.1.1(4)】清理旧版本作品文件
@@ -254,6 +267,274 @@ public class ZuopinController {
 
         log.info("查询结果 - 总数: {}", page.getTotal());
         return R.ok().put("page", page);
+    }
+
+    /**
+     * 【论文5.2.3】分片上传 - 上传单个分片
+     * 大文件先切成5MB的小片，一片一片传上去
+     *
+     * @param file 分片文件数据
+     * @param fileIdentifier 文件唯一标识（用于关联同一文件的各分片）
+     * @param chunkIndex 当前分片索引（从0开始）
+     * @param totalChunks 总分片数
+     * @param originalFilename 原始文件名
+     * @param totalSize 文件总大小
+     * @param request HTTP请求
+     * @return 上传结果
+     */
+    @OperationLog("分片上传作品分片")
+    @PostMapping("/chunkUpload")
+    public R chunkUpload(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("fileIdentifier") String fileIdentifier,
+            @RequestParam("chunkIndex") int chunkIndex,
+            @RequestParam("totalChunks") int totalChunks,
+            @RequestParam("originalFilename") String originalFilename,
+            @RequestParam("totalSize") long totalSize,
+            HttpServletRequest request) {
+        try {
+            log.info("【分片上传】接收分片 - 标识:{}, 分片:{}/{}, 文件:{}, 大度:{}", 
+                    fileIdentifier, chunkIndex, totalChunks, originalFilename, totalSize);
+
+            // 验证登录
+            String xuehao = (String) request.getSession().getAttribute("username");
+            if (xuehao == null) {
+                return R.error("请先登录");
+            }
+
+            // 验证文件类型
+            if (originalFilename == null || !originalFilename.contains(".")) {
+                return R.error("文件名非法");
+            }
+            String fileExt = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
+            String[] allowedExts = {"doc", "docx", "pdf", "zip", "rar", "7z", "ppt", "pptx", "xls", "xlsx"};
+            boolean allowed = false;
+            for (String ext : allowedExts) {
+                if (ext.equals(fileExt)) {
+                    allowed = true;
+                    break;
+                }
+            }
+            if (!allowed) {
+                return R.error("不支持的文件格式");
+            }
+
+            // 验证文件总大小（50MB）
+            if (totalSize > 50 * 1024 * 1024) {
+                return R.error("文件大小不能超过50MB");
+            }
+
+            // 保存分片元数据
+            if (!chunkUploadMeta.containsKey(fileIdentifier)) {
+                Map<String, Object> meta = new HashMap<>();
+                meta.put("originalFilename", originalFilename);
+                meta.put("totalSize", totalSize);
+                meta.put("totalChunks", totalChunks);
+                meta.put("fileExt", fileExt);
+                meta.put("xuehao", xuehao);
+                chunkUploadMeta.put(fileIdentifier, meta);
+            }
+
+            // 创建分片临时存储目录
+            String projectRoot = System.getProperty("user.dir");
+            String chunksDir = projectRoot + "/upload/zuopin/chunks/" + fileIdentifier;
+            File dir = new File(chunksDir);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            // 保存分片文件
+            File chunkFile = new File(dir, chunkIndex + ".part");
+            Files.copy(file.getInputStream(), chunkFile.toPath());
+
+            // 记录已上传分片
+            ConcurrentHashMap<Integer, Boolean> progress = chunkUploadProgress.computeIfAbsent(fileIdentifier, k -> new ConcurrentHashMap<>());
+            progress.put(chunkIndex, true);
+
+            log.info("【分片上传】分片 {} 保存成功 - 进度: {}/{}", chunkIndex, progress.size(), totalChunks);
+
+            // 检查是否所有分片都已上传完成
+            if (progress.size() == totalChunks) {
+                log.info("【分片上传】所有分片已上传完成，准备合并文件: {}", fileIdentifier);
+                // 合合完成后返回特殊标识
+                return R.ok("分片上传完成，准备合并").put("completed", true).put("fileIdentifier", fileIdentifier);
+            }
+
+            return R.ok("分片上传成功").put("completed", false).put("chunkIndex", chunkIndex).put("uploadedChunks", progress.size());
+
+        } catch (Exception e) {
+            log.error("【分片上传】异常", e);
+            return R.error("分片上传失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 【论文5.2.3】断点续传 - 检查已上传的分片
+     * 返回已上传的分片索引列表，用于断点续传
+     *
+     * @param fileIdentifier 文件唯一标识
+     * @return 已上传的分片索引列表
+     */
+    @GetMapping("/chunkCheck")
+    public R chunkCheck(@RequestParam("fileIdentifier") String fileIdentifier) {
+        try {
+            ConcurrentHashMap<Integer, Boolean> progress = chunkUploadProgress.get(fileIdentifier);
+            List<Integer> uploadedChunks = new ArrayList<>();
+
+            if (progress != null) {
+                uploadedChunks.addAll(progress.keySet());
+                log.info("【断点续传】检查已传分片 - 标识:{}, 已传分片数:{}", fileIdentifier, uploadedChunks.size());
+            } else {
+                // 检查磁盘上的分片文件
+                String projectRoot = System.getProperty("user.dir");
+                String chunksDir = projectRoot + "/upload/zuopin/chunks/" + fileIdentifier;
+                File dir = new File(chunksDir);
+                if (dir.exists()) {
+                    for (File f : dir.listFiles()) {
+                        if (f.getName().endsWith(".part")) {
+                            int chunkIdx = Integer.parseInt(f.getName().replace(".part", ""));
+                            uploadedChunks.add(chunkIdx);
+                        }
+                    }
+                    log.info("【断点续传】从磁盘恢复进度 - 标识:{}, 已传分片数:{}", fileIdentifier, uploadedChunks.size());
+                }
+            }
+
+            return R.ok().put("uploadedChunks", uploadedChunks);
+        } catch (Exception e) {
+            log.error("【断点续传】检查异常", e);
+            return R.error("检查失败");
+        }
+    }
+
+    /**
+     * 【论文5.2.3】合并分片 - 将所有分片合并为完整文件
+     *
+     * @param params 包含 fileIdentifier 和 baomingId
+     * @param request HTTP请求
+     * @return 合合结果
+     */
+    @OperationLog("合并上传作品文件")
+    @PostMapping("/chunkMerge")
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
+    public R chunkMerge(@RequestBody Map<String, Object> params, HttpServletRequest request) {
+        try {
+            String fileIdentifier = (String) params.get("fileIdentifier");
+            Long baomingId = Long.parseLong(params.get("baomingId").toString());
+
+            log.info("【分片合并】开始合并 - 标识:{}, 报名ID:{}", fileIdentifier, baomingId);
+
+            // 查询报名记录
+            JingsaibaomingEntity baoming = jingsaibaomingService.selectById(baomingId);
+            if (baoming == null) {
+                return R.error("报名信息不存在");
+            }
+
+            // 验证是否为当前学生的报名
+            String xuehao = (String) request.getSession().getAttribute("username");
+            if (!xuehao.equals(baoming.getXuehao())) {
+                return R.error("无权操作此报名记录");
+            }
+
+            // 验证报名是否已审核通过
+            if (!"通过".equals(baoming.getSfsh())) {
+                return R.error("报名信息未审核通过，无法提交作品");
+            }
+
+            // 验证缴费状态
+            EntityWrapper<JingsaiJiaofeiJiluEntity> jiaofeiEw = new EntityWrapper<>();
+            jiaofeiEw.eq("baoming_id", baomingId);
+            jiaofeiEw.eq("xuehao", baoming.getXuehao());
+            List<JingsaiJiaofeiJiluEntity> jiaofeiList = jingsaiJiaofeiJiluService.selectList(jiaofeiEw);
+            boolean hasApprovedPayment = false;
+            if (jiaofeiList != null) {
+                for (JingsaiJiaofeiJiluEntity jiaofei : jiaofeiList) {
+                    if ("已通过".equals(jiaofei.getJiaofeiZhuangtai())) {
+                        hasApprovedPayment = true;
+                        break;
+                    }
+                }
+            }
+            if (!hasApprovedPayment) {
+                return R.error("请先完成缴费并等待审核通过后，再提交作品");
+            }
+
+            // 获取分片元数据
+            Map<String, Object> meta = chunkUploadMeta.get(fileIdentifier);
+            if (meta == null) {
+                return R.error("文件上传信息不存在，请重新上传");
+            }
+
+            int totalChunks = (int) meta.get("totalChunks");
+            String fileExt = (String) meta.get("fileExt");
+
+            // 检查所有分片是否都已上传
+            ConcurrentHashMap<Integer, Boolean> progress = chunkUploadProgress.get(fileIdentifier);
+            if (progress == null || progress.size() < totalChunks) {
+                return R.error("还有分片未上传完成，请继续上传");
+            }
+
+            // 合并分片文件
+            String projectRoot = System.getProperty("user.dir");
+            String uploadPath = projectRoot + "/upload/zuopin/";
+            String chunksDir = projectRoot + "/upload/zuopin/chunks/" + fileIdentifier;
+
+            // 生成最终文件名
+            String finalFileName = baoming.getXuehao() + "_" + baomingId + "_" + System.currentTimeMillis() + "." + fileExt;
+            File finalFile = new File(uploadPath, finalFileName);
+
+            // 合合操作：按分片索引顺序写入
+            OutputStream outStream = new FileOutputStream(finalFile);
+            byte[] buffer = new byte[CHUNK_SIZE];
+            for (int i = 0; i < totalChunks; i++) {
+                File chunkFile = new File(chunksDir, i + ".part");
+                if (!chunkFile.exists()) {
+                    outStream.close();
+                    finalFile.delete();
+                    return R.error("分片 " + i + " 不存在，请重新上传");
+                }
+                FileInputStream inStream = new FileInputStream(chunkFile);
+                int bytesRead;
+                while ((bytesRead = inStream.read(buffer)) != -1) {
+                    outStream.write(buffer, 0, bytesRead);
+                }
+                inStream.close();
+            }
+            outStream.flush();
+            outStream.close();
+
+            log.info("【分片合并】合并完成 - 文件:{}, 大度:{}字节", finalFileName, finalFile.length());
+
+            // 更新报名记录的作品字段
+            baoming.setCansaizuopin("upload/zuopin/" + finalFileName);
+            jingsaibaomingService.updateById(baoming);
+
+            // 版本控制 - 保留最近3个版本
+            try {
+                cleanupOldVersions(baoming.getXuehao(), baomingId, projectRoot);
+            } catch (Exception e) {
+                log.warn("清理旧版本失败：{}", e.getMessage());
+            }
+
+            // 清理分片临时文件
+            File chunksDirFile = new File(chunksDir);
+            if (chunksDirFile.exists()) {
+                for (File f : chunksDirFile.listFiles()) {
+                    f.delete();
+                }
+                chunksDirFile.delete();
+            }
+            chunkUploadProgress.remove(fileIdentifier);
+            chunkUploadMeta.remove(fileIdentifier);
+
+            log.info("【分片上传】整个流程完成 - 学号:{}, 竞赛:{}, 文件:{}", 
+                    baoming.getXuehao(), baoming.getJingsaimingcheng(), finalFileName);
+            return R.ok("作品上传成功").put("fileName", finalFileName);
+
+        } catch (Exception e) {
+            log.error("【分片合并】异常", e);
+            return R.error("合并失败：" + e.getMessage());
+        }
     }
 
     /**

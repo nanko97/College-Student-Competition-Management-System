@@ -84,6 +84,7 @@
             <el-button v-if="scope.row.sfsh === '通过' && !scope.row.cansaizuopin" type="success" size="mini" icon="el-icon-upload2" @click="uploadHandler(scope.row)">提交作品</el-button>
             <el-button v-if="scope.row.sfsh === '通过' && scope.row.cansaizuopin" type="primary" size="mini" icon="el-icon-refresh" @click="updateHandler(scope.row)">更新</el-button>
             <el-button v-if="scope.row.sfsh === '通过' && scope.row.cansaizuopin" type="info" size="mini" icon="el-icon-download" @click="downloadHandler(scope.row)">下载</el-button>
+            <el-button v-if="scope.row.sfsh === '通过' && scope.row.cansaizuopin" type="warning" size="mini" icon="el-icon-document" @click="exportPdfHandler(scope.row)">成绩单</el-button>
             <el-tag v-if="scope.row.sfsh !== '通过'" type="info" size="mini" effect="dark">{{ scope.row.sfsh === '待审核' ? '等待审核' : '审核未通过' }}</el-tag>
           </template>
         </el-table-column>
@@ -125,9 +126,14 @@
             <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
             <div class="el-upload__tip" slot="tip">
               支持格式：doc、docx、pdf、zip、rar、7z、ppt、pptx、xls、xlsx<br>
-              文件大小不超过50MB
+              文件大小不超过50MB，大文件自动分片上传
             </div>
           </el-upload>
+        </el-form-item>
+        <!-- 【论文5.2.3】分片上传进度条 -->
+        <el-form-item label="上传进度" v-if="chunkUploading">
+          <el-progress :percentage="chunkProgress" :status="chunkProgressStatus" :stroke-width="20" :text-inside="true"></el-progress>
+          <div style="margin-top:8px;color:#909399;font-size:12px">{{ chunkProgressText }}</div>
         </el-form-item>
         <el-form-item label="已选文件" v-if="uploadForm.fileName">
           <el-tag type="success" closable @close="clearFile()">{{ uploadForm.fileName }}</el-tag>
@@ -161,6 +167,11 @@ export default {
       uploadVisible: false,
       uploadDialogTitle: '提交作品',
       uploading: false,
+      chunkUploading: false,
+      chunkProgress: 0,
+      chunkProgressStatus: '',
+      chunkProgressText: '',
+      CHUNK_SIZE: 5 * 1024 * 1024, // 【论文5.2.3】5MB分片大小
       currentBaoming: {},
       fileList: [],
       uploadForm: {
@@ -264,8 +275,18 @@ export default {
         return
       }
 
+      const file = this.uploadForm.file
+      // 【论文5.2.3】大文件（>5MB）使用分片上传，小文件使用普通上传
+      if (file.size > this.CHUNK_SIZE) {
+        this.chunkUploadFile(file)
+      } else {
+        this.normalUploadFile(file)
+      }
+    },
+    // 普通上传（小文件）
+    normalUploadFile(file) {
       const formData = new FormData()
-      formData.append('file', this.uploadForm.file)
+      formData.append('file', file)
       formData.append('baomingId', this.currentBaoming.id)
 
       this.uploading = true
@@ -294,6 +315,147 @@ export default {
         this.uploading = false
         this.$message.error('上传失败')
       })
+    },
+    // 【论文5.2.3】分片上传（大文件）
+    chunkUploadFile(file) {
+      const totalChunks = Math.ceil(file.size / this.CHUNK_SIZE)
+      // 生成文件唯一标识（文件名+大小+修改时间的MD5简化版）
+      const fileIdentifier = file.name + '_' + file.size + '_' + Date.now()
+
+      this.uploading = true
+      this.chunkUploading = true
+      this.chunkProgress = 0
+      this.chunkProgressStatus = ''
+      this.chunkProgressText = '准备分片上传...'
+
+      // 先检查断点续传状态
+      this.$http({
+        url: 'zuopin/chunkCheck',
+        method: 'get',
+        params: { fileIdentifier }
+      }).then(({data}) => {
+        const uploadedChunks = (data && data.code === 0) ? (data.uploadedChunks || []) : []
+        this.uploadChunks(file, fileIdentifier, totalChunks, uploadedChunks)
+      }).catch(() => {
+        // 检查失败时从头开始
+        this.uploadChunks(file, fileIdentifier, totalChunks, [])
+      })
+    },
+    // 分片上传执行
+    uploadChunks(file, fileIdentifier, totalChunks, uploadedChunks) {
+      let completedChunks = uploadedChunks.length
+      this.chunkProgress = Math.round((completedChunks / totalChunks) * 100)
+      this.chunkProgressText = `分片上传中 ${completedChunks}/${totalChunks}`
+
+      // 逐个上传未完成的分片
+      const uploadSequence = []
+      for (let i = 0; i < totalChunks; i++) {
+        if (!uploadedChunks.includes(i)) {
+          uploadSequence.push(i)
+        }
+      }
+
+      let currentIndex = 0
+      const uploadNext = () => {
+        if (currentIndex >= uploadSequence.length) {
+          // 所有分片已传完，执行合并
+          this.mergeChunks(fileIdentifier, totalChunks, file.name, file.size)
+          return
+        }
+
+        const chunkIndex = uploadSequence[currentIndex]
+        const start = chunkIndex * this.CHUNK_SIZE
+        const end = Math.min(start + this.CHUNK_SIZE, file.size)
+        const chunkBlob = file.slice(start, end)
+
+        const formData = new FormData()
+        formData.append('file', chunkBlob)
+        formData.append('fileIdentifier', fileIdentifier)
+        formData.append('chunkIndex', chunkIndex)
+        formData.append('totalChunks', totalChunks)
+        formData.append('originalFilename', file.name)
+        formData.append('totalSize', file.size)
+
+        this.$http({
+          url: 'zuopin/chunkUpload',
+          method: 'post',
+          headers: { 'Content-Type': 'multipart/form-data' },
+          data: formData,
+          timeout: 60000 // 单个分片60秒超时
+        }).then(({data}) => {
+          currentIndex++
+          completedChunks++
+          this.chunkProgress = Math.round((completedChunks / totalChunks) * 100)
+          this.chunkProgressText = `分片上传中 ${completedChunks}/${totalChunks}`
+
+          if (data && data.completed) {
+            // 服务端已确认全部接收，直接合并
+            this.mergeChunks(fileIdentifier, totalChunks, file.name, file.size)
+          } else {
+            // 继续上传下一个分片
+            uploadNext()
+          }
+        }).catch((err) => {
+          this.uploading = false
+          this.chunkUploading = false
+          this.chunkProgressStatus = 'exception'
+          this.chunkProgressText = '分片上传失败，请重试'
+          this.$message.error('分片上传失败')
+        })
+      }
+
+      uploadNext()
+    },
+    // 合合分片
+    mergeChunks(fileIdentifier, totalChunks, originalFilename, totalSize) {
+      this.chunkProgressText = '合并文件中...'
+      this.chunkProgress = 99
+      this.chunkProgressStatus = ''
+
+      this.$http({
+        url: 'zuopin/chunkMerge',
+        method: 'post',
+        data: {
+          fileIdentifier,
+          baomingId: this.currentBaoming.id
+        }
+      }).then(({data}) => {
+        this.uploading = false
+        this.chunkUploading = false
+        if (data && data.code === 0) {
+          this.chunkProgress = 100
+          this.chunkProgressStatus = 'success'
+          this.chunkProgressText = '上传完成！'
+          this.$message({
+            message: '作品上传成功',
+            type: 'success',
+            duration: 1500,
+            onClose: () => {
+              this.uploadVisible = false
+              this.getDataList()
+              this.getStatistics()
+            }
+          })
+        } else {
+          this.chunkProgressStatus = 'exception'
+          this.chunkProgressText = '合并失败'
+          this.$message.error(data.msg || '合并失败')
+        }
+      }).catch(() => {
+        this.uploading = false
+        this.chunkUploading = false
+        this.chunkProgressStatus = 'exception'
+        this.chunkProgressText = '合并失败'
+        this.$message.error('合并失败')
+      })
+    },
+    // 【论文3.1.1(5)】成绩单PDF导出
+    exportPdfHandler(row) {
+      this.$message.info('正在生成PDF，请稍候...')
+      // 使用window.open直接下载
+      const baseURL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080/BYSJ_Springboot'
+      const url = baseURL + '/zuopindafen/exportPdf?jingsaimingcheng=' + encodeURIComponent(row.jingsaimingcheng)
+      window.open(url)
     },
     downloadHandler(row) {
       if (row.cansaizuopin) {
