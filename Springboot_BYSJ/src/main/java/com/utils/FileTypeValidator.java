@@ -103,6 +103,84 @@ public class FileTypeValidator {
     }
     
     /**
+     * 检测文件的真实 MIME 类型
+     * 使用 Apache Tika 基于文件内容（而非扩展名）检测
+     * 
+     * @param file 上传的文件
+     * @return 检测到的 MIME 类型字符串
+     * @throws IOException 如果读取文件内容失败
+     */
+    public static String detectMimeType(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return "application/octet-stream";
+        }
+        return TIKA.detect(file.getInputStream());
+    }
+    
+    /**
+     * 判断检测到的 MIME 类型是否与声明的文件扩展名匹配
+     * 【论文4.2.10节】防止伪装文件扩展名攻击
+     * 
+     * @param detectedMimeType Tika 检测到的真实 MIME 类型
+     * @param declaredExtension 用户声明的文件扩展名
+     * @return true-类型匹配或无法判定（允许通过），false-类型不匹配（拒绝上传）
+     */
+    public static boolean isMimeTypeAllowed(String detectedMimeType, String declaredExtension) {
+        if (detectedMimeType == null || declaredExtension == null) {
+            return true; // 无法判定时默认允许
+        }
+        
+        // 允许所有文本类型（txt、csv等可能被检测为text/plain）
+        if (detectedMimeType.startsWith("text/")) {
+            return true;
+        }
+        
+        // 允许所有压缩包类型（zip、rar等可能被检测为application/zip等）
+        if (detectedMimeType.equals("application/zip") || detectedMimeType.equals("application/x-rar-compressed")
+                || detectedMimeType.equals("application/x-7z-compressed") || detectedMimeType.equals("application/gzip")) {
+            return true;
+        }
+        
+        // 允许所有图片类型
+        if (detectedMimeType.startsWith("image/")) {
+            return true;
+        }
+        
+        // 允许 Office 文档类型
+        if (ALLOWED_DOCUMENT_MIME_TYPES.contains(detectedMimeType)) {
+            return true;
+        }
+        
+        // 允许 application/octet-stream（未知类型，常见于各种格式）
+        if (detectedMimeType.equals("application/octet-stream")) {
+            return true;
+        }
+        
+        // 允许复合文档类型（Office老格式）
+        if (detectedMimeType.equals("application/x-tika-ooxml") || detectedMimeType.equals("application/x-tika-msoffice")) {
+            return true;
+        }
+        
+        // 严格拦截：可执行文件类型（危险！）
+        String[] dangerousMimeTypes = {
+            "application/x-msdownload", "application/x-msdos-program",
+            "application/x-executable", "application/x-dosexec",
+            "application/java-archive", "application/x-java-archive",
+            "application/x-sh", "application/x-bat",
+            "application/x-csh", "application/x-python-code"
+        };  
+        for (String dangerous : dangerousMimeTypes) {
+            if (detectedMimeType.equals(dangerous)) {
+                log.warn("检测到危险文件类型：{}", detectedMimeType);
+                return false;
+            }
+        }
+        
+        // 其他未明确拒绝的类型默认允许
+        return true;
+    }
+    
+    /**
      * 根据 MIME 类型获取推荐的文件扩展名
      * 
      * @param mimeType MIME 类型

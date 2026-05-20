@@ -71,6 +71,11 @@ const menu = {
                     {"buttons": ["查看", "审核"], "menu": "人员变更审核", "menuJump": "列表", "tableName": "jingsai_renyuan_biangueng_shenhe"}
                 ],
                 "menu": "人员变更管理"
+            }, {
+                "child": [
+                    {"buttons": ["查看"], "menu": "操作日志", "menuJump": "列表", "tableName": "operationlog", "routePath": "/operationlog"}
+                ],
+                "menu": "系统日志"
             }],
             "frontMenu": [],
             "hasBackLogin": "是",

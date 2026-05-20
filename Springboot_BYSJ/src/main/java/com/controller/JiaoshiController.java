@@ -18,6 +18,7 @@ import com.utils.R;
 import com.utils.ValidatorUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 教师信息管理控制器
@@ -59,6 +61,19 @@ public class JiaoshiController {
     @Autowired
     private DataSyncService dataSyncService; // 数据联动同步服务
 
+    // 【防暴力破解】登录失败次数限制（论文4.4.1节：连续失败5次锁定10分钟）
+    @Value("${login.max-fail-count:5}")
+    private int maxFailCount;
+
+    // 存储登录失败次数（线程安全，生产环境可替换为Redis）
+    private final Map<String, Integer> loginFailCountMap = new ConcurrentHashMap<>();
+
+    // 存储锁定时间（账号被锁定后的解锁时间戳）
+    private final Map<String, Long> lockTimeMap = new ConcurrentHashMap<>();
+
+    // 锁定时长（毫秒），默认10分钟
+    private static final long LOCK_DURATION_MS = 10 * 60 * 1000;
+
     /**
      * 教师登录接口
      * 功能：验证工号和密码，生成登录 Token
@@ -89,18 +104,48 @@ public class JiaoshiController {
                 return R.error("密码不能为空");
             }
             
-            // 2. 根据工号查询教师
+            // 2. 【防暴力破解】检查账号是否处于锁定状态
+            Long lockTime = lockTimeMap.get(username);
+            if (lockTime != null) {
+                long remainingMs = lockTime - System.currentTimeMillis();
+                if (remainingMs > 0) {
+                    long remainingMin = remainingMs / 60000 + 1;
+                    log.warn("教师登录失败：账号{}已被锁定，剩余{}分钟", username, remainingMin);
+                    return R.error("登录失败次数过多，请" + remainingMin + "分钟后再试");
+                } else {
+                    // 锁定时间已过，清除锁定记录
+                    lockTimeMap.remove(username);
+                    loginFailCountMap.remove(username);
+                }
+            }
+            
+            // 3. 【防暴力破解】检查登录失败次数
+            Integer failCount = loginFailCountMap.getOrDefault(username, 0);
+            if (failCount >= maxFailCount) {
+                // 超过限制，锁定账号
+                lockTimeMap.put(username, System.currentTimeMillis() + LOCK_DURATION_MS);
+                loginFailCountMap.remove(username); // 清除计数，下次解锁后重新计数
+                log.warn("教师登录锁定：账号{}连续失败{}次，锁定10分钟", username, maxFailCount);
+                return R.error("登录失败次数过多，请10分钟后再试");
+            }
+            
+            // 4. 根据工号查询教师
             EntityWrapper<JiaoshiEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("gonghao", username);
             JiaoshiEntity user = jiaoshiService.selectOne(queryWrapper);
             
-            // 3. 用户不存在或密码错误
+            // 5. 用户不存在或密码错误
             if (user == null || !passwordEncoder.matches(password, user.getMima())) {
-                log.warn("教师登录失败：工号{}账号或密码不正确", username);
+                loginFailCountMap.put(username, failCount + 1);
+                log.warn("教师登录失败：工号{}账号或密码不正确，失败次数：{}", username, failCount + 1);
                 return R.error("账号或密码不正确");
             }
             
-            // 4. 登录成功，生成 Token
+            // 6. 【防暴力破解】登录成功，清除失败计数
+            loginFailCountMap.remove(username);
+            lockTimeMap.remove(username);
+            
+            // 7. 登录成功，生成 Token
             String token = tokenService.generateToken(user.getId(), username, "jiaoshi", "教师");
             log.info("教师 {} 登录成功", username);
             // 返回token和教师姓名

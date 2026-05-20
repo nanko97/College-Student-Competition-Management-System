@@ -85,6 +85,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/zuopin/upload",
         "/zuopin/delete",
         "/zuopin/statistics",
+        "/zuopin/versions",  // 【论文3.1.1(4)】作品版本历史查询
         // 团队管理相关（学生）
         "/jingsai/tuandui/list",
         "/jingsai/tuandui/my/list",

@@ -29,6 +29,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +57,113 @@ public class ZuopinController {
 
     @Autowired
     private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
+
+    // 【论文3.1.1(4)】版本控制：保留最近3个版本
+    private static final int MAX_VERSIONS = 3;
+
+    /**
+     * 【论文3.1.1(4)】清理旧版本作品文件
+     * 保留最近3个版本，超出部分删除
+     * 
+     * @param xuehao 学号
+     * @param baomingId 报名ID
+     * @param projectRoot 项目根目录
+     */
+    private void cleanupOldVersions(String xuehao, Long baomingId, String projectRoot) {
+        String zuopinDir = projectRoot + "/upload/zuopin/";
+        File dir = new File(zuopinDir);
+        if (!dir.exists()) return;
+
+        // 查找该学号+报名ID的所有版本文件（文件名格式：xuehao_baomingId_timestamp.ext）
+        String prefix = xuehao + "_" + baomingId + "_";
+        List<File> versionFiles = new ArrayList<>();
+        for (File f : dir.listFiles()) {
+            if (f.getName().startsWith(prefix)) {
+                versionFiles.add(f);
+            }
+        }
+
+        // 按创建时间降序排序（最新版本在前）
+        versionFiles.sort((a, b) -> {
+            try {
+                BasicFileAttributes attrA = Files.readAttributes(a.toPath(), BasicFileAttributes.class);
+                BasicFileAttributes attrB = Files.readAttributes(b.toPath(), BasicFileAttributes.class);
+                return attrB.creationTime().compareTo(attrA.creationTime());
+            } catch (Exception e) {
+                return Long.compare(b.lastModified(), a.lastModified());
+            }
+        });
+
+        // 保留最近3个版本，删除更早的版本
+        if (versionFiles.size() > MAX_VERSIONS) {
+            for (int i = MAX_VERSIONS; i < versionFiles.size(); i++) {
+                File oldVersion = versionFiles.get(i);
+                try {
+                    oldVersion.delete();
+                    log.info("【版本控制】删除旧版本文件：{}（保留最近{}个版本）", oldVersion.getName(), MAX_VERSIONS);
+                } catch (Exception e) {
+                    log.warn("【版本控制】删除旧版本失败：{}", oldVersion.getName());
+                }
+            }
+        }
+        log.info("【版本控制】学号{} 报名{} 当前保留{}个版本", xuehao, baomingId, Math.min(versionFiles.size(), MAX_VERSIONS));
+    }
+
+    /**
+     * 【论文3.1.1(4)】查询作品版本历史
+     * 返回该报名记录的所有版本文件列表（最多3个）
+     *
+     * @param baomingId 报名ID
+     * @param request HTTP请求
+     * @return 版本历史列表
+     */
+    @GetMapping("/versions/{baomingId}")
+    public R getVersionHistory(@PathVariable("baomingId") Long baomingId, HttpServletRequest request) {
+        try {
+            JingsaibaomingEntity baoming = jingsaibaomingService.selectById(baomingId);
+            if (baoming == null) {
+                return R.error("报名信息不存在");
+            }
+
+            String projectRoot = System.getProperty("user.dir");
+            String zuopinDir = projectRoot + "/upload/zuopin/";
+            File dir = new File(zuopinDir);
+            if (!dir.exists()) {
+                return R.ok().put("data", new ArrayList<>());
+            }
+
+            // 查找该报名的所有版本文件
+            String prefix = baoming.getXuehao() + "_" + baomingId + "_";
+            List<File> versionFiles = new ArrayList<>();
+            for (File f : dir.listFiles()) {
+                if (f.getName().startsWith(prefix)) {
+                    versionFiles.add(f);
+                }
+            }
+
+            // 按修改时间降序排序
+            versionFiles.sort((a, b) -> Long.compare(b.lastModified(), a.lastModified()));
+
+            List<Map<String, Object>> versions = new ArrayList<>();
+            int versionNum = versionFiles.size();
+            for (File f : versionFiles) {
+                Map<String, Object> v = new HashMap<>();
+                v.put("version", versionNum--);
+                v.put("fileName", f.getName());
+                v.put("filePath", "upload/zuopin/" + f.getName());
+                v.put("fileSize", f.length());
+                v.put("uploadTime", new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(f.lastModified()));
+                v.put("isCurrent", f.getName().equals(new File(projectRoot, baoming.getCansaizuopin()).getName()));
+                versions.add(v);
+            }
+
+            log.info("查询版本历史 - 报名ID: {}，版本数: {}", baomingId, versions.size());
+            return R.ok().put("data", versions);
+        } catch (Exception e) {
+            log.error("查询版本历史异常", e);
+            return R.error("查询版本历史失败");
+        }
+    }
 
     /**
      * 分页查询作品列表（前端标准接口）
@@ -226,7 +337,7 @@ public class ZuopinController {
                 return R.error("请先完成缴费并等待教师审核通过后，再提交作品");
             }
 
-            // 8. 保存文件
+            // 【论文3.1.1(4)】8. 保存文件 - 支持版本控制，保留最近3个版本
             String projectRoot = System.getProperty("user.dir");
             String uploadPath = projectRoot + "/upload/zuopin/";
             File uploadDir = new File(uploadPath);
@@ -234,7 +345,7 @@ public class ZuopinController {
                 uploadDir.mkdirs();
             }
 
-            // 生成唯一文件名：学号_竞赛ID_时间戳_原文件名
+            // 生成唯一文件名：学号_报名ID_时间戳.扩展名
             String fileName = baoming.getXuehao() + "_" + baomingId + "_" + System.currentTimeMillis() + "." + fileExt;
             File destFile = new File(uploadDir, fileName);
             Files.copy(file.getInputStream(), destFile.toPath());
@@ -244,17 +355,12 @@ public class ZuopinController {
             baoming.setCansaizuopin("upload/zuopin/" + fileName);
             jingsaibaomingService.updateById(baoming);
 
-            // 9. 如果是更新作品，删除旧文件
-            if (oldFile != null && !oldFile.isEmpty()) {
-                try {
-                    File oldFileObj = new File(projectRoot, oldFile);
-                    if (oldFileObj.exists()) {
-                        oldFileObj.delete();
-                        log.info("已删除旧作品文件：{}", oldFile);
-                    }
-                } catch (Exception e) {
-                    log.warn("删除旧作品文件失败：{}", oldFile, e);
-                }
+            // 【论文3.1.1(4)】9. 版本控制 - 保留最近3个版本，超出部分删除
+            // 不直接删除旧文件，而是保留作为版本历史
+            try {
+                cleanupOldVersions(baoming.getXuehao(), baomingId, projectRoot);
+            } catch (Exception e) {
+                log.warn("清理旧版本文件失败：{}", e.getMessage());
             }
 
             log.info("学生 {} 上传作品成功，竞赛：{}，文件：{}",

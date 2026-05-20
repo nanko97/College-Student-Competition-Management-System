@@ -4,6 +4,7 @@ import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
 import com.entity.EIException;
 import com.service.ConfigService;
+import com.utils.FileTypeValidator;
 import com.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -103,6 +104,19 @@ public class FileController {
             log.warn("文件上传失败：不支持的文件类型，当前类型：{}，支持类型：{}",
                     fileExt, allowFileTypes);
             throw new EIException("不支持该文件类型，仅支持：" + allowFileTypes);
+        }
+
+        // 【论文4.2.10】使用 Apache Tika 检测文件真实类型，防止伪装扩展名攻击
+        try {
+            String detectedMimeType = FileTypeValidator.detectMimeType(file);
+            log.debug("文件类型检测：后缀={}, Tika检测MIME={}", fileExt, detectedMimeType);
+            if (!FileTypeValidator.isMimeTypeAllowed(detectedMimeType, fileExt)) {
+                log.warn("文件上传失败：文件真实类型与扩展名不匹配，后缀={}, 检测MIME={}", fileExt, detectedMimeType);
+                throw new EIException("文件真实类型与扩展名不一致，疑似伪装文件，禁止上传");
+            }
+        } catch (IOException e) {
+            log.warn("文件类型检测异常，跳过Tika检测：{}", e.getMessage());
+            // Tika检测失败时不阻止上传，避免影响正常使用
         }
 
         // 4. 构建上传目录（兼容 IDE 和 jar包运行）

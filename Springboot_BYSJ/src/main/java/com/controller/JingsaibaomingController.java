@@ -641,6 +641,15 @@ public class JingsaibaomingController {
             return R.error("参赛人员不能为空");
         }
         
+        // 【论文3.1.1(3)】报名截止时间检查 - 竞赛已结束不允许新报名
+        if (jingsaibaoming.getJingsaiId() != null) {
+            JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(jingsaibaoming.getJingsaiId());
+            if (jingsai != null && jingsai.getJingsaishijian() != null && jingsai.getJingsaishijian().before(new Date())) {
+                log.warn("报名截止：竞赛{}已结束，不允许报名", jingsai.getJingsaimingcheng());
+                return R.error("该竞赛已结束（截止时间：" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(jingsai.getJingsaishijian()) + "），无法提交报名");
+            }
+        }
+        
         try {
             // 2. 自动填充学号 (如果是学生自己报名)
             String tableName = (String) request.getSession().getAttribute("tableName");
@@ -739,10 +748,28 @@ public class JingsaibaomingController {
         }
         
         try {
-            // 2. 实体校验
+            // 2. 【论文3.1.1(3)】报名截止时间自动锁定 - 检查竞赛是否已结束
+            JingsaibaomingEntity oldBaomingForDeadline = jingsaibaomingService.selectById(jingsaibaoming.getId());
+            if (oldBaomingForDeadline != null && oldBaomingForDeadline.getJingsaiId() != null) {
+                JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(oldBaomingForDeadline.getJingsaiId());
+                if (jingsai != null && jingsai.getJingsaishijian() != null) {
+                    // 如果当前时间超过竞赛时间，则不允许修改报名信息
+                    if (jingsai.getJingsaishijian().before(new Date())) {
+                        // 只有审核操作（教师审核通过/驳回）才允许在截止后执行
+                        String newSfsh = jingsaibaoming.getSfsh();
+                        boolean isShenheOnly = "是".equals(newSfsh) || "已通过".equals(newSfsh) || "否".equals(newSfsh);
+                        if (!isShenheOnly) {
+                            log.warn("报名截止锁定：竞赛{}已结束，不允许修改报名，ID：{}", jingsai.getJingsaimingcheng(), jingsaibaoming.getId());
+                            return R.error("该竞赛已结束（截止时间：" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(jingsai.getJingsaishijian()) + "），报名信息已锁定，不允许修改");
+                        }
+                    }
+                }
+            }
+            
+            // 3. 实体校验
             ValidatorUtils.validateEntity(jingsaibaoming);
             
-            // 3. 【核心】检查是否为审核操作（sfsh字段变更）
+            // 4. 【核心】检查是否为审核操作（sfsh字段变更）
             String newSfsh = jingsaibaoming.getSfsh();
             boolean isShenheAction = "是".equals(newSfsh) || "已通过".equals(newSfsh);
             boolean isBohuiAction = "否".equals(newSfsh) || "未通过".equals(newSfsh);

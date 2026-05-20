@@ -114,6 +114,7 @@ public class OperationLogController {
         long failCount = failPage.getTotal();
         
         Map<String, Object> statistics = new java.util.HashMap<>();
+        statistics.put("total", totalCount);  // 前端使用 total 字段名
         statistics.put("totalCount", totalCount);
         statistics.put("todayCount", todayCount);
         statistics.put("successCount", successCount);

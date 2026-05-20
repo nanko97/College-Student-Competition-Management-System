@@ -1,6 +1,8 @@
 package com.config;
 
 import com.interceptor.AuthorizationInterceptor;
+import com.interceptor.RateLimitInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -16,8 +18,21 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
         return new AuthorizationInterceptor();
     }
 
+    @Autowired
+    private RateLimitInterceptor rateLimitInterceptor;  // 【论文4.4.5节】请求限流拦截器
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // 【论文4.4.5节】先注册限流拦截器（在权限校验之前执行）
+        registry.addInterceptor(rateLimitInterceptor)
+            .addPathPatterns("/**")
+            .excludePathPatterns(
+                "/static/**", "/upload/**", "/admin/**", "/front/**",
+                "/**/*.html", "/**/*.js", "/**/*.css",
+                "/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.ico", "/**/*.woff2"
+            );
+        
+        // 注册权限校验拦截器
         registry.addInterceptor(getAuthorizationInterceptor())
             .addPathPatterns("/**")  // 拦截所有路径
             .excludePathPatterns(
@@ -44,7 +59,8 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
                 "/**/*.woff2",                   // 字体文件
                 "/actuator/**"                   // 监控端点
             );
-        super.addInterceptors(registry);
+        // 注意：不再调用 super.addInterceptors(registry)，
+        // 因为限流拦截器已经单独注册过了
     }
 
     /**
