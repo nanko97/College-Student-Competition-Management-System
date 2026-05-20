@@ -73,6 +73,13 @@
                 prefix-icon="el-icon-s-order"
               ></el-input>
             </el-form-item>
+            <el-form-item label="审核状态">
+              <el-select v-model="searchForm.sfsh" placeholder="请选择" clearable style="width: 150px;">
+                <el-option label="待审核" value="待审核"></el-option>
+                <el-option label="已通过" value="是"></el-option>
+                <el-option label="已驳回" value="否"></el-option>
+              </el-select>
+            </el-form-item>
             <el-form-item>
               <el-button type="primary" icon="el-icon-search" @click="search()">查询</el-button>
             </el-form-item>
@@ -230,7 +237,7 @@ import AddOrUpdate from "./add-or-update";
 export default {
   data() {
     return {
-      searchForm: { key: "" },
+      searchForm: { key: "", sfsh: '' },
       dataList: [],
       pageIndex: 1,
       pageSize: 10,
@@ -338,6 +345,10 @@ export default {
       }
       if(this.searchForm.jingsaileixing && this.searchForm.jingsaileixing.trim()) {
         params['jingsaileixing'] = '%' + this.searchForm.jingsaileixing.trim() + '%'
+      }
+      // 审核状态筛选
+      if(this.searchForm.sfsh) {
+        params['sfsh'] = this.searchForm.sfsh
       }
       
       console.log('最终请求参数:', params);

@@ -455,24 +455,19 @@ public class JingsaiTuanduiController {
             String tableName = (String) request.getSession().getAttribute("tableName");
             String username = (String) request.getSession().getAttribute("username");
             
-            // 使用更可靠的查询方式：先查询所有，再过滤
-            List<JingsaiTuanduiEntity> allTuandui = tuanduiService.selectList(null);
+            List<Long> jingsaiIds = null;
             
-            // 如果是教师，过滤出该教师的竞赛的团队
+            // 如果是教师，先查询该教师的竞赛ID列表
             if ("jiaoshi".equals(tableName)) {
                 EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
                 jingsaiEw.eq("gonghao", username);
                 List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
                 
                 if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
-                    List<Long> jingsaiIds = new java.util.ArrayList<>();
+                    jingsaiIds = new java.util.ArrayList<>();
                     for (JingsaixinxiEntity jingsai : myJingsaiList) {
                         jingsaiIds.add(jingsai.getId());
                     }
-                    final List<Long> finalJingsaiIds = jingsaiIds;
-                    allTuandui = allTuandui.stream()
-                        .filter(t -> finalJingsaiIds.contains(t.getJingsaiId()))
-                        .collect(java.util.stream.Collectors.toList());
                 } else {
                     Map<String, Object> stats = new java.util.HashMap<>();
                     stats.put("totalTuandui", 0);
@@ -482,23 +477,23 @@ public class JingsaiTuanduiController {
                 }
             }
             
-            // 总团队数
-            int totalTuandui = allTuandui != null ? allTuandui.size() : 0;
+            // 总团队数 - selectCount
+            EntityWrapper<JingsaiTuanduiEntity> baseEw = new EntityWrapper<>();
+            if (jingsaiIds != null) baseEw.in("jingsai_id", jingsaiIds);
+            int totalTuandui = tuanduiService.selectCount(baseEw);
             log.info("团队总数：{}", totalTuandui);
             
-            // 待审核和已通过数
-            int pendingCount = 0;
-            int passedCount = 0;
-            if (allTuandui != null) {
-                for (JingsaiTuanduiEntity tuandui : allTuandui) {
-                    String status = tuandui.getShenheZhuangtai();
-                    if ("待审核".equals(status)) {
-                        pendingCount++;
-                    } else if ("已通过".equals(status)) {
-                        passedCount++;
-                    }
-                }
-            }
+            // 待审核数
+            EntityWrapper<JingsaiTuanduiEntity> pendingEw = new EntityWrapper<>();
+            if (jingsaiIds != null) pendingEw.in("jingsai_id", jingsaiIds);
+            pendingEw.eq("shenhe_zhuangtai", "待审核");
+            int pendingCount = tuanduiService.selectCount(pendingEw);
+            
+            // 已通过数
+            EntityWrapper<JingsaiTuanduiEntity> passedEw = new EntityWrapper<>();
+            if (jingsaiIds != null) passedEw.in("jingsai_id", jingsaiIds);
+            passedEw.eq("shenhe_zhuangtai", "已通过");
+            int passedCount = tuanduiService.selectCount(passedEw);
             log.info("待审核：{}，已通过：{}", pendingCount, passedCount);
             
             Map<String, Object> stats = new java.util.HashMap<>();

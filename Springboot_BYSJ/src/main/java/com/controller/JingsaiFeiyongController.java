@@ -162,24 +162,20 @@ public class JingsaiFeiyongController {
             log.info("========== 费用统计数据查询开始 ==========");
             Map<String, Object> stats = new java.util.HashMap<>();
             
-            // 使用更可靠的查询方式：先查询所有，再过滤
-            List<JingsaiFeiyongEntity> allFeiyong = jingsaiFeiyongService.selectList(null);
-            int totalCount = allFeiyong != null ? allFeiyong.size() : 0;
+            // 使用 selectCount 避免全表扫描
+            int totalCount = jingsaiFeiyongService.selectCount(null);
             log.info("费用配置总数：{}", totalCount);
             stats.put("totalFeiyong", totalCount);
             
             // 2. 统计收费竞赛数
-            int shoufeiCount = 0;
-            int mianfeiCount = 0;
-            if (allFeiyong != null) {
-                for (JingsaiFeiyongEntity feiyong : allFeiyong) {
-                    if ("是".equals(feiyong.getShifouShoufei())) {
-                        shoufeiCount++;
-                    } else if ("否".equals(feiyong.getShifouShoufei())) {
-                        mianfeiCount++;
-                    }
-                }
-            }
+            EntityWrapper<JingsaiFeiyongEntity> shoufeiEw = new EntityWrapper<>();
+            shoufeiEw.eq("shifou_shoufei", "是");
+            int shoufeiCount = jingsaiFeiyongService.selectCount(shoufeiEw);
+            
+            // 3. 统计免费竞赛数
+            EntityWrapper<JingsaiFeiyongEntity> mianfeiEw = new EntityWrapper<>();
+            mianfeiEw.eq("shifou_shoufei", "否");
+            int mianfeiCount = jingsaiFeiyongService.selectCount(mianfeiEw);
             log.info("收费竞赛数：{}，免费竞赛数：{}", shoufeiCount, mianfeiCount);
             stats.put("shoufeiCount", shoufeiCount);
             stats.put("mianfeiCount", mianfeiCount);

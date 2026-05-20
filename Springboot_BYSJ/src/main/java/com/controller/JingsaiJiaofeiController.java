@@ -519,8 +519,8 @@ public class JingsaiJiaofeiController {
             
             log.info("缴费统计数据查询 - 角色:{}, 用户:{}", tableName, username);
             
-            // 使用更可靠的查询方式：先查询所有，再过滤
-            List<JingsaiJiaofeiJiluEntity> allJiaofei = jingsaiJiaofeiJiluService.selectList(null);
+            // 使用 EntityWrapper + selectCount 避免全表扫描
+            List<Long> jingsaiIds = null;
             
             // 如果是教师，过滤出该教师的竞赛的缴费记录
             if ("jiaoshi".equals(tableName)) {
@@ -529,14 +529,10 @@ public class JingsaiJiaofeiController {
                 List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
                 
                 if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
-                    List<Long> jingsaiIds = new java.util.ArrayList<>();
+                    jingsaiIds = new java.util.ArrayList<>();
                     for (JingsaixinxiEntity jingsai : myJingsaiList) {
                         jingsaiIds.add(jingsai.getId());
                     }
-                    final List<Long> finalJingsaiIds = jingsaiIds;
-                    allJiaofei = allJiaofei.stream()
-                        .filter(j -> finalJingsaiIds.contains(j.getJingsaiId()))
-                        .collect(java.util.stream.Collectors.toList());
                     log.info("教师 {} 统计自己创建的 {} 个竞赛的缴费记录", username, jingsaiIds.size());
                 } else {
                     Map<String, Object> stats = new java.util.HashMap<>();
@@ -548,21 +544,22 @@ public class JingsaiJiaofeiController {
             }
 
             // 统计总数
-            int total = allJiaofei != null ? allJiaofei.size() : 0;
+            EntityWrapper<JingsaiJiaofeiJiluEntity> baseEw = new EntityWrapper<>();
+            if (jingsaiIds != null) baseEw.in("jingsai_id", jingsaiIds);
+            int total = jingsaiJiaofeiJiluService.selectCount(baseEw);
             log.info("缴费记录总数：{}", total);
 
             // 统计已通过数量
-            int yitongguo = 0;
-            int daishenhe = 0;
-            if (allJiaofei != null) {
-                for (JingsaiJiaofeiJiluEntity jiaofei : allJiaofei) {
-                    if ("已通过".equals(jiaofei.getJiaofeiZhuangtai())) {
-                        yitongguo++;
-                    } else if ("已缴费".equals(jiaofei.getJiaofeiZhuangtai())) {
-                        daishenhe++;
-                    }
-                }
-            }
+            EntityWrapper<JingsaiJiaofeiJiluEntity> tongguoEw = new EntityWrapper<>();
+            tongguoEw.eq("jiaofei_zhuangtai", "已通过");
+            if (jingsaiIds != null) tongguoEw.in("jingsai_id", jingsaiIds);
+            int yitongguo = jingsaiJiaofeiJiluService.selectCount(tongguoEw);
+            
+            // 统计待审核数量
+            EntityWrapper<JingsaiJiaofeiJiluEntity> shenheEw = new EntityWrapper<>();
+            shenheEw.eq("jiaofei_zhuangtai", "已缴费");
+            if (jingsaiIds != null) shenheEw.in("jingsai_id", jingsaiIds);
+            int daishenhe = jingsaiJiaofeiJiluService.selectCount(shenheEw);
             log.info("已通过：{}，待审核：{}", yitongguo, daishenhe);
 
             Map<String, Object> data = new java.util.HashMap<>();

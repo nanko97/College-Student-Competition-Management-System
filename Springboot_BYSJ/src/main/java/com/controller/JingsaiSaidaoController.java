@@ -205,40 +205,30 @@ public class JingsaiSaidaoController {
      */
     @GetMapping("/list")
     public R list(@RequestParam Map<String, Object> params, HttpServletRequest request) {
-        // 权限控制：根据用户角色过滤数据
         String tableName = (String) request.getSession().getAttribute("tableName");
         log.info("查询赛道列表 - 角色: {}", tableName);
-        
-        // 先查询所有数据
-        List<JingsaiSaidaoEntity> allSaidao = saidaoService.selectList(null);
         
         // 教师过滤：只查看自己组织的竞赛的赛道
         if ("jiaoshi".equals(tableName)) {
             String gonghao = (String) request.getSession().getAttribute("username");
             log.info("教师 {} 查询自己组织的竞赛的赛道", gonghao);
             
-            // 查询该教师创建的所有竞赛ID
             EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
             jingsaiEw.eq("gonghao", gonghao);
             List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
             
             if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
-                // 提取竞赛 ID 列表
                 List<Long> myJingsaiIds = myJingsaiList.stream()
                         .map(JingsaixinxiEntity::getId)
                         .collect(Collectors.toList());
                 
-                // 内存过滤：只保留教师创建的竞赛的赛道
-                List<JingsaiSaidaoEntity> filteredSaidao = new ArrayList<>();
-                for (JingsaiSaidaoEntity saidao : allSaidao) {
-                    if (myJingsaiIds.contains(saidao.getJingsaiId())) {
-                        filteredSaidao.add(saidao);
-                    }
-                }
+                // 使用 EntityWrapper IN 查询替代全表扫描+内存过滤
+                EntityWrapper<JingsaiSaidaoEntity> ew = new EntityWrapper<>();
+                ew.in("jingsai_id", myJingsaiIds);
+                List<JingsaiSaidaoEntity> filteredSaidao = saidaoService.selectList(ew);
                 
                 log.info("教师 {} 查询到 {} 个竞赛的 {} 个赛道", gonghao, myJingsaiIds.size(), filteredSaidao.size());
                 
-                // 构建分页结果
                 int total = filteredSaidao.size();
                 int pageSize = params.get("limit") != null ? Integer.parseInt(params.get("limit").toString()) : 10;
                 int pageNum = params.get("page") != null ? Integer.parseInt(params.get("page").toString()) : 1;
@@ -269,40 +259,30 @@ public class JingsaiSaidaoController {
      */
     @GetMapping("/page")
     public R page(@RequestParam Map<String, Object> params, HttpServletRequest request) {
-        // 权限控制：根据用户角色过滤数据
         String tableName = (String) request.getSession().getAttribute("tableName");
         log.info("分页查询赛道 - 角色: {}", tableName);
-        
-        // 先查询所有数据
-        List<JingsaiSaidaoEntity> allSaidao = saidaoService.selectList(null);
         
         // 教师过滤：只查看自己组织的竞赛的赛道
         if ("jiaoshi".equals(tableName)) {
             String gonghao = (String) request.getSession().getAttribute("username");
             log.info("教师 {} 分页查询自己组织的竞赛的赛道", gonghao);
             
-            // 查询该教师创建的所有竞赛ID
             EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
             jingsaiEw.eq("gonghao", gonghao);
             List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
             
             if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
-                // 提取竞赛 ID 列表
                 List<Long> myJingsaiIds = myJingsaiList.stream()
                         .map(JingsaixinxiEntity::getId)
                         .collect(Collectors.toList());
                 
-                // 内存过滤：只保留教师创建的竞赛的赛道
-                List<JingsaiSaidaoEntity> filteredSaidao = new ArrayList<>();
-                for (JingsaiSaidaoEntity saidao : allSaidao) {
-                    if (myJingsaiIds.contains(saidao.getJingsaiId())) {
-                        filteredSaidao.add(saidao);
-                    }
-                }
+                // 使用 EntityWrapper IN 查询替代全表扫描+内存过滤
+                EntityWrapper<JingsaiSaidaoEntity> ew = new EntityWrapper<>();
+                ew.in("jingsai_id", myJingsaiIds);
+                List<JingsaiSaidaoEntity> filteredSaidao = saidaoService.selectList(ew);
                 
                 log.info("教师 {} 分页查询到 {} 个竞赛的 {} 个赛道", gonghao, myJingsaiIds.size(), filteredSaidao.size());
                 
-                // 构建分页结果
                 int total = filteredSaidao.size();
                 int pageSize = params.get("limit") != null ? Integer.parseInt(params.get("limit").toString()) : 10;
                 int pageNum = params.get("page") != null ? Integer.parseInt(params.get("page").toString()) : 1;
@@ -360,60 +340,51 @@ public class JingsaiSaidaoController {
             
             Map<String, Object> stats = new java.util.HashMap<>();
             
-            // 使用更可靠的查询方式：先查询所有，再过滤
-            List<JingsaiSaidaoEntity> allSaidao = saidaoService.selectList(null);
-            
-            // 教师过滤：只统计自己创建的竞赛的赛道
-            List<JingsaiSaidaoEntity> filteredSaidao = allSaidao;
+            // 构建基础查询条件
+            List<Long> myJingsaiIds = null;
             if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
-                log.info("教师角色，工号：{}", gonghao);
-                
-                // 查询该教师创建的所有竞赛ID
                 EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
                 jingsaiEw.eq("gonghao", gonghao);
                 List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
                 
                 if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
-                    List<Long> myJingsaiIds = myJingsaiList.stream()
+                    myJingsaiIds = myJingsaiList.stream()
                             .map(JingsaixinxiEntity::getId)
                             .collect(Collectors.toList());
-                    
-                    // 内存过滤：只保留教师创建的竞赛的赛道
-                    filteredSaidao = new ArrayList<>();
-                    if (allSaidao != null) {
-                        for (JingsaiSaidaoEntity saidao : allSaidao) {
-                            if (myJingsaiIds.contains(saidao.getJingsaiId())) {
-                                filteredSaidao.add(saidao);
-                            }
-                        }
-                    }
-                    log.info("教师 {} 只能查看自己创建的 {} 个竞赛的 {} 个赛道统计", gonghao, myJingsaiIds.size(), filteredSaidao.size());
                 } else {
-                    filteredSaidao = new ArrayList<>();
-                    log.info("教师 {} 没有创建任何竞赛，返回空统计", gonghao);
+                    // 教师无竞赛，返回空统计
+                    stats.put("totalSaidao", 0);
+                    stats.put("activeSaidao", 0);
+                    stats.put("jingsaiCount", 0);
+                    return R.ok().put("data", stats);
                 }
             }
             
             // 1. 统计赛道总数
-            int totalCount = filteredSaidao != null ? filteredSaidao.size() : 0;
+            EntityWrapper<JingsaiSaidaoEntity> baseEw = new EntityWrapper<>();
+            if (myJingsaiIds != null) baseEw.in("jingsai_id", myJingsaiIds);
+            int totalCount = saidaoService.selectCount(baseEw);
             log.info("赛道总数：{}", totalCount);
             stats.put("totalSaidao", totalCount);
             
             // 2. 统计活跃赛道数
-            int activeCount = 0;
-            if (filteredSaidao != null) {
-                for (JingsaiSaidaoEntity saidao : filteredSaidao) {
-                    if ("是".equals(saidao.getIsActive())) {
-                        activeCount++;
-                    }
-                }
-            }
+            EntityWrapper<JingsaiSaidaoEntity> activeEw = new EntityWrapper<>();
+            if (myJingsaiIds != null) activeEw.in("jingsai_id", myJingsaiIds);
+            activeEw.eq("is_active", "是");
+            int activeCount = saidaoService.selectCount(activeEw);
             log.info("活跃赛道数：{}", activeCount);
             stats.put("activeSaidao", activeCount);
             
-            // 3. 统计关联竞赛数（去重）
-            long jingsaiCount = filteredSaidao.stream()
+            // 3. 统计关联竞赛数 - 需要查询实际数据做distinct
+            EntityWrapper<JingsaiSaidaoEntity> jingsaiCountEw = new EntityWrapper<>();
+            if (myJingsaiIds != null) jingsaiCountEw.in("jingsai_id", myJingsaiIds);
+            jingsaiCountEw.groupBy("jingsai_id");
+            // 使用selectCount配合groupBy在MyBatis-Plus 2.x中不直接支持distinct count
+            // 改为selectList只查jingsai_id字段，减少数据量
+            jingsaiCountEw.setSqlSelect("jingsai_id");
+            List<JingsaiSaidaoEntity> distinctList = saidaoService.selectList(jingsaiCountEw);
+            long jingsaiCount = distinctList.stream()
                 .map(JingsaiSaidaoEntity::getJingsaiId)
                 .filter(id -> id != null)
                 .distinct()

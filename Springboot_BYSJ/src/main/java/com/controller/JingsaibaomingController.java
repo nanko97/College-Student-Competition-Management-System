@@ -223,6 +223,12 @@ public class JingsaibaomingController {
                     ew.eq("xueshengxingming", value);
                 }
             }
+            // 审核状态过滤（sfsh字段）
+            if (params.get("sfsh") != null && !params.get("sfsh").toString().isEmpty()) {
+                String sfsh = params.get("sfsh").toString();
+                ew.eq("sfsh", sfsh);
+                log.debug("审核状态过滤：{}", sfsh);
+            }
             
             // 4. 执行分页查询
             PageUtils page = jingsaibaomingService.queryPage(
@@ -746,6 +752,11 @@ public class JingsaibaomingController {
                 JingsaibaomingEntity oldBaoming = jingsaibaomingService.selectById(jingsaibaoming.getId());
                 if (oldBaoming != null) {
                     String oldSfsh = oldBaoming.getSfsh();
+                    // 【幂等保护】如果已审核通过或已驳回，不允许重复审核
+                    if ("是".equals(oldSfsh) || "已通过".equals(oldSfsh) || "否".equals(oldSfsh)) {
+                        log.warn("报名已审核，当前状态：{}，ID：{}，请勿重复操作", oldSfsh, jingsaibaoming.getId());
+                        return R.error("该报名已审核，当前状态为【" + oldSfsh + "】，请勿重复操作");
+                    }
                     boolean wasNotApproved = !"是".equals(oldSfsh) && !"已通过".equals(oldSfsh);
                     
                     // 如果是首次审核通过，生成缴费记录

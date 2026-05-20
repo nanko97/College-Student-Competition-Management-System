@@ -525,115 +525,115 @@ public class JingsaiJinjiController {
             String tableName = (String) request.getSession().getAttribute("tableName");
             log.info("当前用户角色tableName：{}", tableName);
             
-            // 获取用户相关的竞赛ID列表
-            final List<Long> myJingsaiIds = new java.util.ArrayList<>();
-            
+            // 教师无竞赛时直接返回空统计
+            List<Long> myJingsaiIds = new java.util.ArrayList<>();
             if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
-                log.info("教师角色，工号：{}", gonghao);
-                
-                // 查询该教师创建的所有竞赛ID
                 EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
                 jingsaiEw.eq("gonghao", gonghao);
                 List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
-                
                 if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
                     for (JingsaixinxiEntity jingsai : myJingsaiList) {
                         myJingsaiIds.add(jingsai.getId());
                     }
-                    log.info("教师 {} 创建了 {} 个竞赛，IDs: {}", gonghao, myJingsaiIds.size(), myJingsaiIds);
                 } else {
-                    log.info("教师 {} 还没有创建任何竞赛", gonghao);
-                }
-            } else if ("xuesheng".equals(tableName)) {
-                String xuehao = (String) request.getSession().getAttribute("username");
-                log.info("学生角色，学号：{}", xuehao);
-                
-                // 学生通过xuehao字段过滤自己的晋级记录，不需要竞赛ID列表
-            }
-            
-            // 使用更可靠的查询方式：先查询所有，再过滤
-            List<JingsaiJinjiGuanxiEntity> allGuanxi = jinjiGuanxiService.selectList(null);
-            List<JingsaiJinjiJiluEntity> allJilu = jinjiJiluService.selectList(null);
-            
-            // 根据角色过滤数据
-            List<JingsaiJinjiGuanxiEntity> filteredGuanxi = allGuanxi;
-            List<JingsaiJinjiJiluEntity> filteredJilu = allJilu;
-            
-            if ("jiaoshi".equals(tableName)) {
-                // 教师：只查看自己竞赛相关的晋级关系和记录
-                if (!myJingsaiIds.isEmpty()) {
-                    filteredGuanxi = new java.util.ArrayList<>();
-                    if (allGuanxi != null) {
-                        for (JingsaiJinjiGuanxiEntity guanxi : allGuanxi) {
-                            if (myJingsaiIds.contains(guanxi.getFuJingsaiId()) || 
-                                myJingsaiIds.contains(guanxi.getZiJingsaiId())) {
-                                filteredGuanxi.add(guanxi);
-                            }
-                        }
-                    }
-                    
-                    filteredJilu = new java.util.ArrayList<>();
-                    if (allJilu != null) {
-                        for (JingsaiJinjiJiluEntity jilu : allJilu) {
-                            if (myJingsaiIds.contains(jilu.getYuanJingsaiId()) || 
-                                myJingsaiIds.contains(jilu.getXinJingsaiId())) {
-                                filteredJilu.add(jilu);
-                            }
-                        }
-                    }
-                } else {
-                    filteredGuanxi = new java.util.ArrayList<>();
-                    filteredJilu = new java.util.ArrayList<>();
-                }
-            } else if ("xuesheng".equals(tableName)) {
-                String xuehao = (String) request.getSession().getAttribute("username");
-                // 学生：只查看自己的晋级记录
-                filteredGuanxi = new java.util.ArrayList<>(); // 学生不看晋级关系配置
-                filteredJilu = new java.util.ArrayList<>();
-                if (allJilu != null) {
-                    for (JingsaiJinjiJiluEntity jilu : allJilu) {
-                        if (xuehao.equals(jilu.getXuehao())) {
-                            filteredJilu.add(jilu);
-                        }
-                    }
+                    // 教师无竞赛，返回空统计
+                    Map<String, Object> stats = new java.util.HashMap<>();
+                    stats.put("totalGuanxi", 0);
+                    stats.put("activeGuanxi", 0);
+                    stats.put("totalJilu", 0);
+                    stats.put("pendingCount", 0);
+                    stats.put("approvedCount", 0);
+                    stats.put("rejectedCount", 0);
+                    stats.put("totalCount", 0);
+                    return R.ok().put("data", stats);
                 }
             }
             
-            // 总晋级关系数
-            int totalGuanxi = filteredGuanxi != null ? filteredGuanxi.size() : 0;
-            log.info("晋级关系总数：{}", totalGuanxi);
-            
-            // 活跃晋级关系数
+            // === 晋级关系统计 ===
+            int totalGuanxi = 0;
             int activeGuanxi = 0;
-            if (filteredGuanxi != null) {
-                for (JingsaiJinjiGuanxiEntity guanxi : filteredGuanxi) {
-                    if ("是".equals(guanxi.getIsActive())) {
-                        activeGuanxi++;
-                    }
-                }
+            
+            if ("xuesheng".equals(tableName)) {
+                // 学生不看晋级关系配置
+                totalGuanxi = 0;
+                activeGuanxi = 0;
+            } else if ("jiaoshi".equals(tableName)) {
+                // 教师：fu_jingsai_id IN myJingsaiIds OR zi_jingsai_id IN myJingsaiIds
+                EntityWrapper<JingsaiJinjiGuanxiEntity> guanxiEw = new EntityWrapper<>();
+                guanxiEw.andNew().in("fu_jingsai_id", myJingsaiIds).or().in("zi_jingsai_id", myJingsaiIds);
+                totalGuanxi = jinjiGuanxiService.selectCount(guanxiEw);
+                
+                EntityWrapper<JingsaiJinjiGuanxiEntity> activeGuanxiEw = new EntityWrapper<>();
+                activeGuanxiEw.andNew().in("fu_jingsai_id", myJingsaiIds).or().in("zi_jingsai_id", myJingsaiIds);
+                activeGuanxiEw.eq("is_active", "是");
+                activeGuanxi = jinjiGuanxiService.selectCount(activeGuanxiEw);
+            } else {
+                // 管理员
+                totalGuanxi = jinjiGuanxiService.selectCount(null);
+                EntityWrapper<JingsaiJinjiGuanxiEntity> activeEw = new EntityWrapper<>();
+                activeEw.eq("is_active", "是");
+                activeGuanxi = jinjiGuanxiService.selectCount(activeEw);
             }
-            log.info("活跃晋级关系数：{}", activeGuanxi);
+            log.info("晋级关系总数：{}，活跃：{}", totalGuanxi, activeGuanxi);
             
-            // 总晋级记录数
-            int totalJilu = filteredJilu != null ? filteredJilu.size() : 0;
-            log.info("晋级记录总数：{}", totalJilu);
-            
-            // 待审核、已通过、已驳回数
+            // === 晋级记录统计 ===
+            int totalJilu = 0;
             int pendingCount = 0;
             int approvedCount = 0;
             int rejectedCount = 0;
-            if (filteredJilu != null) {
-                for (JingsaiJinjiJiluEntity jilu : filteredJilu) {
-                    String status = jilu.getJinjiZhuangtai();
-                    if ("待审核".equals(status)) {
-                        pendingCount++;
-                    } else if ("已通过".equals(status)) {
-                        approvedCount++;
-                    } else if ("已驳回".equals(status)) {
-                        rejectedCount++;
-                    }
-                }
+            
+            if ("xuesheng".equals(tableName)) {
+                String xuehao = (String) request.getSession().getAttribute("username");
+                EntityWrapper<JingsaiJinjiJiluEntity> jiluEw = new EntityWrapper<>();
+                jiluEw.eq("xuehao", xuehao);
+                totalJilu = jinjiJiluService.selectCount(jiluEw);
+                
+                EntityWrapper<JingsaiJinjiJiluEntity> pendingEw = new EntityWrapper<>();
+                pendingEw.eq("xuehao", xuehao).eq("jinji_zhuangtai", "待审核");
+                pendingCount = jinjiJiluService.selectCount(pendingEw);
+                
+                EntityWrapper<JingsaiJinjiJiluEntity> approvedEw = new EntityWrapper<>();
+                approvedEw.eq("xuehao", xuehao).eq("jinji_zhuangtai", "已通过");
+                approvedCount = jinjiJiluService.selectCount(approvedEw);
+                
+                EntityWrapper<JingsaiJinjiJiluEntity> rejectedEw = new EntityWrapper<>();
+                rejectedEw.eq("xuehao", xuehao).eq("jinji_zhuangtai", "已驳回");
+                rejectedCount = jinjiJiluService.selectCount(rejectedEw);
+            } else if ("jiaoshi".equals(tableName)) {
+                // 教师：(yuan_jingsai_id IN myJingsaiIds OR xin_jingsai_id IN myJingsaiIds) AND jinji_zhuangtai=?
+                EntityWrapper<JingsaiJinjiJiluEntity> jiluEw = new EntityWrapper<>();
+                jiluEw.andNew().in("yuan_jingsai_id", myJingsaiIds).or().in("xin_jingsai_id", myJingsaiIds);
+                totalJilu = jinjiJiluService.selectCount(jiluEw);
+                
+                EntityWrapper<JingsaiJinjiJiluEntity> pendingEw = new EntityWrapper<>();
+                pendingEw.andNew().in("yuan_jingsai_id", myJingsaiIds).or().in("xin_jingsai_id", myJingsaiIds);
+                pendingEw.eq("jinji_zhuangtai", "待审核");
+                pendingCount = jinjiJiluService.selectCount(pendingEw);
+                
+                EntityWrapper<JingsaiJinjiJiluEntity> approvedEw = new EntityWrapper<>();
+                approvedEw.andNew().in("yuan_jingsai_id", myJingsaiIds).or().in("xin_jingsai_id", myJingsaiIds);
+                approvedEw.eq("jinji_zhuangtai", "已通过");
+                approvedCount = jinjiJiluService.selectCount(approvedEw);
+                
+                EntityWrapper<JingsaiJinjiJiluEntity> rejectedEw = new EntityWrapper<>();
+                rejectedEw.andNew().in("yuan_jingsai_id", myJingsaiIds).or().in("xin_jingsai_id", myJingsaiIds);
+                rejectedEw.eq("jinji_zhuangtai", "已驳回");
+                rejectedCount = jinjiJiluService.selectCount(rejectedEw);
+            } else {
+                // 管理员
+                totalJilu = jinjiJiluService.selectCount(null);
+                EntityWrapper<JingsaiJinjiJiluEntity> pendingEw = new EntityWrapper<>();
+                pendingEw.eq("jinji_zhuangtai", "待审核");
+                pendingCount = jinjiJiluService.selectCount(pendingEw);
+                
+                EntityWrapper<JingsaiJinjiJiluEntity> approvedEw = new EntityWrapper<>();
+                approvedEw.eq("jinji_zhuangtai", "已通过");
+                approvedCount = jinjiJiluService.selectCount(approvedEw);
+                
+                EntityWrapper<JingsaiJinjiJiluEntity> rejectedEw = new EntityWrapper<>();
+                rejectedEw.eq("jinji_zhuangtai", "已驳回");
+                rejectedCount = jinjiJiluService.selectCount(rejectedEw);
             }
             log.info("待审核：{}，已通过：{}，已驳回：{}", pendingCount, approvedCount, rejectedCount);
             
@@ -644,7 +644,7 @@ public class JingsaiJinjiController {
             stats.put("pendingCount", pendingCount);
             stats.put("approvedCount", approvedCount);
             stats.put("rejectedCount", rejectedCount);
-            stats.put("totalCount", totalJilu); // 添加总记录数字段
+            stats.put("totalCount", totalJilu);
             
             return R.ok().put("data", stats);
         } catch (Exception e) {

@@ -810,25 +810,16 @@ public class ZuopindafenController {
             Map<String, Object> stats = new HashMap<>();
             String tableName = (String) request.getSession().getAttribute("tableName");
             
-            // 使用更可靠的查询方式：先查询所有，再过滤
-            List<ZuopindafenEntity> allScores = zuopindafenService.selectList(null);
-            
-            // 根据用户角色过滤数据
+            // 使用 EntityWrapper 缩小查询范围，避免全表扫描
+            EntityWrapper<ZuopindafenEntity> scoreEw = new EntityWrapper<>();
             if ("xuesheng".equals(tableName)) {
-                // 学生只能查看自己的数据
                 String xuehao = (String) request.getSession().getAttribute("username");
-                final String finalXuehao = xuehao;
-                allScores = allScores.stream()
-                    .filter(s -> finalXuehao.equals(s.getXuehao()))
-                    .collect(java.util.stream.Collectors.toList());
+                scoreEw.eq("xuehao", xuehao);
             } else if ("jiaoshi".equals(tableName)) {
-                // 教师只能查看自己评分的数据
                 String gonghao = (String) request.getSession().getAttribute("username");
-                final String finalGonghao = gonghao;
-                allScores = allScores.stream()
-                    .filter(s -> finalGonghao.equals(s.getGonghao()))
-                    .collect(java.util.stream.Collectors.toList());
+                scoreEw.eq("gonghao", gonghao);
             }
+            List<ZuopindafenEntity> allScores = zuopindafenService.selectList(scoreEw);
             
             // 1. 统计评分总数
             int totalCount = allScores != null ? allScores.size() : 0;
@@ -847,7 +838,6 @@ public class ZuopindafenController {
                 }
                 if (validScoreCount > 0) {
                     double avgScore = sumScore / validScoreCount;
-                    // 保留一位小数
                     stats.put("avgScore", Math.round(avgScore * 10.0) / 10.0);
                     log.info("平均分：{}", stats.get("avgScore"));
                 } else {
@@ -859,26 +849,23 @@ public class ZuopindafenController {
                 log.info("平均分：0（无评分记录）");
             }
             
-            // 3. 统计复核申请数
-            List<ZuopindafenFuheEntity> allFuhes = zuopindafenFuheService.selectList(null);
-            
-            // 根据角色过滤复核记录
+            // 3. 统计复核申请数 - 使用 EntityWrapper 缩小范围
+            EntityWrapper<ZuopindafenFuheEntity> fuheEw = new EntityWrapper<>();
             if ("xuesheng".equals(tableName)) {
                 String xuehao = (String) request.getSession().getAttribute("username");
-                final String finalXuehao = xuehao;
-                allFuhes = allFuhes.stream()
-                    .filter(f -> finalXuehao.equals(f.getXuehao()))
-                    .collect(java.util.stream.Collectors.toList());
+                fuheEw.eq("xuehao", xuehao);
             } else if ("jiaoshi".equals(tableName)) {
-                // 教师需要过滤出自己评分的作品对应的复核记录
-                final List<Long> myScoreIds = allScores.stream()
-                    .map(ZuopindafenEntity::getId)
-                    .collect(java.util.stream.Collectors.toList());
-                allFuhes = allFuhes.stream()
-                    .filter(f -> myScoreIds.contains(f.getZuopindafenId()))
-                    .collect(java.util.stream.Collectors.toList());
+                // 教师需要过滤自己评分的作品的复核记录
+                if (allScores != null && !allScores.isEmpty()) {
+                    List<Long> myScoreIds = allScores.stream()
+                        .map(ZuopindafenEntity::getId)
+                        .collect(java.util.stream.Collectors.toList());
+                    fuheEw.in("zuopindafen_id", myScoreIds);
+                } else {
+                    fuheEw.eq("zuopindafen_id", -1); // 无数据时返回0
+                }
             }
-            int fuheCount = allFuhes != null ? allFuhes.size() : 0;
+            int fuheCount = zuopindafenFuheService.selectCount(fuheEw);
             log.info("复核申请数：{}", fuheCount);
             stats.put("fuheCount", fuheCount);
             

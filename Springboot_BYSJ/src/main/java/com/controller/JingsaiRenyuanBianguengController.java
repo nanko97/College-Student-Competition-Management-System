@@ -172,7 +172,12 @@ public class JingsaiRenyuanBianguengController {
         String role = (String) request.getSession().getAttribute("role");
         
         EntityWrapper<JingsaiRenyuanBianguengEntity> ew = new EntityWrapper<>();
-        ew.eq("shenhe_zhuangtai", "审核中");
+        
+        // 支持按审核状态筛选，默认查待审核
+        String shenheStatus = params.get("shenheZhuangtai") != null ? params.get("shenheZhuangtai").toString() : "待审核";
+        if (!shenheStatus.isEmpty()) {
+            ew.eq("shenhe_zhuangtai", shenheStatus);
+        }
         
         // 【重要】教师只能查看自己创建的竞赛的人员变更申请，管理员可以查看所有
         if ("教师".equals(role)) {
@@ -301,27 +306,22 @@ public class JingsaiRenyuanBianguengController {
     public R getStatistics(HttpServletRequest request) {
         try {
             log.info("========== 人员变更统计数据查询开始 ==========");
-            String role = (String) request.getSession().getAttribute("role");
+            String tableName = (String) request.getSession().getAttribute("tableName");
             String gonghao = (String) request.getSession().getAttribute("username");
             
-            // 使用更可靠的查询方式：先查询所有，再过滤
-            List<JingsaiRenyuanBianguengEntity> allBiangueng = bianguengService.selectList(null);
+            List<Long> jingsaiIds = null;
             
             // 教师只能统计自己创建的竞赛的变更申请
-            if ("教师".equals(role)) {
+            if ("jiaoshi".equals(tableName)) {
                 EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
                 jingsaiEw.eq("gonghao", gonghao);
                 List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
                 
                 if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
-                    List<Long> jingsaiIds = new java.util.ArrayList<>();
+                    jingsaiIds = new java.util.ArrayList<>();
                     for (JingsaixinxiEntity jingsai : myJingsaiList) {
                         jingsaiIds.add(jingsai.getId());
                     }
-                    final List<Long> finalJingsaiIds = jingsaiIds;
-                    allBiangueng = allBiangueng.stream()
-                        .filter(b -> finalJingsaiIds.contains(b.getJingsaiId()))
-                        .collect(java.util.stream.Collectors.toList());
                 } else {
                     Map<String, Object> stats = new java.util.HashMap<>();
                     stats.put("totalBiangueng", 0);
@@ -331,23 +331,23 @@ public class JingsaiRenyuanBianguengController {
                 }
             }
             
-            // 总变更数
-            int totalBiangueng = allBiangueng != null ? allBiangueng.size() : 0;
+            // 总变更数 - selectCount
+            EntityWrapper<JingsaiRenyuanBianguengEntity> baseEw = new EntityWrapper<>();
+            if (jingsaiIds != null) baseEw.in("jingsai_id", jingsaiIds);
+            int totalBiangueng = bianguengService.selectCount(baseEw);
             log.info("变更总数：{}", totalBiangueng);
             
-            // 待审核数和已处理数
-            int pendingCount = 0;
-            int todayProcessed = 0;
-            if (allBiangueng != null) {
-                for (JingsaiRenyuanBianguengEntity biangueng : allBiangueng) {
-                    String status = biangueng.getShenheZhuangtai();
-                    if ("审核中".equals(status)) {
-                        pendingCount++;
-                    } else if ("已通过".equals(status) || "已驳回".equals(status)) {
-                        todayProcessed++;
-                    }
-                }
-            }
+            // 待审核数
+            EntityWrapper<JingsaiRenyuanBianguengEntity> pendingEw = new EntityWrapper<>();
+            if (jingsaiIds != null) pendingEw.in("jingsai_id", jingsaiIds);
+            pendingEw.eq("shenhe_zhuangtai", "待审核");
+            int pendingCount = bianguengService.selectCount(pendingEw);
+            
+            // 已处理数（已通过 + 已驳回）
+            EntityWrapper<JingsaiRenyuanBianguengEntity> processedEw = new EntityWrapper<>();
+            if (jingsaiIds != null) processedEw.in("jingsai_id", jingsaiIds);
+            processedEw.in("shenhe_zhuangtai", "已通过", "已驳回");
+            int todayProcessed = bianguengService.selectCount(processedEw);
             log.info("待审核：{}，已处理：{}", pendingCount, todayProcessed);
             
             Map<String, Object> stats = new java.util.HashMap<>();

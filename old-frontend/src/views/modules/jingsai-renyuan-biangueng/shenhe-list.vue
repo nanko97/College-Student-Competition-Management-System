@@ -66,6 +66,13 @@
                 <el-option label="更换负责人" value="更换负责人"></el-option>
               </el-select>
             </el-form-item>
+            <el-form-item label="审核状态">
+              <el-select v-model="searchForm.shenheZhuangtai" placeholder="请选择" clearable style="width: 150px;">
+                <el-option label="待审核" value="待审核"></el-option>
+                <el-option label="已通过" value="已通过"></el-option>
+                <el-option label="已驳回" value="已驳回"></el-option>
+              </el-select>
+            </el-form-item>
             <el-form-item>
               <el-button type="primary" icon="el-icon-search" @click="search()">查询</el-button>
             </el-form-item>
@@ -98,6 +105,11 @@
           </el-table-column>
           <el-table-column prop="caozuoRenXingming" header-align="center" align="center" label="申请人" width="100"></el-table-column>
           <el-table-column prop="caozuoYuanyin" header-align="center" align="center" label="变更原因" show-overflow-tooltip></el-table-column>
+          <el-table-column prop="shenheZhuangtai" header-align="center" align="center" label="审核状态" width="100">
+            <template slot-scope="scope">
+              <el-tag :type="getZhuangtaiType(scope.row.shenheZhuangtai)" size="small">{{ scope.row.shenheZhuangtai }}</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column prop="addtime" header-align="center" align="center" label="申请时间" width="160"></el-table-column>
           <el-table-column fixed="right" header-align="center" align="center" width="220" label="操作">
             <template slot-scope="scope">
@@ -120,7 +132,7 @@
         ></el-pagination>
       </div>
     </div>
-    <shenhe-dialog v-if="shenheVisible" ref="shenheDialog" @refreshDataList="getDataList" @close="shenheVisible = false"></shenhe-dialog>
+    <shenhe-dialog v-if="shenheVisible" ref="shenheDialog" @refreshDataList="refreshData" @close="shenheVisible = false"></shenhe-dialog>
     <detail-dialog v-if="detailVisible" ref="detailDialog" @close="detailVisible = false"></detail-dialog>
   </div>
 </template>
@@ -133,7 +145,8 @@ export default {
     return {
       searchForm: {
         tuanduiBianhao: '',
-        bianguengLeixing: ''
+        bianguengLeixing: '',
+        shenheZhuangtai: ''
       },
       dataList: [],
       pageIndex: 1,
@@ -168,6 +181,12 @@ export default {
       if (leixing === '移除成员') return 'warning'
       return 'danger'
     },
+    getZhuangtaiType(zhuangtai) {
+      if (zhuangtai === '待审核') return 'warning'
+      if (zhuangtai === '已通过') return 'success'
+      if (zhuangtai === '已驳回') return 'danger'
+      return 'info'
+    },
     getDataList() {
       this.dataListLoading = true
       this.$http({
@@ -177,7 +196,8 @@ export default {
           'page': this.pageIndex,
           'limit': this.pageSize,
           'tuanduiBianhao': this.searchForm.tuanduiBianhao,
-          'bianguengLeixing': this.searchForm.bianguengLeixing
+          'bianguengLeixing': this.searchForm.bianguengLeixing,
+          'shenheZhuangtai': this.searchForm.shenheZhuangtai
         }
       }).then(({data}) => {
         console.log('人员变更API响应:', data)
@@ -231,17 +251,19 @@ export default {
       }).then(({data}) => {
         if (data && data.code === 0) {
           const stats = data.data || {}
-          // 字段名一致，直接赋值
           this.statistics = {
             totalBiangueng: stats.totalBiangueng || 0,
             pendingCount: stats.pendingCount || 0,
             todayProcessed: stats.todayProcessed || 0
           }
-          console.log('人员变更统计数据加载成功:', this.statistics)
         }
       }).catch((error) => {
         console.error('获取统计数据失败:', error)
       })
+    },
+    refreshData() {
+      this.getDataList()
+      this.getStatistics()
     }
   }
 }

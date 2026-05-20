@@ -5,6 +5,48 @@
       <p class="page-subtitle">Score Review Management</p>
     </div>
 
+    <!-- 统计卡片 -->
+    <div class="statistics-wrapper">
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="el-icon-document"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.total || 0 }}</div>
+              <div class="stat-label">复核总数</div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="stat-card stat-pink">
+            <div class="stat-icon"><i class="el-icon-time"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.pendingCount || 0 }}</div>
+              <div class="stat-label">待审核</div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon"><i class="el-icon-success"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.approvedCount || 0 }}</div>
+              <div class="stat-label">已通过</div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="stat-card stat-green">
+            <div class="stat-icon"><i class="el-icon-circle-close"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.rejectedCount || 0 }}</div>
+              <div class="stat-label">已驳回</div>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+    </div>
+
     <div v-if="showFlag">
       <div class="search-wrapper">
         <el-form :inline="true" :model="searchForm" class="tech-search-form">
@@ -154,6 +196,13 @@ export default {
       totalPage: 0,
       dataListLoading: false,
       showFlag: true,
+      // 统计信息
+      statistics: {
+        total: 0,
+        pendingCount: 0,
+        approvedCount: 0,
+        rejectedCount: 0
+      },
       auditDialogVisible: false,
       detailDialogVisible: false,
       auditForm: {
@@ -174,6 +223,7 @@ export default {
   },
   created() {
     this.getDataList()
+    this.getStatistics()
   },
   methods: {
     getDataList() {
@@ -271,6 +321,7 @@ export default {
           this.$message.success('审核成功')
           this.auditDialogVisible = false
           this.getDataList()
+          this.getStatistics()
         } else {
           this.$message.error(data.msg || '审核失败')
         }
@@ -279,6 +330,24 @@ export default {
     viewDetail(row) {
       this.detailData = row
       this.detailDialogVisible = true
+    },
+    // 获取统计数据
+    getStatistics() {
+      this.$http({
+        url: 'zuopindafenfuhe/statistics',
+        method: 'get'
+      }).then(({data}) => {
+        if (data && data.code === 0 && data.data) {
+          this.statistics = {
+            total: data.data.total || 0,
+            pendingCount: data.data.pendingCount || 0,
+            approvedCount: data.data.approvedCount || 0,
+            rejectedCount: data.data.rejectedCount || 0
+          }
+        }
+      }).catch(err => {
+        console.error('复核统计查询异常:', err)
+      })
     }
   }
 }
@@ -286,6 +355,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/css/tech-theme.scss';
+@import '@/assets/css/statistics-cards.scss';
 .tech-search-form {
   ::v-deep .el-form-item {
     margin-bottom: 0;

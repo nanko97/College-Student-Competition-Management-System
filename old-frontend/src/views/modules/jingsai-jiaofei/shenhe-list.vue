@@ -6,6 +6,48 @@
       <p class="page-subtitle">Payment Review Management</p>
     </div>
 
+    <!-- 统计信息 -->
+    <div class="statistics-wrapper">
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon"><i class="el-icon-money"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.totalJiaofei || 0 }}</div>
+              <div class="stat-label">缴费总数</div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="stat-card stat-pink">
+            <div class="stat-icon"><i class="el-icon-time"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.daishenhe || 0 }}</div>
+              <div class="stat-label">待审核</div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="stat-card stat-green">
+            <div class="stat-icon"><i class="el-icon-success"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.yitongguo || 0 }}</div>
+              <div class="stat-label">已通过</div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="el-icon-s-data"></i></div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.totalJiaofei || 0 }}</div>
+              <div class="stat-label">总记录</div>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+    </div>
+
     <!-- 列表页 -->
     <div v-if="showFlag">
       <!-- 搜索区域 -->
@@ -19,6 +61,13 @@
                 clearable
                 prefix-icon="el-icon-user"
               ></el-input>
+            </el-form-item>
+            <el-form-item label="审核状态">
+              <el-select v-model="searchForm.jiaofeiZhuangtai" placeholder="全部" clearable style="width: 150px;">
+                <el-option label="待审核" value="已缴费"></el-option>
+                <el-option label="已通过" value="已通过"></el-option>
+                <el-option label="已驳回" value="已驳回"></el-option>
+              </el-select>
             </el-form-item>
             <el-form-item>
               <el-button type="primary" icon="el-icon-search" @click="search()">查询</el-button>
@@ -119,7 +168,8 @@ export default {
     return {
       showFlag: true,
       searchForm: {
-        xueshengxingming: ''
+        xueshengxingming: '',
+        jiaofeiZhuangtai: ''
       },
       dataList: [],
       pageIndex: 1,
@@ -132,14 +182,21 @@ export default {
         jiaofeiId: null,
         yijian: ''
       },
-      auditAction: '' // 'approve' or 'reject'
+      auditAction: '' // 'approve' or 'reject',
+      statistics: {
+        totalJiaofei: 0,
+        daishenhe: 0,
+        yitongguo: 0
+      }
     }
   },
   created() {
     this.getDataList()
+    this.getStatistics()
   },
   activated() {
     this.getDataList()
+    this.getStatistics()
   },
   methods: {
     getDataList() {
@@ -151,7 +208,7 @@ export default {
           'page': this.pageIndex,
           'limit': this.pageSize,
           'xueshengxingming': this.searchForm.xueshengxingming,
-          'jiaofeiZhuangtai': '已缴费'
+          'jiaofeiZhuangtai': this.searchForm.jiaofeiZhuangtai
         }
       }).then(({data}) => {
         console.log('缴费审核API响应:', data)
@@ -224,6 +281,7 @@ export default {
             onClose: () => {
               this.auditVisible = false
               this.getDataList()
+              this.getStatistics()
             }
           })
         } else {
@@ -240,6 +298,22 @@ export default {
       if (status === '已驳回') return 'danger'
       return 'info'
     },
+    getStatistics() {
+      this.$http({
+        url: 'jingsai/jiaofei/statistics',
+        method: 'get'
+      }).then(({data}) => {
+        if (data && data.code === 0 && data.data) {
+          this.statistics = {
+            totalJiaofei: data.data.total || 0,
+            daishenhe: data.data.daishenhe || 0,
+            yitongguo: data.data.yitongguo || 0
+          }
+        }
+      }).catch(err => {
+        console.error('缴费审核统计查询异常:', err)
+      })
+    }
   }
 }
 </script>

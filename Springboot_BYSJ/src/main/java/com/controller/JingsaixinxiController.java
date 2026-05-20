@@ -1092,50 +1092,38 @@ public class JingsaixinxiController {
             // 这样才能与列表数据保持一致（列表显示所有竞赛）
             
             // 1. 统计竞赛总数（所有角色都统计所有竞赛）
-            List<JingsaixinxiEntity> allContests = jingsaixinxiService.selectList(null);
-            int totalContests = allContests != null ? allContests.size() : 0;
+            int totalContests = jingsaixinxiService.selectCount(null);
             stats.put("totalJingsai", totalContests);
             log.info("竞赛总数：{}", totalContests);
             
             // 2. 统计进行中竞赛（竞赛时间未过期的）
-            int ongoingCount = 0;
-            Date now = new Date();
-            
-            if (allContests != null) {
-                for (JingsaixinxiEntity contest : allContests) {
-                    if (contest.getJingsaishijian() != null && contest.getJingsaishijian().after(now)) {
-                        ongoingCount++;
-                    }
-                }
-            }
+            EntityWrapper<JingsaixinxiEntity> ongoingEw = new EntityWrapper<>();
+            ongoingEw.gt("jingsaishijian", new Date());
+            int ongoingCount = jingsaixinxiService.selectCount(ongoingEw);
             stats.put("ongoingJingsai", ongoingCount);
             log.info("进行中竞赛数：{}", ongoingCount);
             
             // 3. 统计报名记录数（所有角色都统计所有报名）
-            List<JingsaibaomingEntity> allBaomings = jingsaibaomingService.selectList(null);
-            int totalApplications = allBaomings != null ? allBaomings.size() : 0;
+            int totalApplications = jingsaibaomingService.selectCount(null);
             stats.put("baomingJingsai", totalApplications);
             log.info("报名记录总数：{}", totalApplications);
             
             // 4. 统计待审核报名数（所有角色都统计所有待审核报名）
             EntityWrapper<JingsaibaomingEntity> pendingBaomingEw = new EntityWrapper<>();
             pendingBaomingEw.eq("sfsh", "待审核");
-            List<JingsaibaomingEntity> pendingBaomings = jingsaibaomingService.selectList(pendingBaomingEw);
-            int pendingApplications = pendingBaomings != null ? pendingBaomings.size() : 0;
+            int pendingApplications = jingsaibaomingService.selectCount(pendingBaomingEw);
             stats.put("pendingBaoming", pendingApplications);
             log.info("待审核报名数：{}", pendingApplications);
             
             // 5. 统计缴费记录数（所有角色都统计所有缴费）
-            List<JingsaiJiaofeiJiluEntity> allJiaofei = jingsaiJiaofeiJiluService.selectList(null);
-            int totalJiaofei = allJiaofei != null ? allJiaofei.size() : 0;
+            int totalJiaofei = jingsaiJiaofeiJiluService.selectCount(null);
             stats.put("totalJiaofei", totalJiaofei);
             log.info("缴费记录总数：{}", totalJiaofei);
             
             // 6. 统计待审核缴费数（所有角色都统计所有待审核缴费）
             EntityWrapper<JingsaiJiaofeiJiluEntity> pendingJiaofeiEw = new EntityWrapper<>();
             pendingJiaofeiEw.eq("jiaofei_zhuangtai", "已缴费");
-            List<JingsaiJiaofeiJiluEntity> pendingJiaofeiList = jingsaiJiaofeiJiluService.selectList(pendingJiaofeiEw);
-            int pendingJiaofei = pendingJiaofeiList != null ? pendingJiaofeiList.size() : 0;
+            int pendingJiaofei = jingsaiJiaofeiJiluService.selectCount(pendingJiaofeiEw);
             stats.put("pendingJiaofei", pendingJiaofei);
             log.info("待审核缴费数：{}", pendingJiaofei);
             
@@ -1143,30 +1131,26 @@ public class JingsaixinxiController {
             EntityWrapper<JingsaibaomingEntity> zuopinEw = new EntityWrapper<>();
             zuopinEw.isNotNull("cansaizuopin");
             zuopinEw.ne("cansaizuopin", "");
-            List<JingsaibaomingEntity> zuopinBaomings = jingsaibaomingService.selectList(zuopinEw);
-            int totalZuopin = zuopinBaomings != null ? zuopinBaomings.size() : 0;
+            int totalZuopin = jingsaibaomingService.selectCount(zuopinEw);
             stats.put("totalZuopin", totalZuopin);
             log.info("作品提交总数：{}", totalZuopin);
             
             // 8. 统计团队数量（所有角色都统计所有团队）
-            List<JingsaiTuanduiEntity> allTuandui = jingsaiTuanduiService.selectList(null);
-            int totalTuandui = allTuandui != null ? allTuandui.size() : 0;
+            int totalTuandui = jingsaiTuanduiService.selectCount(null);
             stats.put("totalTuandui", totalTuandui);
             log.info("团队总数：{}", totalTuandui);
             
             // 9. 统计待审核团队数（所有角色都统计所有待审核团队）
             EntityWrapper<JingsaiTuanduiEntity> pendingTuanduiEw = new EntityWrapper<>();
             pendingTuanduiEw.eq("shenhe_zhuangtai", "待审核");
-            List<JingsaiTuanduiEntity> pendingTuanduiList = jingsaiTuanduiService.selectList(pendingTuanduiEw);
-            int pendingTuandui = pendingTuanduiList != null ? pendingTuanduiList.size() : 0;
+            int pendingTuandui = jingsaiTuanduiService.selectCount(pendingTuanduiEw);
             stats.put("pendingTuandui", pendingTuandui);
             log.info("待审核团队数：{}", pendingTuandui);
             
             // 10. 统计待审核复核申请数（所有角色都统计所有待审核复核）
             EntityWrapper<ZuopindafenFuheEntity> fuheEw = new EntityWrapper<>();
             fuheEw.eq("fuhe_status", "待审核");
-            List<ZuopindafenFuheEntity> pendingFuheList = zuopindafenFuheService.selectList(fuheEw);
-            int pendingFuhe = pendingFuheList != null ? pendingFuheList.size() : 0;
+            int pendingFuhe = zuopindafenFuheService.selectCount(fuheEw);
             stats.put("pendingFuhe", pendingFuhe);
             log.info("待审核复核申请数：{}", pendingFuhe);
 
@@ -1206,36 +1190,32 @@ public class JingsaixinxiController {
             // 1. 查询该教师创建的所有竞赛
             EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
             jingsaiEw.eq("gonghao", gonghao);
-            List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
-            
-            int totalContests = myJingsaiList != null ? myJingsaiList.size() : 0;
+            int totalContests = jingsaixinxiService.selectCount(jingsaiEw);
             stats.put("totalJingsai", totalContests);
             log.info("我的竞赛总数：{}", totalContests);
             
             // 2. 统计进行中竞赛
-            int ongoingCount = 0;
-            Date now = new Date();
-            if (myJingsaiList != null) {
-                for (JingsaixinxiEntity contest : myJingsaiList) {
-                    if (contest.getJingsaishijian() != null && contest.getJingsaishijian().after(now)) {
-                        ongoingCount++;
-                    }
-                }
-            }
+            EntityWrapper<JingsaixinxiEntity> ongoingEw2 = new EntityWrapper<>();
+            ongoingEw2.eq("gonghao", gonghao);
+            ongoingEw2.gt("jingsaishijian", new Date());
+            int ongoingCount = jingsaixinxiService.selectCount(ongoingEw2);
             stats.put("ongoingJingsai", ongoingCount);
             log.info("我的进行中竞赛数：{}", ongoingCount);
             
             // 3. 统计这些竞赛的报名记录数
             int totalApplications = 0;
             if (totalContests > 0) {
-                List<Long> myJingsaiIds = myJingsaiList.stream()
-                        .map(JingsaixinxiEntity::getId)
-                        .collect(java.util.stream.Collectors.toList());
-                
-                EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
-                baomingEw.in("jingsai_id", myJingsaiIds);
-                List<JingsaibaomingEntity> myBaomings = jingsaibaomingService.selectList(baomingEw);
-                totalApplications = myBaomings != null ? myBaomings.size() : 0;
+                EntityWrapper<JingsaixinxiEntity> myJingsaiEw = new EntityWrapper<>();
+                myJingsaiEw.eq("gonghao", gonghao);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(myJingsaiEw);
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    List<Long> myJingsaiIds = myJingsaiList.stream()
+                            .map(JingsaixinxiEntity::getId)
+                            .collect(java.util.stream.Collectors.toList());
+                    EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
+                    baomingEw.in("jingsai_id", myJingsaiIds);
+                    totalApplications = jingsaibaomingService.selectCount(baomingEw);
+                }
             }
             stats.put("baomingJingsai", totalApplications);
             log.info("我的竞赛报名记录总数：{}", totalApplications);

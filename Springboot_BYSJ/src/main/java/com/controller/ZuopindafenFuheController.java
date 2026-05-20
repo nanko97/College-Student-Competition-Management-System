@@ -302,6 +302,68 @@ public class ZuopindafenFuheController {
     }
 
     /**
+     * 复核统计数据接口（公开接口，前端审核页面调用）
+     */
+    @RequestMapping("/statistics")
+    public R statistics(HttpServletRequest request) {
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        String xuehao = null;
+        if ("xuesheng".equals(tableName)) {
+            xuehao = (String) request.getSession().getAttribute("username");
+        }
+        // 教师：统计自己创建的竞赛的复核记录
+        if ("jiaoshi".equals(tableName)) {
+            String gonghao = (String) request.getSession().getAttribute("username");
+            EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+            jingsaiEw.eq("gonghao", gonghao);
+            List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+            if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                List<Long> jingsaiIds = myJingsaiList.stream()
+                    .map(JingsaixinxiEntity::getId)
+                    .collect(java.util.stream.Collectors.toList());
+                // 通过zuopindafen_id关联过滤
+                EntityWrapper<ZuopindafenEntity> scoreEw = new EntityWrapper<>();
+                scoreEw.in("jingsai_id", jingsaiIds);
+                List<ZuopindafenEntity> myScores = zuopindafenService.selectList(scoreEw);
+                if (myScores != null && !myScores.isEmpty()) {
+                    List<Long> myScoreIds = myScores.stream().map(ZuopindafenEntity::getId).collect(java.util.stream.Collectors.toList());
+                    Map<String, Object> stats = new HashMap<>();
+                    // 总数
+                    EntityWrapper<ZuopindafenFuheEntity> totalEw = new EntityWrapper<>();
+                    totalEw.in("zuopindafen_id", myScoreIds);
+                    stats.put("total", zuopindafenFuheService.selectCount(totalEw));
+                    // 待审核
+                    EntityWrapper<ZuopindafenFuheEntity> pendingEw = new EntityWrapper<>();
+                    pendingEw.in("zuopindafen_id", myScoreIds).eq("fuhe_status", "待审核");
+                    stats.put("pendingCount", zuopindafenFuheService.selectCount(pendingEw));
+                    // 已通过
+                    EntityWrapper<ZuopindafenFuheEntity> approvedEw = new EntityWrapper<>();
+                    approvedEw.in("zuopindafen_id", myScoreIds).eq("fuhe_status", "已通过");
+                    stats.put("approvedCount", zuopindafenFuheService.selectCount(approvedEw));
+                    // 已驳回
+                    EntityWrapper<ZuopindafenFuheEntity> rejectedEw = new EntityWrapper<>();
+                    rejectedEw.in("zuopindafen_id", myScoreIds).eq("fuhe_status", "已驳回");
+                    stats.put("rejectedCount", zuopindafenFuheService.selectCount(rejectedEw));
+                    return R.ok().put("data", stats);
+                } else {
+                    // 教师没有作品评分记录
+                    Map<String, Object> stats = new HashMap<>();
+                    stats.put("total", 0); stats.put("pendingCount", 0); stats.put("approvedCount", 0); stats.put("rejectedCount", 0);
+                    return R.ok().put("data", stats);
+                }
+            } else {
+                // 教师没有创建竞赛
+                Map<String, Object> stats = new HashMap<>();
+                stats.put("total", 0); stats.put("pendingCount", 0); stats.put("approvedCount", 0); stats.put("rejectedCount", 0);
+                return R.ok().put("data", stats);
+            }
+        }
+        // 学生和管理员使用已有的getStatistics方法
+        Map<String, Object> stats = getStatistics(xuehao);
+        return R.ok().put("data", stats);
+    }
+
+    /**
      * 删除
      */
     @OperationLog("删除成绩复核申请")
@@ -315,6 +377,7 @@ public class ZuopindafenFuheController {
 
     /**
      * 审核复核申请（教师使用）
+     * 【幂等保护】只有"待审核"状态的复核申请才能被审核
      */
     @OperationLog("审核成绩复核申请")
     @PostMapping("/shenhe")
@@ -322,8 +385,18 @@ public class ZuopindafenFuheController {
     public R shenhe(@RequestBody ZuopindafenFuheEntity zuopindafenFuhe) {
         logger.debug("审核复核申请:{}", zuopindafenFuhe);
         
-        // 获取当前登录教师信息
-        // 注意：shenheGonghao和shenheJiaoshi字段已由前端传递
+        // 【幂等保护】检查当前复核状态，只有"待审核"才允许审核操作
+        if (zuopindafenFuhe.getId() != null) {
+            ZuopindafenFuheEntity existingFuhe = zuopindafenFuheService.selectById(zuopindafenFuhe.getId());
+            if (existingFuhe == null) {
+                logger.warn("复核申请不存在，ID：{}", zuopindafenFuhe.getId());
+                return R.error("复核申请不存在");
+            }
+            if (!"待审核".equals(existingFuhe.getFuheStatus())) {
+                logger.warn("复核申请已被审核，当前状态：{}，ID：{}", existingFuhe.getFuheStatus(), zuopindafenFuhe.getId());
+                return R.error("该复核申请已被审核，当前状态为【" + existingFuhe.getFuheStatus() + "】，请勿重复操作");
+            }
+        }
         
         // 更新复核记录
         zuopindafenFuhe.setShenheShijian(new Date());

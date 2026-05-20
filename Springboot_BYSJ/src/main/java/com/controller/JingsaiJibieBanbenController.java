@@ -51,15 +51,11 @@ public class JingsaiJibieBanbenController {
         String tableName = (String) request.getSession().getAttribute("tableName");
         log.info("查询级别版本列表 - 角色: {}", tableName);
         
-        // 先查询所有数据
-        List<JingsaiJibieBanbenEntity> allRecords = jibieBanbenService.selectList(null);
-        
         // 教师过滤：只查看自己创建的竞赛的级别版本
         if ("jiaoshi".equals(tableName)) {
             String gonghao = (String) request.getSession().getAttribute("username");
             log.info("教师 {} 查询级别版本", gonghao);
             
-            // 查询该教师创建的所有竞赛ID
             EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
             jingsaiEw.eq("gonghao", gonghao);
             List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
@@ -70,17 +66,13 @@ public class JingsaiJibieBanbenController {
                     jingsaiIds.add(jingsai.getId());
                 }
                 
-                // 内存过滤：只保留教师创建的竞赛的级别版本
-                List<JingsaiJibieBanbenEntity> filteredRecords = new ArrayList<>();
-                for (JingsaiJibieBanbenEntity record : allRecords) {
-                    if (jingsaiIds.contains(record.getJingsaiId())) {
-                        filteredRecords.add(record);
-                    }
-                }
+                // 使用 EntityWrapper IN 查询替代全表扫描+内存过滤
+                EntityWrapper<JingsaiJibieBanbenEntity> ew = new EntityWrapper<>();
+                ew.in("jingsai_id", jingsaiIds);
+                List<JingsaiJibieBanbenEntity> filteredRecords = jibieBanbenService.selectList(ew);
                 
-                log.info("教师 {} 只能查看自己创建的 {} 个竞赛的级别版本，竞赛IDs: {}", gonghao, jingsaiIds.size(), jingsaiIds);
+                log.info("教师 {} 只能查看自己创建的 {} 个竞赛的级别版本", gonghao, jingsaiIds.size());
                 
-                // 构建分页结果
                 int total = filteredRecords.size();
                 int pageSize = params.get("limit") != null ? Integer.parseInt(params.get("limit").toString()) : 10;
                 int pageNum = params.get("page") != null ? Integer.parseInt(params.get("page").toString()) : 1;
@@ -114,15 +106,11 @@ public class JingsaiJibieBanbenController {
         String tableName = (String) request.getSession().getAttribute("tableName");
         log.info("查询级别版本列表 - 角色: {}", tableName);
         
-        // 先查询所有数据
-        List<JingsaiJibieBanbenEntity> allRecords = jibieBanbenService.selectList(null);
-        
         // 教师过滤：只查看自己创建的竞赛的级别版本
         if ("jiaoshi".equals(tableName)) {
             String gonghao = (String) request.getSession().getAttribute("username");
             log.info("教师 {} 查询级别版本", gonghao);
             
-            // 查询该教师创建的所有竞赛ID
             EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
             jingsaiEw.eq("gonghao", gonghao);
             List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
@@ -133,17 +121,13 @@ public class JingsaiJibieBanbenController {
                     jingsaiIds.add(jingsai.getId());
                 }
                 
-                // 内存过滤：只保留教师创建的竞赛的级别版本
-                List<JingsaiJibieBanbenEntity> filteredRecords = new ArrayList<>();
-                for (JingsaiJibieBanbenEntity record : allRecords) {
-                    if (jingsaiIds.contains(record.getJingsaiId())) {
-                        filteredRecords.add(record);
-                    }
-                }
+                // 使用 EntityWrapper IN 查询替代全表扫描+内存过滤
+                EntityWrapper<JingsaiJibieBanbenEntity> ew = new EntityWrapper<>();
+                ew.in("jingsai_id", jingsaiIds);
+                List<JingsaiJibieBanbenEntity> filteredRecords = jibieBanbenService.selectList(ew);
                 
-                log.info("教师 {} 只能查看自己创建的 {} 个竞赛的级别版本，竞赛IDs: {}", gonghao, jingsaiIds.size(), jingsaiIds);
+                log.info("教师 {} 只能查看自己创建的 {} 个竞赛的级别版本", gonghao, jingsaiIds.size());
                 
-                // 构建分页结果
                 int total = filteredRecords.size();
                 int pageSize = params.get("limit") != null ? Integer.parseInt(params.get("limit").toString()) : 10;
                 int pageNum = params.get("page") != null ? Integer.parseInt(params.get("page").toString()) : 1;
@@ -454,45 +438,33 @@ public class JingsaiJibieBanbenController {
                 }
             }
             
-            // 使用更可靠的查询方式：先查询所有，再过滤
-            List<JingsaiJibieBanbenEntity> allRecords = jibieBanbenService.selectList(null);
-            
-            // 根据角色过滤数据
-            List<JingsaiJibieBanbenEntity> filteredRecords = allRecords;
-            
-            if ("jiaoshi".equals(tableName)) {
-                // 教师：只查看自己竞赛的级别版本
-                if (!myJingsaiIds.isEmpty()) {
-                    filteredRecords = new ArrayList<>();
-                    if (allRecords != null) {
-                        for (JingsaiJibieBanbenEntity record : allRecords) {
-                            if (myJingsaiIds.contains(record.getJingsaiId())) {
-                                filteredRecords.add(record);
-                            }
-                        }
-                    }
-                } else {
-                    filteredRecords = new ArrayList<>();
-                }
+            // 使用 selectCount 避免全表扫描
+            // 教师无竞赛时直接返回空统计
+            if ("jiaoshi".equals(tableName) && myJingsaiIds.isEmpty()) {
+                Map<String, Object> stats = new java.util.HashMap<>();
+                stats.put("totalBanben", 0);
+                stats.put("guojiajiCount", 0);
+                stats.put("currentBanben", 0);
+                return R.ok().put("data", stats);
             }
             
             // 总版本数
-            int totalBanben = filteredRecords != null ? filteredRecords.size() : 0;
+            EntityWrapper<JingsaiJibieBanbenEntity> baseEw = new EntityWrapper<>();
+            if (!myJingsaiIds.isEmpty()) baseEw.in("jingsai_id", myJingsaiIds);
+            int totalBanben = jibieBanbenService.selectCount(baseEw);
             log.info("级别版本总数：{}", totalBanben);
             
             // 国家级数量
-            int guojiajiCount = 0;
-            int currentBanben = 0;
-            if (filteredRecords != null) {
-                for (JingsaiJibieBanbenEntity record : filteredRecords) {
-                    if ("国家级".equals(record.getJibie())) {
-                        guojiajiCount++;
-                    }
-                    if ("是".equals(record.getIsCurrent())) {
-                        currentBanben++;
-                    }
-                }
-            }
+            EntityWrapper<JingsaiJibieBanbenEntity> guojiajiEw = new EntityWrapper<>();
+            if (!myJingsaiIds.isEmpty()) guojiajiEw.in("jingsai_id", myJingsaiIds);
+            guojiajiEw.eq("jibie", "国家级");
+            int guojiajiCount = jibieBanbenService.selectCount(guojiajiEw);
+            
+            // 当前版本数量
+            EntityWrapper<JingsaiJibieBanbenEntity> currentEw = new EntityWrapper<>();
+            if (!myJingsaiIds.isEmpty()) currentEw.in("jingsai_id", myJingsaiIds);
+            currentEw.eq("is_current", "是");
+            int currentBanben = jibieBanbenService.selectCount(currentEw);
             log.info("国家级：{}，当前版本：{}", guojiajiCount, currentBanben);
             
             Map<String, Object> stats = new java.util.HashMap<>();

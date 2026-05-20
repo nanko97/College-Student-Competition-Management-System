@@ -257,7 +257,7 @@ export default {
               bianguengLeixing: this.dataForm.bianguengLeixing,
               caozuoHou: JSON.stringify(caozuoHou),
               caozuoYuanyin: this.dataForm.caozuoYuanyin,
-              shenheZhuangtai: '审核中'
+              shenheZhuangtai: '待审核'
             }
           }).then(({data}) => {
             if (data && data.code === 0) {
