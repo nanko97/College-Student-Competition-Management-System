@@ -233,27 +233,64 @@ public class JingsaiSaidaoController {
     /**
      * 获取统计数据
      * 功能：统计赛道总数、活跃赛道数、关联竞赛数
+     * 教师只能查看自己创建的竞赛的赛道统计
      * 
+     * @param request HTTP请求（获取用户角色信息）
      * @return R 统一返回结果，包含统计信息
      */
     @RequestMapping("/statistics")
-    public R statistics() {
+    public R statistics(HttpServletRequest request) {
         try {
             log.info("========== 赛道统计数据查询开始 ==========");
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            log.info("当前用户角色tableName：{}", tableName);
+            
             Map<String, Object> stats = new java.util.HashMap<>();
             
             // 使用更可靠的查询方式：先查询所有，再过滤
             List<JingsaiSaidaoEntity> allSaidao = saidaoService.selectList(null);
             
+            // 教师过滤：只统计自己创建的竞赛的赛道
+            List<JingsaiSaidaoEntity> filteredSaidao = allSaidao;
+            if ("jiaoshi".equals(tableName)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                log.info("教师角色，工号：{}", gonghao);
+                
+                // 查询该教师创建的所有竞赛ID
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", gonghao);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    List<Long> myJingsaiIds = myJingsaiList.stream()
+                            .map(JingsaixinxiEntity::getId)
+                            .collect(Collectors.toList());
+                    
+                    // 内存过滤：只保留教师创建的竞赛的赛道
+                    filteredSaidao = new ArrayList<>();
+                    if (allSaidao != null) {
+                        for (JingsaiSaidaoEntity saidao : allSaidao) {
+                            if (myJingsaiIds.contains(saidao.getJingsaiId())) {
+                                filteredSaidao.add(saidao);
+                            }
+                        }
+                    }
+                    log.info("教师 {} 只能查看自己创建的 {} 个竞赛的 {} 个赛道统计", gonghao, myJingsaiIds.size(), filteredSaidao.size());
+                } else {
+                    filteredSaidao = new ArrayList<>();
+                    log.info("教师 {} 没有创建任何竞赛，返回空统计", gonghao);
+                }
+            }
+            
             // 1. 统计赛道总数
-            int totalCount = allSaidao != null ? allSaidao.size() : 0;
+            int totalCount = filteredSaidao != null ? filteredSaidao.size() : 0;
             log.info("赛道总数：{}", totalCount);
             stats.put("totalSaidao", totalCount);
             
             // 2. 统计活跃赛道数
             int activeCount = 0;
-            if (allSaidao != null) {
-                for (JingsaiSaidaoEntity saidao : allSaidao) {
+            if (filteredSaidao != null) {
+                for (JingsaiSaidaoEntity saidao : filteredSaidao) {
                     if ("是".equals(saidao.getIsActive())) {
                         activeCount++;
                     }
@@ -263,7 +300,7 @@ public class JingsaiSaidaoController {
             stats.put("activeSaidao", activeCount);
             
             // 3. 统计关联竞赛数（去重）
-            long jingsaiCount = allSaidao.stream()
+            long jingsaiCount = filteredSaidao.stream()
                 .map(JingsaiSaidaoEntity::getJingsaiId)
                 .filter(id -> id != null)
                 .distinct()

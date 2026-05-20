@@ -21,7 +21,10 @@ const menu = {
                 ],
                 "menu": "竞赛管理"
             }, {
-                "child": [{"buttons": ["查看", "删除"], "menu": "竞赛报名", "menuJump": "列表", "tableName": "jingsaibaoming"}],
+                "child": [
+                    {"buttons": ["查看", "删除"], "menu": "报名管理", "menuJump": "列表", "tableName": "jingsaibaoming"},
+                    {"buttons": ["查看", "审核"], "menu": "我的报名", "menuJump": "列表", "tableName": "jingsaibaoming_my", "routePath": "/jingsaibaoming-my"}
+                ],
                 "menu": "报名管理"
             }, {
                 "child": [
@@ -138,12 +141,21 @@ const menu = {
                     }
                 ], "menu": "竞赛管理"
             }, {
-                "child": [{
-                    "buttons": ["查看", "审核", "评分", "删除"],
-                    "menu": "竞赛报名",
-                    "menuJump": "列表",
-                    "tableName": "jingsaibaoming"
-                }], "menu": "报名管理"
+                "child": [
+                    {
+                        "buttons": ["查看", "审核", "评分", "删除"],
+                        "menu": "报名管理",
+                        "menuJump": "列表",
+                        "tableName": "jingsaibaoming"
+                    },
+                    {
+                        "buttons": ["查看", "审核"],
+                        "menu": "我的报名",
+                        "menuJump": "列表",
+                        "tableName": "jingsaibaoming_my",
+                        "routePath": "/jingsaibaoming-my"
+                    }
+                ], "menu": "报名管理"
             }, {
                 "child": [
                     {"buttons": ["查看", "修改", "删除"], "menu": "作品打分", "menuJump": "列表", "tableName": "zuopindafen"},

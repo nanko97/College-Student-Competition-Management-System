@@ -21,6 +21,16 @@ public class JingsaiFeiyongServiceImpl extends ServiceImpl<JingsaiFeiyongDao, Ji
         // 构建查询条件
         EntityWrapper<JingsaiFeiyongEntity> ew = new EntityWrapper<>();
         
+        // 教师权限过滤：只查询特定竞赛ID列表的费用配置
+        if (params.get("jingsai_id_in") != null) {
+            @SuppressWarnings("unchecked")
+            java.util.List<Long> jingsaiIds = (java.util.List<Long>) params.get("jingsai_id_in");
+            if (jingsaiIds != null && !jingsaiIds.isEmpty()) {
+                ew.in("jingsai_id", jingsaiIds);
+                log.debug("教师权限过滤 - 竞赛ID列表: {}", jingsaiIds);
+            }
+        }
+        
         // 竞赛名称模糊查询
         if (params.get("jingsaimingcheng") != null && !params.get("jingsaimingcheng").toString().isEmpty()) {
             ew.like("jingsaimingcheng", params.get("jingsaimingcheng").toString());

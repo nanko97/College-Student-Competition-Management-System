@@ -14,6 +14,7 @@ import jingsaixinxi from '@/views/modules/jingsaixinxi/list'
 import jingsaixinxiMyList from '@/views/modules/jingsaixinxi/my-list'
 import xuesheng from '@/views/modules/xuesheng/list'
 import jingsaibaoming from '@/views/modules/jingsaibaoming/list'
+import jingsaibaomingMyList from '@/views/modules/jingsaibaoming/my-list'
 import jiaoshi from '@/views/modules/jiaoshi/list'
 import zuopindafen from '@/views/modules/zuopindafen/list'
 // 新增功能模块路由
@@ -91,6 +92,11 @@ const routes = [{
       path: '/jingsaibaoming',
       name: '竞赛报名',
       component: jingsaibaoming
+    }
+    , {
+      path: '/jingsaibaoming-my',
+      name: '我的报名',
+      component: jingsaibaomingMyList
     }
     , {
       path: '/jiaoshi',

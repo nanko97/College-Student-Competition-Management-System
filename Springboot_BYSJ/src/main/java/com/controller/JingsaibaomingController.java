@@ -84,20 +84,21 @@ public class JingsaibaomingController {
         log.info("jingsaibaoming对象：{}", jingsaibaoming);
         
         try {
-            // 1. 权限控制：根据用户角色过滤数据
+            // 1. 权限控制：根据用户角色和前端参数过滤数据
             String tableName = (String) request.getSession().getAttribute("tableName");
             log.info("当前用户角色tableName：{}", tableName);
             log.info("前端传递的xuehao：{}", params.get("xuehao"));
             
-            if ("jiaoshi".equals(tableName)) {
-                // 教师只能查看自己组织的竞赛的报名
-                String gonghao = (String) request.getSession().getAttribute("username");
-                
-                // 先查询该教师创建的所有竞赛ID
+            // 如果前端传递了gonghao参数，则进行过滤（用于“我的报名”页面，教师只看自己竞赛的报名）
+            if (params.get("gonghao") != null && !params.get("gonghao").toString().isEmpty()) {
+                String gonghao = params.get("gonghao").toString();
+                log.info("按工号 {} 过滤报名数据", gonghao);
+                            
+                // 查询该教师创建的所有竞赛ID
                 EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
                 jingsaiEw.eq("gonghao", gonghao);
                 List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
-                
+                            
                 if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
                     // 提取竞赛 ID 列表
                     List<Long> myJingsaiIds = myJingsaiList.stream()
@@ -124,12 +125,32 @@ public class JingsaibaomingController {
                     log.warn("Session中没有username，无法进行权限过滤！");
                 }
             }
+            // 报名管理页面（list.vue）：教师和管理员都能看到全部数据，不进行权限过滤
             
             log.info("最终jingsaibaoming对象：{}", jingsaibaoming);
             log.info("最终params：{}", params);
             
             // 2. 构建查询条件
             EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<>();
+            
+            // 处理jingsai_id=-1的情况（教师没有创建任何竞赛，返回空列表）
+            if (params.containsKey("jingsai_id") && params.get("jingsai_id") != null) {
+                Object jingsaiId = params.get("jingsai_id");
+                if (jingsaiId instanceof Integer && (Integer)jingsaiId == -1) {
+                    ew.eq("id", -1);  // 设置不可能的条件，返回空列表
+                    log.debug("教师没有创建任何竞赛，返回空列表");
+                }
+            }
+            
+            // 处理jingsai_id_in参数（用于教师查看自己竞赛的报名）
+            if (params.containsKey("jingsai_id_in") && params.get("jingsai_id_in") != null) {
+                @SuppressWarnings("unchecked")
+                java.util.List<Long> jingsaiIds = (java.util.List<Long>) params.get("jingsai_id_in");
+                if (jingsaiIds != null && !jingsaiIds.isEmpty()) {
+                    ew.in("jingsai_id", jingsaiIds);
+                    log.debug("按竞赛ID列表过滤：{}", jingsaiIds);
+                }
+            }
             
             // 3. 处理前端传递的模糊查询参数（带 % 的参数）
             if (params.get("jingsaimingcheng") != null) {
@@ -249,11 +270,11 @@ public class JingsaibaomingController {
             // 1. 权限控制：根据用户角色过滤数据
             String tableName = (String) request.getSession().getAttribute("tableName");
             
-            if ("jiaoshi".equals(tableName)) {
-                // 教师只能查看自己组织的竞赛的报名
-                String gonghao = (String) request.getSession().getAttribute("username");
+            // 如果前端传递了gonghao参数，则进行过滤（用于“我的报名”页面）
+            if (params.get("gonghao") != null && !params.get("gonghao").toString().isEmpty()) {
+                String gonghao = params.get("gonghao").toString();
                 
-                // 先查询该教师创建的所有竞赛ID
+                // 查询该教师创建的所有竞赛ID
                 EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
                 jingsaiEw.eq("gonghao", gonghao);
                 List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
@@ -279,9 +300,29 @@ public class JingsaibaomingController {
                     log.info("学生 {} 查询自己的报名列表", xuehao);
                 }
             }
+            // 报名管理页面：教师和管理员都能看到全部数据，不进行权限过滤
             
             // 2. 构建查询条件
             EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<>();
+            
+            // 处理jingsai_id=-1的情况（教师没有创建任何竞赛，返回空列表）
+            if (params.containsKey("jingsai_id") && params.get("jingsai_id") != null) {
+                Object jingsaiId = params.get("jingsai_id");
+                if (jingsaiId instanceof Integer && (Integer)jingsaiId == -1) {
+                    ew.eq("id", -1);  // 设置不可能的条件，返回空列表
+                    log.debug("教师没有创建任何竞赛，返回空列表");
+                }
+            }
+            
+            // 处理jingsai_id_in参数（用于教师查看自己竞赛的报名）
+            if (params.containsKey("jingsai_id_in") && params.get("jingsai_id_in") != null) {
+                @SuppressWarnings("unchecked")
+                java.util.List<Long> jingsaiIds = (java.util.List<Long>) params.get("jingsai_id_in");
+                if (jingsaiIds != null && !jingsaiIds.isEmpty()) {
+                    ew.in("jingsai_id", jingsaiIds);
+                    log.debug("按竞赛ID列表过滤：{}", jingsaiIds);
+                }
+            }
             
             // 3. 执行分页查询
             PageUtils page = jingsaibaomingService.queryPage(
@@ -882,21 +923,44 @@ public class JingsaibaomingController {
     /**
      * 获取统计数据
      * 功能：统计报名总数、已通过数、待审核数
+     * 教师只能统计自己创建的竞赛的报名数据
      * 
+     * @param params 查询参数（支持gonghao参数）
      * @param request HTTP 请求
      * @return R 统一返回结果，包含统计信息
      */
     @RequestMapping("/statistics")
-    public R statistics(HttpServletRequest request) {
+    public R statistics(@RequestParam Map<String, Object> params, HttpServletRequest request) {
         log.info("=========== 报名统计查询开始 ===========");
+        log.info("请求参数：{}", params);
         try {
-            Map<String, Object> params = new HashMap<>();
-            
-            // 根据用户角色设置查询参数
+            // 根据用户角色和前端参数设置查询参数
             String tableName = (String) request.getSession().getAttribute("tableName");
             log.info("当前用户角色tableName：{}", tableName);
             
-            if ("xuesheng".equals(tableName)) {
+            // 优先检查前端传递的gonghao参数（用于my-list.vue页面，教师只看自己竞赛的报名）
+            if (params.get("gonghao") != null && !params.get("gonghao").toString().isEmpty()) {
+                String gonghao = params.get("gonghao").toString();
+                log.info("前端传递的工号：{}", gonghao);
+                
+                // 查询该教师创建的所有竞赛ID
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", gonghao);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    // 提取竞赛 ID 列表
+                    List<Long> myJingsaiIds = myJingsaiList.stream()
+                            .map(JingsaixinxiEntity::getId)
+                            .collect(Collectors.toList());
+                    params.put("jingsai_id_in", myJingsaiIds);
+                    log.info("教师 {} 统计自己组织的 {} 个竞赛的报名数据", gonghao, myJingsaiIds.size());
+                } else {
+                    // 该教师没有创建任何竞赛，返回空统计
+                    params.put("jingsai_id", -1);
+                    log.info("教师 {} 没有创建任何竞赛，返回空统计", gonghao);
+                }
+            } else if ("xuesheng".equals(tableName)) {
                 // 学生只能查看自己的数据
                 String xuehao = (String) request.getSession().getAttribute("username");
                 log.info("学生学号：{}", xuehao);
@@ -904,9 +968,10 @@ public class JingsaibaomingController {
                     params.put("xuehao", xuehao);
                 }
             }
-            // 教师和管理员可以查看所有数据，不添加过滤条件
+            // 报名管理页面（list.vue）：教师和管理员都能看到全部数据，不进行权限过滤
+            // my-list.vue页面通过前端传递gonghao参数来过滤
             
-            log.info("查询参数：{}", params);
+            log.info("最终查询参数：{}", params);
             Map<String, Object> statistics = jingsaibaomingService.getStatistics(params);
             log.info("统计结果：{}", statistics);
             return R.ok().put("data", statistics);

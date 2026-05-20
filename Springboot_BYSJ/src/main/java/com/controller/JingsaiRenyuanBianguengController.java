@@ -30,18 +30,80 @@ public class JingsaiRenyuanBianguengController {
 
     /**
      * 分页查询变更记录（通用）
+     * 教师只能查看自己组织的竞赛的变更记录
      */
     @GetMapping("/page")
-    public R page(@RequestParam Map<String, Object> params) {
+    public R page(@RequestParam Map<String, Object> params, HttpServletRequest request) {
+        // 权限控制：根据用户角色过滤数据
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        log.info("查询人员变更记录 - 角色: {}", tableName);
+        
+        // 教师只能查看自己组织的竞赛的变更记录
+        if ("jiaoshi".equals(tableName)) {
+            String gonghao = (String) request.getSession().getAttribute("username");
+            log.info("教师 {} 查询自己组织的竞赛的人员变更记录", gonghao);
+            
+            // 查询该教师创建的所有竞赛ID
+            EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+            jingsaiEw.eq("gonghao", gonghao);
+            List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+            
+            if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                // 提取竞赛 ID 列表
+                List<Long> myJingsaiIds = myJingsaiList.stream()
+                        .map(JingsaixinxiEntity::getId)
+                        .collect(java.util.stream.Collectors.toList());
+                
+                // 将竞赛ID列表添加到params中，供Service层过滤
+                params.put("jingsai_id_in", myJingsaiIds);
+                log.info("教师 {} 查询到 {} 个竞赛的人员变更记录", gonghao, myJingsaiIds.size());
+            } else {
+                // 该教师没有创建任何竞赛，返回空结果
+                params.put("jingsai_id", -1);
+                log.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+            }
+        }
+        
         PageUtils page = bianguengService.queryPage(params);
         return R.ok().put("page", page);
     }
 
     /**
      * 查询变更记录列表
+     * 教师只能查看自己组织的竞赛的变更记录
      */
     @GetMapping("/list")
-    public R list(@RequestParam Map<String, Object> params) {
+    public R list(@RequestParam Map<String, Object> params, HttpServletRequest request) {
+        // 权限控制：根据用户角色过滤数据
+        String tableName = (String) request.getSession().getAttribute("tableName");
+        log.info("查询人员变更记录列表 - 角色: {}", tableName);
+        
+        // 教师只能查看自己组织的竞赛的变更记录
+        if ("jiaoshi".equals(tableName)) {
+            String gonghao = (String) request.getSession().getAttribute("username");
+            log.info("教师 {} 查询自己组织的竞赛的人员变更记录列表", gonghao);
+            
+            // 查询该教师创建的所有竞赛ID
+            EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+            jingsaiEw.eq("gonghao", gonghao);
+            List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+            
+            if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                // 提取竞赛 ID 列表
+                List<Long> myJingsaiIds = myJingsaiList.stream()
+                        .map(JingsaixinxiEntity::getId)
+                        .collect(java.util.stream.Collectors.toList());
+                
+                // 将竞赛ID列表添加到params中，供Service层过滤
+                params.put("jingsai_id_in", myJingsaiIds);
+                log.info("教师 {} 查询到 {} 个竞赛的人员变更记录列表", gonghao, myJingsaiIds.size());
+            } else {
+                // 该教师没有创建任何竞赛，返回空结果
+                params.put("jingsai_id", -1);
+                log.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+            }
+        }
+        
         PageUtils page = bianguengService.queryPage(params);
         return R.ok().put("page", page);
     }

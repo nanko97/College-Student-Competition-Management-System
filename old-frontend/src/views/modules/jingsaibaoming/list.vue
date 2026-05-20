@@ -12,8 +12,8 @@
       <span>提示：此处仅显示您的个人报名记录</span>
     </div>
 
-    <!-- 教师/管理员提示信息 -->
-    <div class="role-tip" v-if="!isStudent">
+    <!-- 管理员提示信息 -->
+    <div class="role-tip" v-if="!isStudent && !isTeacher">
       <i class="el-icon-info"></i>
       <span>提示：管理所有学生的竞赛报名信息，可进行审核和操作</span>
     </div>
@@ -271,6 +271,11 @@ export default {
     isStudent() {
       const tableName = this.$storage.get("sessionTable");
       return tableName === "xuesheng";
+    },
+    // 判断是否为教师角色
+    isTeacher() {
+      const tableName = this.$storage.get("sessionTable");
+      return tableName === "jiaoshi";
     }
   },
   created() {
@@ -407,9 +412,11 @@ export default {
     },
     // 获取统计信息
     getStatistics() {
+      // 报名管理页面：教师和管理员都能看到全部数据，不传递gonghao参数
       this.$http({
         url: 'jingsaibaoming/statistics',
-        method: 'get'
+        method: 'get',
+        params: {}  // 空参数，查询全部数据
       }).then(({data}) => {
         if (data && data.code === 0) {
           this.statistics = data.data || {}

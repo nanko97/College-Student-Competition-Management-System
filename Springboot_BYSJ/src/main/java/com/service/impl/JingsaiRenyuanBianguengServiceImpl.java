@@ -36,6 +36,22 @@ public class JingsaiRenyuanBianguengServiceImpl extends ServiceImpl<JingsaiRenyu
         // 构建查询条件
         EntityWrapper<JingsaiRenyuanBianguengEntity> ew = new EntityWrapper<>();
         
+        // 教师权限过滤：只查询特定竞赛ID列表的变更记录
+        if (params.get("jingsai_id_in") != null) {
+            @SuppressWarnings("unchecked")
+            java.util.List<Long> jingsaiIds = (java.util.List<Long>) params.get("jingsai_id_in");
+            if (jingsaiIds != null && !jingsaiIds.isEmpty()) {
+                ew.in("jingsai_id", jingsaiIds);
+                log.debug("教师权限过滤 - 竞赛ID列表: {}", jingsaiIds);
+            }
+        }
+        
+        // 教师没有创建任何竞赛时，返回空列表
+        if (params.get("jingsai_id") != null && "-1".equals(params.get("jingsai_id").toString())) {
+            log.info("教师没有创建任何竞赛，直接返回空列表");
+            return new PageUtils(new Page<JingsaiRenyuanBianguengEntity>());
+        }
+        
         // 变更类型精确匹配
         if (params.get("bianguengLeixing") != null && !params.get("bianguengLeixing").toString().isEmpty()) {
             ew.eq("biangueng_leixing", params.get("bianguengLeixing").toString());
