@@ -226,6 +226,18 @@ export default {
     this.getStatistics()
   },
   methods: {
+    // 格式化日期为后端期望的格式: yyyy-MM-dd HH:mm:ss
+    formatDate(date) {
+      if (!date) return null
+      const d = new Date(date)
+      const year = d.getFullYear()
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      const hours = String(d.getHours()).padStart(2, '0')
+      const minutes = String(d.getMinutes()).padStart(2, '0')
+      const seconds = String(d.getSeconds()).padStart(2, '0')
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+    },
     // 获取统计数据
     getStatistics() {
       this.$http({
@@ -327,16 +339,32 @@ export default {
     viewAndMarkRead(row) {
       this.currentMessage = row
       this.detailVisible = true
+      
+      console.log('开始标记为已读，消息ID:', row.id)
+      
       // 标记为已读
       this.$http({
         url: 'xiaoxitongzhi/update',
         method: 'post',
-        data: { id: row.id, isRead: '已读', readTime: new Date().toLocaleString() }
+        data: { id: row.id, isRead: '已读', readTime: this.formatDate(new Date()) }
       }).then(({ data }) => {
+        console.log('后端返回数据:', data)
         if (data && data.code === 0) {
-          row.isRead = '已读'
+          console.log('✓ 标记已读成功，更新界面')
+          // 立即更新当前行的状态
+          this.$set(row, 'isRead', '已读')
+          // 刷新统计信息
           this.getStatistics()
+          // 刷新列表数据，确保表格显示最新状态
+          this.getDataList()
+          this.$message.success('已标记为已读')
+        } else {
+          console.error('✗ 标记失败，返回数据:', data)
+          this.$message.error('标记失败：' + (data.msg || '未知错误'))
         }
+      }).catch(error => {
+        console.error('✗ 标记已读失败:', error)
+        this.$message.error('网络请求失败')
       })
     },
 
@@ -388,7 +416,7 @@ export default {
           return this.$http({
             url: 'xiaoxitongzhi/update',
             method: 'post',
-            data: { id: id, isRead: '已读', readTime: new Date().toLocaleString() }
+            data: { id: id, isRead: '已读', readTime: this.formatDate(new Date()) }
           })
         })
         Promise.all(promises).then(() => {

@@ -11,6 +11,7 @@ import com.entity.view.JingsaibaomingView;
 import com.service.JingsaibaomingService;
 import com.service.JingsaiFeiyongService;
 import com.service.JingsaixinxiService;
+import com.utils.EntityUtil;
 import com.utils.IdWorker;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
@@ -688,6 +689,9 @@ public class JingsaibaomingController {
 
             // 3. 实体校验
             ValidatorUtils.validateEntity(jingsaibaoming);
+            
+            // 3.5 【关键修复】兜底处理：设置addtime（如果前端未传递或格式错误）
+            EntityUtil.setAddtimeIfNull(jingsaibaoming);
             
             // 4. 生成唯一 ID 并保存
             jingsaibaoming.setId(IdWorker.getId());

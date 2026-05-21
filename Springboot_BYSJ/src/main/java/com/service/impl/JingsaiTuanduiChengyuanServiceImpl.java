@@ -10,6 +10,7 @@ import com.entity.JingsaiTuanduiChengyuanEntity;
 import com.entity.JingsaiTuanduiEntity;
 import com.service.JingsaiTuanduiChengyuanService;
 import com.service.JingsaiTuanduiService;
+import com.utils.EntityUtil;
 import com.utils.IdWorker;
 import com.utils.PageUtils;
 import com.utils.Query;
@@ -92,6 +93,7 @@ public class JingsaiTuanduiChengyuanServiceImpl extends ServiceImpl<JingsaiTuand
             chengyuan.setJuese("队员");
             chengyuan.setIsActive("是");
             chengyuan.setRuzuiShijian(new Date());
+            EntityUtil.setAddtimeIfNull(chengyuan);
             this.insert(chengyuan);
 
             // 5. 更新团队人数

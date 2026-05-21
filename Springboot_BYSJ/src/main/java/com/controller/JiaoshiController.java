@@ -10,6 +10,7 @@ import com.entity.view.JiaoshiView;
 import com.service.DataSyncService;
 import com.service.JiaoshiService;
 import com.service.TokenService;
+import com.utils.EntityUtil;
 import com.utils.IdWorker;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
@@ -640,6 +641,9 @@ public class JiaoshiController {
             if (StringUtils.hasText(jiaoshi.getMima())) {
                 jiaoshi.setMima(passwordEncoder.encode(jiaoshi.getMima()));
             }
+            
+            // 3.5 【关键修复】兜底处理：设置addtime（如果前端未传递或格式错误）
+            EntityUtil.setAddtimeIfNull(jiaoshi);
             
             // 4. 生成 ID 并保存
             jiaoshi.setId(IdWorker.getId());

@@ -72,8 +72,8 @@ public class JingsaiJiaofeiJiluServiceImpl extends ServiceImpl<JingsaiJiaofeiJil
                 return R.error("缴费记录不存在");
             }
 
-            // 幂等保护：防止重复审核
-            if (!"待审核".equals(jiaofei.getJiaofeiZhuangtai()) && !"审核中".equals(jiaofei.getJiaofeiZhuangtai())) {
+            // 幂等保护：防止重复审核（已缴费=待审核，已通过/已驳回=已审核）
+            if ("已通过".equals(jiaofei.getJiaofeiZhuangtai()) || "已驳回".equals(jiaofei.getJiaofeiZhuangtai())) {
                 return R.error("该缴费记录已审核，请勿重复操作");
             }
 

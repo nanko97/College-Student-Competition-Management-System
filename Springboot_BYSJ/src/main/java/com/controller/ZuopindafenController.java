@@ -1,15 +1,19 @@
 package com.controller;
 
+import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.entity.JingsaixinxiEntity;
+import com.entity.TokenEntity;
 import com.entity.ZuopindafenEntity;
 import com.entity.ZuopindafenFuheEntity;
 import com.entity.view.ZuopindafenView;
 import com.service.JingsaixinxiService;
+import com.service.TokenService;
 import com.service.ZuopindafenFuheService;
 import com.service.ZuopindafenService;
+import com.utils.EntityUtil;
 import com.utils.IdWorker;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
@@ -60,6 +64,9 @@ public class ZuopindafenController {
 
     @Autowired
     private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
+
+    @Autowired
+    private TokenService tokenService;
 
     /**
      * 后端分页列表查询
@@ -511,6 +518,9 @@ public class ZuopindafenController {
             // 4. 实体校验
             ValidatorUtils.validateEntity(zuopindafen);
             
+            // 4.5 【关键修复】兜底处理：设置addtime（如果前端未传递或格式错误）
+            EntityUtil.setAddtimeIfNull(zuopindafen);
+            
             // 5. 生成唯一 ID 并保存
             zuopindafen.setId(IdWorker.getId());
             zuopindafenService.insert(zuopindafen);
@@ -889,6 +899,7 @@ public class ZuopindafenController {
      * @param request HTTP请求
      * @param response HTTP响应
      */
+    @IgnoreAuth
     @GetMapping("/exportPdf")
     @OperationLog("导出成绩PDF")
     public void exportPdf(@RequestParam(required = false) String xuehao,
@@ -896,8 +907,26 @@ public class ZuopindafenController {
                          HttpServletRequest request,
                          HttpServletResponse response) {
         try {
+            // 支持通过Token参数认证（用于前端直接下载）
+            String token = request.getParameter("Token");
+            if (token != null && !token.isEmpty()) {
+                TokenEntity tokenEntity = tokenService.getTokenEntity(token);
+                if (tokenEntity != null) {
+                    request.getSession().setAttribute("userId", tokenEntity.getUserid());
+                    request.getSession().setAttribute("role", tokenEntity.getRole());
+                    request.getSession().setAttribute("tableName", tokenEntity.getTablename());
+                    request.getSession().setAttribute("username", tokenEntity.getUsername());
+                }
+            }
+            
             // 1. 权限控制：根据角色确定查询范围
             String tableName = (String) request.getSession().getAttribute("tableName");
+            if (tableName == null || tableName.isEmpty()) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"code\":401,\"msg\":\"请先登录\"}");
+                return;
+            }
+            
             String queryXuehao = xuehao;
             
             if ("xuesheng".equals(tableName)) {

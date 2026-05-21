@@ -200,6 +200,77 @@ public class XiaoxiTongzhiController {
     }
 
     /**
+     * 更新消息（标记为已读）
+     */
+    @OperationLog("更新消息状态")
+    @PostMapping("/update")
+    @Transactional(rollbackFor = Exception.class)
+    public R update(@RequestBody XiaoxiTongzhiEntity entity, HttpServletRequest request) {
+        try {
+            log.info("========== 更新消息开始，ID: {} ==========");
+            log.info("前端传递的数据 - ID: {}, isRead: {}, readTime: {}", 
+                    entity.getId(), entity.getIsRead(), entity.getReadTime());
+            
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String username = (String) request.getSession().getAttribute("username");
+            log.info("当前用户 - tableName: {}, username: {}", tableName, username);
+            
+            XiaoxiTongzhiEntity oldEntity = xiaoxiTongzhiService.selectById(entity.getId());
+            if (oldEntity == null) {
+                log.warn("消息不存在，ID: {}", entity.getId());
+                return R.error("消息不存在");
+            }
+            
+            log.info("更新前的消息状态 - isRead: {}", oldEntity.getIsRead());
+            
+            // 权限验证：确保用户只能更新自己的消息
+            boolean canUpdate = false;
+            if ("xuesheng".equals(tableName)) {
+                canUpdate = username.equals(oldEntity.getJieshourenXuehao());
+            } else if ("jiaoshi".equals(tableName)) {
+                canUpdate = username.equals(oldEntity.getJieshourenGonghao());
+            } else {
+                // 管理员可以更新所有消息
+                canUpdate = true;
+            }
+            
+            if (!canUpdate) {
+                log.warn("无权操作此消息，用户: {}, 消息ID: {}", username, entity.getId());
+                return R.error("无权操作此消息");
+            }
+            
+            // 使用前端传递的 isRead 值，如果为空则设置为“已读”
+            String newIsRead = (entity.getIsRead() != null && !entity.getIsRead().isEmpty()) 
+                    ? entity.getIsRead() : "已读";
+            
+            // 如果前端传递的 readTime 是字符串，则使用当前时间
+            if (entity.getReadTime() == null) {
+                entity.setReadTime(new Date());
+            }
+            
+            // 设置更新后的值
+            oldEntity.setIsRead(newIsRead);
+            oldEntity.setReadTime(entity.getReadTime());
+            
+            log.info("准备更新 - ID: {}, 新状态: {}, readTime: {}", 
+                    oldEntity.getId(), oldEntity.getIsRead(), oldEntity.getReadTime());
+            
+            // 更新消息
+            xiaoxiTongzhiService.updateById(oldEntity);
+            
+            // 验证更新结果
+            XiaoxiTongzhiEntity updatedEntity = xiaoxiTongzhiService.selectById(entity.getId());
+            log.info("✓ 消息更新成功，ID: {}, 用户: {}, 更新后状态: {}", 
+                    entity.getId(), username, updatedEntity.getIsRead());
+            
+            return R.ok("更新成功");
+        } catch (Exception e) {
+            log.error("✗ 更新消息异常，ID: {}", entity.getId(), e);
+            return R.error("更新失败");
+        }
+    }
+
+    /**
      * 发送消息通知（内部调用或管理员使用）
      */
     @OperationLog("发送消息通知")

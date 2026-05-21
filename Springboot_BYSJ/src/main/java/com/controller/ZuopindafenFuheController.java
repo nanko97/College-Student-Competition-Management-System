@@ -24,6 +24,7 @@ import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.entity.ZuopindafenFuheEntity;
 import com.entity.view.ZuopindafenFuheView;
 import com.service.ZuopindafenFuheService;
+import com.utils.EntityUtil;
 import com.utils.PageUtils;
 import com.utils.R;
 
@@ -232,6 +233,7 @@ public class ZuopindafenFuheController {
         }
         
         // 首次提交或驳回后重新提交，创建新记录
+        EntityUtil.setAddtimeIfNull(zuopindafenFuhe);
         zuopindafenFuheService.insert(zuopindafenFuhe);
 
         // 发送复核申请通知给负责教师

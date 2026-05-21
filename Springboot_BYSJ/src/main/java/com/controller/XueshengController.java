@@ -10,6 +10,7 @@ import com.entity.view.XueshengView;
 import com.service.DataSyncService;
 import com.service.TokenService;
 import com.service.XueshengService;
+import com.utils.EntityUtil;
 import com.utils.IdWorker;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
@@ -628,6 +629,9 @@ public class XueshengController {
             if (StringUtils.hasText(xuesheng.getMima())) {
                 xuesheng.setMima(passwordEncoder.encode(xuesheng.getMima()));
             }
+            
+            // 【关键修复】兜底处理：设置addtime（如果前端未传递或格式错误）
+            EntityUtil.setAddtimeIfNull(xuesheng);
             
             // 4. 生成 ID 并保存
             xuesheng.setId(IdWorker.getId());

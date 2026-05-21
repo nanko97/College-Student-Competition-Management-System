@@ -64,6 +64,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/xiaoxitongzhi/markRead",    // 标记消息为已读
         "/xiaoxitongzhi/markAllRead", // 批量标记已读
         "/xiaoxitongzhi/delete",      // 删除消息
+        "/xiaoxitongzhi/update",      // 更新消息状态
         // 文件下载
         "/file/download",
         "/file/upload",

@@ -452,10 +452,10 @@ export default {
     // 【论文3.1.1(5)】成绩单PDF导出
     exportPdfHandler(row) {
       this.$message.info('正在生成PDF，请稍候...')
-      // 使用window.open直接下载
-      const baseURL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080/BYSJ_Springboot'
-      const url = baseURL + '/zuopindafen/exportPdf?jingsaimingcheng=' + encodeURIComponent(row.jingsaimingcheng)
-      window.open(url)
+      // 直接使用window.open，浏览器会自动携带session认证
+      const token = this.$storage.get('Token')
+      const url = '/BYSJ_Springboot/zuopindafen/exportPdf?jingsaimingcheng=' + encodeURIComponent(row.jingsaimingcheng) + '&Token=' + token
+      window.open(url, '_blank')
     },
     downloadHandler(row) {
       if (row.cansaizuopin) {
