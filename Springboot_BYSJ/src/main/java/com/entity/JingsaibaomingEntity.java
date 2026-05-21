@@ -73,7 +73,7 @@ public class JingsaibaomingEntity<T> implements Serializable {
     /**
      * 赛道ID
      */
-
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long saidaoId;
 
     /**
@@ -85,7 +85,7 @@ public class JingsaibaomingEntity<T> implements Serializable {
     /**
      * 团队ID
      */
-
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long tuanduiId;
 
     /**
@@ -165,13 +165,13 @@ public class JingsaibaomingEntity<T> implements Serializable {
     /**
      * 原报名ID(如果是晋级报名)
      */
-
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long yuanBaomingId;
 
     /**
      * 竞赛ID
      */
-
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long jingsaiId;
 
 

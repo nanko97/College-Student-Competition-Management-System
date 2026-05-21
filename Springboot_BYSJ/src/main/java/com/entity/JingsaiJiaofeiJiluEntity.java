@@ -23,9 +23,11 @@ public class JingsaiJiaofeiJiluEntity implements Serializable {
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long baomingId;
     private String xuehao;
     private String xueshengxingming;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long jingsaiId;
     private String jingsaimingcheng;
     private BigDecimal jiaofeiJine;

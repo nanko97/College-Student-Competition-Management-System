@@ -3,6 +3,8 @@ package com.entity;
 import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -18,14 +20,19 @@ public class JingsaiJinjiJiluEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long yuanBaomingId;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long xinBaomingId;
     private String xuehao;
     private String xueshengxingming;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long yuanJingsaiId;
     private String yuanJingsaimingcheng;
     private String yuanJibie;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long xinJingsaiId;
     private String xinJingsaimingcheng;
     private String xinJibie;

@@ -31,7 +31,7 @@ public class SpringbootSchemaApplication extends SpringBootServletInitializer {
 			System.out.println("");
 			System.out.println("╔════════════════════════════════════════════════════════╗");
 			System.out.println("║                                                        ║");
-			System.out.println("║        🎉 大学生竞赛管理系统启动成功！🎉              ║");
+			System.out.println("║        🎉 大学生竞赛管理系统启动成功！🎉                  	 ║");
 			System.out.println("║                                                        ║");
 			System.out.println("╚════════════════════════════════════════════════════════╝");
 			System.out.println("");

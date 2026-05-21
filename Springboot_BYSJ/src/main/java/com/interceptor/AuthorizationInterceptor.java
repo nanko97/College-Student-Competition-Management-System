@@ -97,7 +97,9 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
             if (userPermissionService != null) {
                 String role = tokenEntity.getRole();
                 
-                if (!userPermissionService.hasPermission(role, requestURI)) {
+                // 移除上下文路径后再进行权限校验
+                String path = requestURI.replace(request.getContextPath(), "");
+                if (!userPermissionService.hasPermission(role, path)) {
                     response.setCharacterEncoding("UTF-8");
                     response.setContentType("application/json; charset=utf-8");
                     PrintWriter writer = null;

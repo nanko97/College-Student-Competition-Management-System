@@ -64,6 +64,9 @@ public class JingsaibaomingController {
     @Autowired
     private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
 
+    @Autowired
+    private com.service.XueshengService xueshengService;
+
     /**
      * 后端分页列表查询
      * 功能：带权限控制的报名信息查询
@@ -547,7 +550,19 @@ public class JingsaibaomingController {
                     return R.error("请先登录");
                 }
             }
-            
+
+            // 2.5 兜底处理：如果学生姓名为空，从学生表查询填充
+            if (!StringUtils.hasText(jingsaibaoming.getXueshengxingming()) && StringUtils.hasText(jingsaibaoming.getXuehao())) {
+                log.warn("报名-学生姓名为空，从学生表查询 - 学号: {}", jingsaibaoming.getXuehao());
+                EntityWrapper<com.entity.XueshengEntity> xueshengEw = new EntityWrapper<>();
+                xueshengEw.eq("xuehao", jingsaibaoming.getXuehao());
+                com.entity.XueshengEntity xuesheng = xueshengService.selectOne(xueshengEw);
+                if (xuesheng != null && StringUtils.hasText(xuesheng.getXueshengxingming())) {
+                    jingsaibaoming.setXueshengxingming(xuesheng.getXueshengxingming());
+                    log.info("报名-从学生表查询到姓名: {}", jingsaibaoming.getXueshengxingming());
+                }
+            }
+
             // 3. 实体校验
             ValidatorUtils.validateEntity(jingsaibaoming);
             
@@ -658,7 +673,19 @@ public class JingsaibaomingController {
                 jingsaibaoming.setXuehao(xuehao);
                 log.info("学生 {} 添加竞赛报名：{}", xuehao, jingsaibaoming.getJingsaimingcheng());
             }
-            
+
+            // 2.5 兜底处理：如果学生姓名为空，从学生表查询填充
+            if (!StringUtils.hasText(jingsaibaoming.getXueshengxingming()) && StringUtils.hasText(jingsaibaoming.getXuehao())) {
+                log.warn("在线报名-学生姓名为空，从学生表查询 - 学号: {}", jingsaibaoming.getXuehao());
+                EntityWrapper<com.entity.XueshengEntity> xueshengEw = new EntityWrapper<>();
+                xueshengEw.eq("xuehao", jingsaibaoming.getXuehao());
+                com.entity.XueshengEntity xuesheng = xueshengService.selectOne(xueshengEw);
+                if (xuesheng != null && StringUtils.hasText(xuesheng.getXueshengxingming())) {
+                    jingsaibaoming.setXueshengxingming(xuesheng.getXueshengxingming());
+                    log.info("在线报名-从学生表查询到姓名: {}", jingsaibaoming.getXueshengxingming());
+                }
+            }
+
             // 3. 实体校验
             ValidatorUtils.validateEntity(jingsaibaoming);
             

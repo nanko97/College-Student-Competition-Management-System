@@ -24,8 +24,8 @@
                 @change="handleJingsaiChange"
                 style="width: 100%;">
                 <el-option
-                  v-for="item in jingsaiList"
-                  :key="item.id"
+                  v-for="(item, index) in jingsaiList"
+                  :key="index"
                   :label="item.jingsaimingcheng"
                   :value="item.id">
                 </el-option>
@@ -37,10 +37,11 @@
               <el-select 
                 v-model="dataForm.saidaoId" 
                 placeholder="请选择赛道"
+                @change="handleSaidaoChange"
                 style="width: 100%;">
                 <el-option
-                  v-for="item in saidaoList"
-                  :key="item.id"
+                  v-for="(item, index) in saidaoList"
+                  :key="index"
                   :label="item.saidaoMingcheng"
                   :value="item.id">
                 </el-option>
@@ -138,8 +139,14 @@ export default {
       const xuehao = this.$storage.get('username')
       const session = this.$storage.get('session') || {}
       
+      console.log('当前用户session:', session)
+      console.log('username:', xuehao)
+      
       this.dataForm.fuzerenXuehao = xuehao
-      this.dataForm.fuzerenXingming = session.xingming || ''
+      
+      // 尝试从session获取姓名，如果获取不到就传空字符串（后端会兜底查询）
+      this.dataForm.fuzerenXingming = session.xingming || session.name || session.xueshengxingming || ''
+      console.log('负责人姓名:', this.dataForm.fuzerenXingming)
       
       // 获取竞赛列表
       this.$http({
@@ -176,10 +183,22 @@ export default {
     
     // 竞赛改变时加载赛道列表
     handleJingsaiChange(jingsaiId) {
-      const jingsai = this.jingsaiList.find(item => item.id === jingsaiId)
+      console.log('选择的竞赛ID:', jingsaiId, '类型:', typeof jingsaiId)
+      console.log('竞赛列表:', this.jingsaiList)
+      
+      // 修复：使用 == 而非 ===，因为id可能是字符串或数字
+      const jingsai = this.jingsaiList.find(item => item.id == jingsaiId)
       if (jingsai) {
         this.dataForm.jingsaimingcheng = jingsai.jingsaimingcheng
+        console.log('找到竞赛:', jingsai.jingsaimingcheng)
+      } else {
+        console.error('未找到竞赛，jingsaiId:', jingsaiId)
       }
+      
+      // 清空赛道选择
+      this.dataForm.saidaoId = null
+      this.dataForm.saidaoMingcheng = ''
+      this.saidaoList = []
       
       this.$http({
         url: 'jingsai/saidao/list',
@@ -212,11 +231,43 @@ export default {
       })
     },
     
+    // 赛道改变时同步赛道名称
+    handleSaidaoChange(saidaoId) {
+      console.log('选择的赛道ID:', saidaoId, '类型:', typeof saidaoId)
+      console.log('赛道列表:', this.saidaoList)
+      
+      // 使用 == 而非 ===，因为id可能是字符串或数字
+      const saidao = this.saidaoList.find(item => item.id == saidaoId)
+      if (saidao) {
+        this.dataForm.saidaoMingcheng = saidao.saidaoMingcheng
+        console.log('找到赛道:', saidao.saidaoMingcheng)
+      } else {
+        console.error('未找到赛道，saidaoId:', saidaoId)
+        this.dataForm.saidaoMingcheng = ''
+      }
+    },
+    
     // 提交创建
     submitCreate() {
       this.$refs.dataForm.validate((valid) => {
         if (valid) {
           this.loading = true
+          
+          console.log('提交团队创建 - 完整表单数据:', JSON.stringify(this.dataForm, null, 2))
+          console.log('jingsaiId:', this.dataForm.jingsaiId, '类型:', typeof this.dataForm.jingsaiId)
+          console.log('saidaoId:', this.dataForm.saidaoId, '类型:', typeof this.dataForm.saidaoId)
+          
+          // 额外校验：确保id不是undefined或null
+          if (!this.dataForm.jingsaiId) {
+            this.loading = false
+            this.$message.error('请选择竞赛')
+            return
+          }
+          if (!this.dataForm.saidaoId) {
+            this.loading = false
+            this.$message.error('请选择赛道')
+            return
+          }
           
           this.$http({
             url: 'jingsai/tuandui/create',
@@ -224,15 +275,21 @@ export default {
             data: this.dataForm
           }).then(({ data }) => {
             this.loading = false
+            console.log('创建团队API响应:', data)
             if (data && data.code === 0) {
               this.$message.success(data.msg || '团队创建成功，等待审核')
               this.$router.replace('/xuesheng-my-tuandui')
             } else {
+              console.error('创建团队失败 - 后端返回:', data)
               this.$message.error(data.msg || '创建失败')
             }
-          }).catch(() => {
+          }).catch(err => {
             this.loading = false
+            console.error('创建团队请求异常:', err)
+            this.$message.error('网络请求失败')
           })
+        } else {
+          console.log('表单验证失败')
         }
       })
     },

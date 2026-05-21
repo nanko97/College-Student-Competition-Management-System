@@ -182,7 +182,7 @@ export default {
         jiaofeiId: null,
         yijian: ''
       },
-      auditAction: '' // 'approve' or 'reject',
+      auditAction: '',  // 'approve' or 'reject'
       statistics: {
         totalJiaofei: 0,
         daishenhe: 0,

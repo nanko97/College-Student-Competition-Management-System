@@ -3,6 +3,8 @@ package com.entity;
 import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -20,11 +22,13 @@ public class ZuopindafenFuheEntity implements Serializable {
      * 主键id
      */
     @TableId
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     /**
      * 作品打分记录ID
      */
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long zuopindafenId;
 
     /**

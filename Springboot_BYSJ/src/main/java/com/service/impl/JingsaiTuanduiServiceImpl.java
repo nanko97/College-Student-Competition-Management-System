@@ -8,9 +8,11 @@ import com.dao.JingsaiTuanduiDao;
 import com.entity.JingsaiSaidaoEntity;
 import com.entity.JingsaiTuanduiChengyuanEntity;
 import com.entity.JingsaiTuanduiEntity;
+import com.entity.XueshengEntity;
 import com.service.JingsaiSaidaoService;
 import com.service.JingsaiTuanduiChengyuanService;
 import com.service.JingsaiTuanduiService;
+import com.service.XueshengService;
 import com.utils.IdWorker;
 import com.utils.PageUtils;
 import com.utils.Query;
@@ -33,6 +35,9 @@ public class JingsaiTuanduiServiceImpl extends ServiceImpl<JingsaiTuanduiDao, Ji
     
     @Autowired
     private JingsaiSaidaoService saidaoService;
+    
+    @Autowired
+    private XueshengService xueshengService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -105,17 +110,41 @@ public class JingsaiTuanduiServiceImpl extends ServiceImpl<JingsaiTuanduiDao, Ji
     @Transactional(rollbackFor = Exception.class)
     public R createTuandui(JingsaiTuanduiEntity tuandui, String caozuoRen) {
         try {
-            log.info("开始创建团队 - 操作人:{}, 团队名称:{}", caozuoRen, tuandui.getTuanduiMingcheng());
+            log.info("========== 创建团队开始 ==========");
+            log.info("操作人: {}", caozuoRen);
+            log.info("接收到的团队数据: {}", tuandui);
+            log.info("jingsaiId: {}, 类型: {}", tuandui.getJingsaiId(), tuandui.getJingsaiId() != null ? tuandui.getJingsaiId().getClass().getName() : "null");
+            log.info("saidaoId: {}, 类型: {}", tuandui.getSaidaoId(), tuandui.getSaidaoId() != null ? tuandui.getSaidaoId().getClass().getName() : "null");
+            log.info("tuanduiMingcheng: {}", tuandui.getTuanduiMingcheng());
+            log.info("fuzerenXuehao: {}", tuandui.getFuzerenXuehao());
+            log.info("fuzerenXingming: {}", tuandui.getFuzerenXingming());
             
             // ========== 1. 参数校验 ==========
             if (tuandui.getJingsaiId() == null) {
+                log.error("参数校验失败: jingsaiId为空");
                 return R.error("请选择竞赛");
             }
             if (tuandui.getSaidaoId() == null) {
+                log.error("参数校验失败: saidaoId为空");
                 return R.error("请选择赛道");
             }
             if (tuandui.getFuzerenXuehao() == null || tuandui.getFuzerenXuehao().isEmpty()) {
                 return R.error("负责人学号不能为空");
+            }
+            
+            // ========== 1.5 兜底处理：如果负责人姓名为空，从学生表查询填充 ==========
+            if (tuandui.getFuzerenXingming() == null || tuandui.getFuzerenXingming().isEmpty()) {
+                log.warn("负责人姓名为空，从学生表查询 - 学号: {}", tuandui.getFuzerenXuehao());
+                EntityWrapper<XueshengEntity> xueshengEw = new EntityWrapper<>();
+                xueshengEw.eq("xuehao", tuandui.getFuzerenXuehao());
+                XueshengEntity xuesheng = xueshengService.selectOne(xueshengEw);
+                if (xuesheng != null && xuesheng.getXueshengxingming() != null) {
+                    tuandui.setFuzerenXingming(xuesheng.getXueshengxingming());
+                    log.info("从学生表查询到姓名: {}", tuandui.getFuzerenXingming());
+                } else {
+                    log.error("未找到学生信息，学号: {}", tuandui.getFuzerenXuehao());
+                    return R.error("未找到学生信息，学号: " + tuandui.getFuzerenXuehao());
+                }
             }
             
             // ========== 2. 唯一性校验：同一学生在同一竞赛中只能属于一个团队 ==========

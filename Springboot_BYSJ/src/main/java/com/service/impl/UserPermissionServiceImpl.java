@@ -100,6 +100,10 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/jingsai/tuandui/update",
         "/jingsai/tuandui/dissolve",
         "/jingsai/tuandui/info",
+        // 赛道管理相关（学生查看赛道）
+        "/jingsai/saidao/list",
+        "/jingsai/saidao/page",
+        "/jingsai/saidao/info",
         // 团队申请相关
         "/tuandui/apply/join",
         "/tuandui/apply/quit",

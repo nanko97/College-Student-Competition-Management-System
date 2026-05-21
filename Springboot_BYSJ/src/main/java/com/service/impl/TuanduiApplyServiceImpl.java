@@ -7,6 +7,7 @@ import com.dao.TuanduiApplyDao;
 import com.entity.JingsaiTuanduiChengyuanEntity;
 import com.entity.JingsaiTuanduiEntity;
 import com.entity.TuanduiApplyEntity;
+import com.entity.XueshengEntity;
 import com.service.JingsaiTuanduiChengyuanService;
 import com.service.JingsaiTuanduiService;
 import com.service.TuanduiApplyService;
@@ -38,6 +39,9 @@ public class TuanduiApplyServiceImpl extends ServiceImpl<TuanduiApplyDao, Tuandu
     @Autowired
     private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
 
+    @Autowired
+    private com.service.XueshengService xueshengService;
+
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         Page<TuanduiApplyEntity> page = this.selectPage(
@@ -60,9 +64,18 @@ public class TuanduiApplyServiceImpl extends ServiceImpl<TuanduiApplyDao, Tuandu
     @Transactional(rollbackFor = Exception.class)
     public R applyJoin(TuanduiApplyEntity apply) {
         try {
+            log.info("接收到的申请数据 - tuanduiId: {}, 类型: {}", apply.getTuanduiId(), apply.getTuanduiId() != null ? apply.getTuanduiId().getClass().getName() : "null");
+            
+            // 容错处理：如果tuanduiId为null，可能是精度丢失导致，尝试从其他方式获取
+            if (apply.getTuanduiId() == null) {
+                log.error("团队ID为空，无法处理申请");
+                return R.error("团队ID无效");
+            }
+            
             // 1. 验证团队是否存在
             JingsaiTuanduiEntity tuandui = tuanduiService.selectById(apply.getTuanduiId());
             if (tuandui == null) {
+                log.error("团队不存在，ID: {}", apply.getTuanduiId());
                 return R.error("团队不存在");
             }
 
@@ -83,6 +96,21 @@ public class TuanduiApplyServiceImpl extends ServiceImpl<TuanduiApplyDao, Tuandu
             applyEw.eq("apply_status", "待审核");
             if (this.selectCount(applyEw) > 0) {
                 return R.error("您已有待审核的加入申请");
+            }
+
+            // ========== 3.5 兜底处理：如果学生姓名为空，从学生表查询填充 ==========
+            if (apply.getXueshengxingming() == null || apply.getXueshengxingming().isEmpty()) {
+                log.warn("学生姓名为空，从学生表查询 - 学号: {}", apply.getXuehao());
+                EntityWrapper<XueshengEntity> xueshengEw = new EntityWrapper<>();
+                xueshengEw.eq("xuehao", apply.getXuehao());
+                XueshengEntity xuesheng = xueshengService.selectOne(xueshengEw);
+                if (xuesheng != null && xuesheng.getXueshengxingming() != null) {
+                    apply.setXueshengxingming(xuesheng.getXueshengxingming());
+                    log.info("从学生表查询到姓名: {}", apply.getXueshengxingming());
+                } else {
+                    log.error("未找到学生信息，学号: {}", apply.getXuehao());
+                    return R.error("未找到学生信息，学号: " + apply.getXuehao());
+                }
             }
 
             // 4. 设置申请信息
@@ -160,6 +188,21 @@ public class TuanduiApplyServiceImpl extends ServiceImpl<TuanduiApplyDao, Tuandu
             applyEw.eq("apply_status", "待审核");
             if (this.selectCount(applyEw) > 0) {
                 return R.error("您已有待审核的退出申请");
+            }
+
+            // 4.5 兜底处理：如果学生姓名为空，从学生表查询填充
+            if (apply.getXueshengxingming() == null || apply.getXueshengxingming().isEmpty()) {
+                log.warn("退出申请-学生姓名为空，从学生表查询 - 学号: {}", apply.getXuehao());
+                EntityWrapper<XueshengEntity> xueshengEw = new EntityWrapper<>();
+                xueshengEw.eq("xuehao", apply.getXuehao());
+                XueshengEntity xuesheng = xueshengService.selectOne(xueshengEw);
+                if (xuesheng != null && xuesheng.getXueshengxingming() != null) {
+                    apply.setXueshengxingming(xuesheng.getXueshengxingming());
+                    log.info("退出申请-从学生表查询到姓名: {}", apply.getXueshengxingming());
+                } else {
+                    log.error("退出申请-未找到学生信息，学号: {}", apply.getXuehao());
+                    return R.error("未找到学生信息，学号: " + apply.getXuehao());
+                }
             }
 
             // 5. 设置申请信息
