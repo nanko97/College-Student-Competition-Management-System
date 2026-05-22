@@ -188,10 +188,10 @@
                     @click="addOrUpdateHandler(scope.row.id,'info')">详情</el-button>
                   <el-button v-if="isAuth('jingsaibaoming_my','审核') && (!scope.row.sfsh || scope.row.sfsh === '待审核')"
                     type="warning" icon="el-icon-check" size="mini"
-                    @click="shenheHandler(scope.row, '是')">通过</el-button>
+                    @click="shenheHandler(scope.row, '通过')">通过</el-button>
                   <el-button v-if="isAuth('jingsaibaoming_my','审核') && (!scope.row.sfsh || scope.row.sfsh === '待审核')"
                     type="danger" icon="el-icon-close" size="mini"
-                    @click="shenheHandler(scope.row, '否')">驳回</el-button>
+                    @click="shenheHandler(scope.row, '未通过')">驳回</el-button>
                   <el-button v-if="isAuth('jingsaibaoming_my','删除')"
                     type="danger" icon="el-icon-delete" size="mini"
                     @click="deleteHandler(scope.row.id)">删除</el-button>
@@ -270,8 +270,8 @@ export default {
     },
     getStatusType(status) {
       if (!status) return 'warning'
-      if (status === '是' || status.includes('通过') || status.includes('成功')) return 'success'
-      if (status === '否' || status.includes('拒绝') || status.includes('失败')) return 'danger'
+      if (status === '通过' || status.includes('成功')) return 'success'
+      if (status === '未通过' || status.includes('拒绝') || status.includes('失败')) return 'danger'
       if (status.includes('待')) return 'warning'
       return 'info'
     },
@@ -373,7 +373,7 @@ export default {
     },
     // 审核报名
     shenheHandler(row, result) {
-      let tip = result === '是' ? '通过' : '驳回';
+      let tip = result === '通过' ? '通过' : '驳回';
       this.$confirm(`确定审核${tip}该报名申请?`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',

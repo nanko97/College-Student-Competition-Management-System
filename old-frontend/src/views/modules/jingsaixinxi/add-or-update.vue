@@ -80,6 +80,37 @@
         </div>
       </el-col>
       <el-col :span="12">
+        <el-form-item class="select" v-if="type!='info'"  label="缴费模式" prop="jiaofeimoshi">
+          <el-select v-model="ruleForm.jiaofeimoshi" placeholder="请选择缴费模式" @change="onJiaofeimoshiChange">
+            <el-option
+                v-for="(item,index) in jiaofeimoshiOptions"
+                v-bind:key="index"
+                :label="item"
+                :value="item">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <div v-else>
+          <el-form-item class="input" label="缴费模式" prop="jiaofeimoshi">
+	      <el-input v-model="ruleForm.jiaofeimoshi"
+                placeholder="缴费模式" readonly></el-input>
+          </el-form-item>
+        </div>
+      </el-col>
+      <el-col :span="12" v-if="ruleForm.jiaofeimoshi==='付费'">
+        <el-form-item class="input" v-if="type!='info'"  label="费用金额" prop="jingsaiFeiyong">
+          <el-input-number v-model="ruleForm.jingsaiFeiyong" 
+              :min="0.01" :precision="2" :step="10" controls-position="right"
+              placeholder="请输入费用金额" style="width: 100%"></el-input-number>
+        </el-form-item>
+        <div v-else>
+          <el-form-item class="input" label="费用金额" prop="jingsaiFeiyong">
+              <el-input v-model="ruleForm.jingsaiFeiyong" 
+                placeholder="费用金额" readonly></el-input>
+          </el-form-item>
+        </div>
+      </el-col>
+      <el-col :span="12">
         <el-form-item class="select" v-if="type!='info'"  label="有赛道" prop="shifouYouSaidao">
           <el-select v-model="ruleForm.shifouYouSaidao" placeholder="请选择">
             <el-option label="是" value="是"></el-option>
@@ -276,6 +307,8 @@ export default {
 	jingsaijiangli : false,
 	jingsaishijian : false,
 	moshi : false,
+	jiaofeimoshi : false,
+	jingsaiFeiyong : false,
 	fengmiantupian : false,
 	gonghao : false,
 	jiaoshixingming : false,
@@ -288,13 +321,16 @@ export default {
         jingsaijiangli: '',
         jingsaishijian: '',
         moshi: '',
+        jiaofeimoshi: '免费',
+        jingsaiFeiyong: 0,
         fengmiantupian: '',
         gonghao: '',
         jiaoshixingming: '',
-        shifouYouSaidao: '否',  // 默认无赛道
-        shifouXuyaoJinji: '否',  // 默认不需晋级
+        shifouYouSaidao: '否',
+        shifouXuyaoJinji: '否',
       },
           moshiOptions: [],
+          jiaofeimoshiOptions: [],
       rules: {
           jingsaimingcheng: [
           ],
@@ -309,6 +345,21 @@ export default {
           jingsaishijian: [
           ],
           moshi: [
+          ],
+          jiaofeimoshi: [
+            { required: true, message: '请选择缴费模式', trigger: 'change' }
+          ],
+          jingsaiFeiyong: [
+            { validator: (rule, value, callback) => {
+                if (this.ruleForm.jiaofeimoshi === '付费') {
+                  if (!value || value <= 0) {
+                    callback(new Error('付费竞赛必须填写费用金额且大于0'));
+                  } else { callback(); }
+                } else {
+                  callback(); // 免费竞赛不校验
+                }
+              }, trigger: 'blur'
+            }
           ],
           fengmiantupian: [
           ],
@@ -377,6 +428,16 @@ export default {
 	    this.ro.moshi = true;
             continue;
           }
+          if(o=='jiaofeimoshi'){
+            this.ruleForm.jiaofeimoshi = obj[o];
+	    this.ro.jiaofeimoshi = true;
+            continue;
+          }
+          if(o=='jingsaiFeiyong'){
+            this.ruleForm.jingsaiFeiyong = obj[o];
+	    this.ro.jingsaiFeiyong = true;
+            continue;
+          }
           if(o=='fengmiantupian'){
             this.ruleForm.fengmiantupian = obj[o];
 	    this.ro.fengmiantupian = true;
@@ -426,7 +487,18 @@ export default {
           this.$message.error('获取用户信息失败，请重新登录');
         });
       }
-            this.moshiOptions = "付费,免费".split(',')
+            this.moshiOptions = "线上,线下,结合".split(',')
+            this.jiaofeimoshiOptions = "付费,免费".split(',')
+    },
+    // 缴费模式变化时自动设置费用金额
+    onJiaofeimoshiChange(val) {
+      if (val === '免费') {
+        this.ruleForm.jingsaiFeiyong = 0;
+      } else if (!this.ruleForm.jingsaiFeiyong || this.ruleForm.jingsaiFeiyong <= 0) {
+        this.ruleForm.jingsaiFeiyong = 50; // 默认50元
+      }
+      // 触发校验
+      this.$refs.ruleForm.validateField('jingsaiFeiyong');
     },
     // 多级联动参数
     info(id) {

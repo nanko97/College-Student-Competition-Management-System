@@ -68,14 +68,15 @@
           <template slot-scope="scope">
             <el-tag v-if="isSfshPass(scope.row.sfsh)" type="success" effect="dark">已通过</el-tag>
             <el-tag v-else-if="scope.row.sfsh === '待审核' || !scope.row.sfsh" type="warning">待审核</el-tag>
-            <el-tag v-else-if="scope.row.sfsh === '否' || scope.row.sfsh === '不通过'" type="danger">未通过</el-tag>
+            <el-tag v-else-if="scope.row.sfsh === '未通过'" type="danger">未通过</el-tag>
             <el-tag v-else type="info">{{ scope.row.sfsh || '未知' }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="ispay" header-align="center" align="center" label="缴费状态" width="100">
           <template slot-scope="scope">
-            <el-tag v-if="scope.row.ispay === '已支付'" type="success" effect="dark">缴费通过</el-tag>
-            <el-tag v-else-if="scope.row.ispay === '已缴费'" type="warning">待审核</el-tag>
+            <el-tag v-if="scope.row.ispay === '已缴费'" type="success" effect="dark">缴费通过</el-tag>
+            <el-tag v-else-if="scope.row.ispay === '未缴费' && scope.row.jiaofeimoshi === '免费'" type="success" effect="dark">免费竞赛</el-tag>
+            <el-tag v-else-if="scope.row.ispay === '待审核'" type="warning">待审核</el-tag>
             <el-tag v-else-if="scope.row.ispay === '已驳回'" type="danger">缴费驳回</el-tag>
             <el-tag v-else-if="scope.row.ispay === '未缴费'" type="info">未缴费</el-tag>
             <el-tag v-else type="info">{{ scope.row.ispay || '未缴费' }}</el-tag>
@@ -90,11 +91,12 @@
         <el-table-column prop="shenqingriqi" header-align="center" align="center" label="报名日期" width="110"></el-table-column>
         <el-table-column fixed="right" header-align="center" align="center" width="280" label="操作">
           <template slot-scope="scope">
-            <el-button v-if="isSfshPass(scope.row.sfsh) && scope.row.ispay === '已支付' && !scope.row.cansaizuopin" type="success" size="mini" icon="el-icon-upload2" @click="uploadHandler(scope.row)">提交作品</el-button>
-            <el-button v-if="isSfshPass(scope.row.sfsh) && scope.row.ispay === '已支付' && scope.row.cansaizuopin" type="primary" size="mini" icon="el-icon-refresh" @click="updateHandler(scope.row)">更新</el-button>
-            <el-button v-if="isSfshPass(scope.row.sfsh) && scope.row.ispay === '已支付' && scope.row.cansaizuopin" type="info" size="mini" icon="el-icon-download" @click="downloadHandler(scope.row)">下载</el-button>
-            <el-button v-if="isSfshPass(scope.row.sfsh) && scope.row.ispay === '已支付' && scope.row.cansaizuopin" type="warning" size="mini" icon="el-icon-document" @click="exportPdfHandler(scope.row)">成绩单</el-button>
-            <el-tag v-if="isSfshPass(scope.row.sfsh) && scope.row.ispay !== '已支付'" type="warning" size="mini" effect="dark">{{ getIspayTip(scope.row) }}</el-tag>
+            <!-- 免费竞赛：审核通过即可提交作品 -->
+            <el-button v-if="isSfshPass(scope.row.sfsh) && canSubmitZuopin(scope.row) && !scope.row.cansaizuopin" type="success" size="mini" icon="el-icon-upload2" @click="uploadHandler(scope.row)" >提交作品</el-button>
+            <el-button v-if="isSfshPass(scope.row.sfsh) && canSubmitZuopin(scope.row) && scope.row.cansaizuopin" type="primary" size="mini" icon="el-icon-refresh" @click="updateHandler(scope.row)" >更新</el-button>
+            <el-button v-if="isSfshPass(scope.row.sfsh) && canSubmitZuopin(scope.row) && scope.row.cansaizuopin" type="info" size="mini" icon="el-icon-download" @click="downloadHandler(scope.row)" >下载</el-button>
+            <el-button v-if="isSfshPass(scope.row.sfsh) && canSubmitZuopin(scope.row) && scope.row.cansaizuopin" type="warning" size="mini" icon="el-icon-document" @click="exportPdfHandler(scope.row)" >成绩单</el-button>
+            <el-tag v-if="isSfshPass(scope.row.sfsh) && !canSubmitZuopin(scope.row)" type="warning" size="mini" effect="dark">{{ getIspayTip(scope.row) }}</el-tag>
             <el-tag v-if="!isSfshPass(scope.row.sfsh)" type="info" size="mini" effect="dark">{{ scope.row.sfsh === '待审核' || !scope.row.sfsh ? '等待审核' : '审核未通过' }}</el-tag>
           </template>
         </el-table-column>
@@ -199,13 +201,20 @@ export default {
     this.getStatistics()
   },
   methods: {
-    // 报名审核状态兼容判断（数据库中"是"和"通过"都表示审核通过）
+    // 报名审核状态判断
     isSfshPass(sfsh) {
-      return sfsh === '通过' || sfsh === '是'
+      return sfsh === '通过'
+    },
+    // 是否可以提交作品：免费竞赛审核通过即可，付费竞赛需缴费通过
+    canSubmitZuopin(row) {
+      if (row.jiaofeimoshi === '免费') return true
+      return row.ispay === '已缴费'
     },
     // 缴费状态提示
     getIspayTip(row) {
-      if (row.ispay === '已缴费') return '缴费待审核'
+      if (row.jiaofeimoshi === '免费') return '免费竞赛'
+      if (row.ispay === '已缴费') return '缴费通过'
+      if (row.ispay === '待审核') return '缴费待审核'
       if (row.ispay === '已驳回') return '缴费被驳回'
       if (row.ispay === '未缴费' || !row.ispay) return '未缴费'
       return '未完成缴费'

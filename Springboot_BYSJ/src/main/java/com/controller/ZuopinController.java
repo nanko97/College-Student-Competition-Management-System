@@ -218,6 +218,20 @@ public class ZuopinController {
 
         PageUtils page = jingsaibaomingService.queryPage(params, ew);
 
+        // 为每个报名记录补充缴费模式信息
+        if (page.getList() != null) {
+            for (Object obj : page.getList()) {
+                JingsaibaomingEntity entity = (JingsaibaomingEntity) obj;
+                // 查询关联竞赛的缴费模式
+                if (entity.getJingsaiId() != null) {
+                    JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(entity.getJingsaiId());
+                    if (jingsai != null) {
+                        entity.setJiaofeimoshi(jingsai.getJiaofeimoshi());
+                    }
+                }
+            }
+        }
+
         log.info("查询结果 - 总数: {}", page.getTotal());
         return R.ok().put("page", page);
     }
@@ -235,7 +249,7 @@ public class ZuopinController {
         log.info("当前用户角色tableName：{}", tableName);
 
         EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<>();
-        ew.andNew("sfsh = '是' OR sfsh = '通过'"); // 兼容两种审核通过值
+        ew.eq("sfsh", "通过");
         ew.isNotNull("cansaizuopin"); // 只显示已提交作品的
         
         // 教师只能查看自己创建的竞赛的作品
@@ -472,27 +486,40 @@ public class ZuopinController {
                 return R.error("无权操作此报名记录");
             }
 
-            // 验证报名是否已审核通过（兼容"是"和"通过"两种值）
-            if (!"通过".equals(baoming.getSfsh()) && !"是".equals(baoming.getSfsh())) {
+            // 验证报名是否已审核通过
+            if (!"通过".equals(baoming.getSfsh())) {
                 return R.error("报名信息未审核通过，无法提交作品");
             }
 
-            // 验证缴费状态
-            EntityWrapper<JingsaiJiaofeiJiluEntity> jiaofeiEw = new EntityWrapper<>();
-            jiaofeiEw.eq("baoming_id", baomingId);
-            jiaofeiEw.eq("xuehao", baoming.getXuehao());
-            List<JingsaiJiaofeiJiluEntity> jiaofeiList = jingsaiJiaofeiJiluService.selectList(jiaofeiEw);
-            boolean hasApprovedPayment = false;
-            if (jiaofeiList != null) {
-                for (JingsaiJiaofeiJiluEntity jiaofei : jiaofeiList) {
-                    if ("已通过".equals(jiaofei.getJiaofeiZhuangtai())) {
-                        hasApprovedPayment = true;
-                        break;
+            // 验证缴费状态：免费竞赛免缴费可直接提交，付费竞赛需缴费审核通过
+            JingsaixinxiEntity jingsai = null;
+            if (baoming.getJingsaiId() != null) {
+                jingsai = jingsaixinxiService.selectById(baoming.getJingsaiId());
+            } else if (baoming.getJingsaimingcheng() != null) {
+                EntityWrapper<JingsaixinxiEntity> ew = new EntityWrapper<>();
+                ew.eq("jingsaimingcheng", baoming.getJingsaimingcheng());
+                jingsai = jingsaixinxiService.selectOne(ew);
+            }
+            boolean isFreeCompetition = (jingsai != null && "免费".equals(jingsai.getJiaofeimoshi()));
+
+            if (!isFreeCompetition) {
+                // 付费竞赛：必须缴费审核通过才能提交作品
+                EntityWrapper<JingsaiJiaofeiJiluEntity> jiaofeiEw = new EntityWrapper<>();
+                jiaofeiEw.eq("baoming_id", baomingId);
+                jiaofeiEw.eq("xuehao", baoming.getXuehao());
+                List<JingsaiJiaofeiJiluEntity> jiaofeiList = jingsaiJiaofeiJiluService.selectList(jiaofeiEw);
+                boolean hasApprovedPayment = false;
+                if (jiaofeiList != null) {
+                    for (JingsaiJiaofeiJiluEntity jiaofei : jiaofeiList) {
+                        if ("已通过".equals(jiaofei.getJiaofeiZhuangtai())) {
+                            hasApprovedPayment = true;
+                            break;
+                        }
                     }
                 }
-            }
-            if (!hasApprovedPayment) {
-                return R.error("请先完成缴费并等待审核通过后，再提交作品");
+                if (!hasApprovedPayment) {
+                    return R.error("请先完成缴费并等待审核通过后，再提交作品");
+                }
             }
 
             // 获取分片元数据
@@ -628,30 +655,43 @@ public class ZuopinController {
                 return R.error("无权操作此报名记录");
             }
 
-            // 验证报名是否已审核通过（兼容"是"和"通过"两种值）
-            if (!"通过".equals(baoming.getSfsh()) && !"是".equals(baoming.getSfsh())) {
+            // 验证报名是否已审核通过
+            if (!"通过".equals(baoming.getSfsh())) {
                 return R.error("报名信息未审核通过，无法提交作品");
             }
             
-            // 【重要】7. 验证缴费状态 - 只有缴费审核通过后才能提交作品
-            EntityWrapper<JingsaiJiaofeiJiluEntity> jiaofeiEw = new EntityWrapper<>();
-            jiaofeiEw.eq("baoming_id", baomingId);
-            jiaofeiEw.eq("xuehao", baoming.getXuehao());
-            List<JingsaiJiaofeiJiluEntity> jiaofeiList = jingsaiJiaofeiJiluService.selectList(jiaofeiEw);
-            
-            boolean hasApprovedPayment = false;
-            if (jiaofeiList != null && !jiaofeiList.isEmpty()) {
-                for (JingsaiJiaofeiJiluEntity jiaofei : jiaofeiList) {
-                    if ("已通过".equals(jiaofei.getJiaofeiZhuangtai())) {
-                        hasApprovedPayment = true;
-                        break;
+            // 验证缴费状态：免费竞赛免缴费可直接提交，付费竞赛需缴费审核通过
+            JingsaixinxiEntity jingsai = null;
+            if (baoming.getJingsaiId() != null) {
+                jingsai = jingsaixinxiService.selectById(baoming.getJingsaiId());
+            } else if (baoming.getJingsaimingcheng() != null) {
+                EntityWrapper<JingsaixinxiEntity> ew = new EntityWrapper<>();
+                ew.eq("jingsaimingcheng", baoming.getJingsaimingcheng());
+                jingsai = jingsaixinxiService.selectOne(ew);
+            }
+            boolean isFreeCompetition = (jingsai != null && "免费".equals(jingsai.getJiaofeimoshi()));
+
+            if (!isFreeCompetition) {
+                // 付费竞赛：必须缴费审核通过
+                EntityWrapper<JingsaiJiaofeiJiluEntity> jiaofeiEw = new EntityWrapper<>();
+                jiaofeiEw.eq("baoming_id", baomingId);
+                jiaofeiEw.eq("xuehao", baoming.getXuehao());
+                List<JingsaiJiaofeiJiluEntity> jiaofeiList = jingsaiJiaofeiJiluService.selectList(jiaofeiEw);
+                
+                boolean hasApprovedPayment = false;
+                if (jiaofeiList != null && !jiaofeiList.isEmpty()) {
+                    for (JingsaiJiaofeiJiluEntity jiaofei : jiaofeiList) {
+                        if ("已通过".equals(jiaofei.getJiaofeiZhuangtai())) {
+                            hasApprovedPayment = true;
+                            break;
+                        }
                     }
                 }
-            }
-            
-            if (!hasApprovedPayment) {
-                log.warn("学生 {} 尝试提交作品但未缴费或未通过审核，报名ID: {}", baoming.getXuehao(), baomingId);
-                return R.error("请先完成缴费并等待教师审核通过后，再提交作品");
+                
+                if (!hasApprovedPayment) {
+                    log.warn("学生 {} 尝试提交作品但未缴费或未通过审核，报名ID: {}", baoming.getXuehao(), baomingId);
+                    return R.error("请先完成缴费并等待教师审核通过后，再提交作品");
+                }
             }
 
             // 【论文3.1.1(4)】8. 保存文件 - 支持版本控制，保留最近3个版本
@@ -759,7 +799,7 @@ public class ZuopinController {
                     // 查询这些竞赛的所有报名记录
                     EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
                     baomingEw.in("jingsai_id", jingsaiIds);
-                    baomingEw.andNew("sfsh = '是' OR sfsh = '通过'");
+                    baomingEw.eq("sfsh", "通过");
                     List<JingsaibaomingEntity> myBaomings = jingsaibaomingService.selectList(baomingEw);
                     
                     // 统计已提交作品的
@@ -812,7 +852,7 @@ public class ZuopinController {
             } else {
                 // 管理员端：统计所有审核通过的报名的作品提交情况
                 EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
-                baomingEw.andNew("sfsh = '是' OR sfsh = '通过'");
+                baomingEw.eq("sfsh", "通过");
                 List<JingsaibaomingEntity> allBaomings = jingsaibaomingService.selectList(baomingEw);
                 
                 int totalBaoming = 0;

@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.util.Date;
 
 
@@ -101,6 +102,18 @@ public class JingsaixinxiEntity<T> implements Serializable {
      */
     @TableField("moshi")
     private String moshi;
+
+    /**
+     * 缴费模式(付费/免费)
+     */
+    @TableField("jiaofeimoshi")
+    private String jiaofeimoshi;
+
+    /**
+     * 竞赛费用金额(付费竞赛>0,免费竞赛=0)
+     */
+    @TableField("jingsai_feiyong")
+    private BigDecimal jingsaiFeiyong;
 
     /**
      * 是否有赛道(是/否)
@@ -249,6 +262,34 @@ public class JingsaixinxiEntity<T> implements Serializable {
      */
     public String getMoshi() {
         return moshi;
+    }
+
+    /**
+     * 设置：缴费模式
+     */
+    public void setJiaofeimoshi(String jiaofeimoshi) {
+        this.jiaofeimoshi = jiaofeimoshi;
+    }
+
+    /**
+     * 获取：缴费模式
+     */
+    public String getJiaofeimoshi() {
+        return jiaofeimoshi;
+    }
+
+    /**
+     * 设置：竞赛费用金额
+     */
+    public void setJingsaiFeiyong(BigDecimal jingsaiFeiyong) {
+        this.jingsaiFeiyong = jingsaiFeiyong;
+    }
+
+    /**
+     * 获取：竞赛费用金额
+     */
+    public BigDecimal getJingsaiFeiyong() {
+        return jingsaiFeiyong;
     }
 
     /**

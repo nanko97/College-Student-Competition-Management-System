@@ -125,25 +125,33 @@ public class JingsaiJiaofeiController {
                 return R.error("该报名已提交缴费，请勿重复提交");
             }
 
-            // 3. 获取费用配置
-            JingsaiFeiyongEntity feiyong = jingsaiFeiyongService.getByJingsaiId(jiaofeiJilu.getJingsaiId());
-            if (feiyong == null || "否".equals(feiyong.getShifouShoufei())) {
-                return R.error("该竞赛无需缴费");
+            // 3. 获取竞赛信息验证缴费
+            JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(jiaofeiJilu.getJingsaiId());
+            if (jingsai == null) {
+                return R.error("竞赛信息不存在");
+            }
+            if ("免费".equals(jingsai.getJiaofeimoshi())) {
+                return R.error("该竞赛无需缴费（免费竞赛）");
+            }
+            BigDecimal feiyong = jingsai.getJingsaiFeiyong();
+            if (feiyong == null || feiyong.compareTo(BigDecimal.ZERO) <= 0) {
+                return R.error("该竞赛未配置费用金额，请联系管理员");
             }
 
-            // 4. 验证缴费截止日期
-            if (feiyong.getJiaofeiJiezhiRiqi() != null) {
+            // 4. 验证缴费截止日期（从jingsai_feiyong表获取）
+            JingsaiFeiyongEntity feiyongConfig = jingsaiFeiyongService.getByJingsaiId(jiaofeiJilu.getJingsaiId());
+            if (feiyongConfig != null && feiyongConfig.getJiaofeiJiezhiRiqi() != null) {
                 Date now = new Date();
-                if (now.after(feiyong.getJiaofeiJiezhiRiqi())) {
+                if (now.after(feiyongConfig.getJiaofeiJiezhiRiqi())) {
                     return R.error("已超过缴费截止日期（" + 
-                        new java.text.SimpleDateFormat("yyyy-MM-dd").format(feiyong.getJiaofeiJiezhiRiqi()) + 
+                        new java.text.SimpleDateFormat("yyyy-MM-dd").format(feiyongConfig.getJiaofeiJiezhiRiqi()) + 
                         "），无法提交缴费");
                 }
             }
 
             // 5. 验证金额
-            if (jiaofeiJilu.getJiaofeiJine().compareTo(feiyong.getBaomingfei()) != 0) {
-                return R.error("缴费金额不正确，应为：" + feiyong.getBaomingfei());
+            if (jiaofeiJilu.getJiaofeiJine().compareTo(feiyong) != 0) {
+                return R.error("缴费金额不正确，应为：" + feiyong);
             }
 
             // 6. 保存缴费记录
@@ -155,7 +163,7 @@ public class JingsaiJiaofeiController {
             jingsaiJiaofeiJiluService.insert(jiaofeiJilu);
 
             // 7. 更新报名表的支付状态
-            baoming.setIspay("已缴费");
+            baoming.setIspay("待审核");
             jingsaibaomingService.updateById(baoming);
 
             log.info("学生 {} 提交缴费凭证，竞赛：{}，金额：{}",
@@ -406,7 +414,7 @@ public class JingsaiJiaofeiController {
             // 8. 更新报名表的支付状态
             JingsaibaomingEntity baoming = jingsaibaomingService.selectById(jiaofeiJilu.getBaomingId());
             if (baoming != null) {
-                baoming.setIspay("已缴费");
+                baoming.setIspay("待审核");
                 jingsaibaomingService.updateById(baoming);
             }
 

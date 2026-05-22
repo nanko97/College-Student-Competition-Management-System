@@ -369,6 +369,17 @@ public class JingsaixinxiController {
             return R.error("竞赛名称不能为空");
         }
         
+        // 1.5 付费竞赛必须配置费用金额
+        if ("付费".equals(jingsaixinxi.getJiaofeimoshi())) {
+            if (jingsaixinxi.getJingsaiFeiyong() == null || jingsaixinxi.getJingsaiFeiyong().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+                log.warn("保存竞赛失败：付费竞赛费用金额未设置或为0");
+                return R.error("付费竞赛必须设置费用金额且大于0");
+            }
+        } else if ("免费".equals(jingsaixinxi.getJiaofeimoshi()) || jingsaixinxi.getJiaofeimoshi() == null) {
+            // 免费竞赛自动设置费用为0
+            jingsaixinxi.setJingsaiFeiyong(java.math.BigDecimal.ZERO);
+        }
+        
         try {
             // 2. 自动填充创建人工号 (如果是教师创建)
             String tableName = (String) request.getSession().getAttribute("tableName");
@@ -500,6 +511,15 @@ public class JingsaixinxiController {
         if (!StringUtils.hasText(jingsaixinxi.getJingsaimingcheng())) {
             log.warn("添加竞赛失败：竞赛名称为空");
             return R.error("竞赛名称不能为空");
+        }
+        
+        // 1.5 付费竞赛必须配置费用金额
+        if ("付费".equals(jingsaixinxi.getJiaofeimoshi())) {
+            if (jingsaixinxi.getJingsaiFeiyong() == null || jingsaixinxi.getJingsaiFeiyong().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+                return R.error("付费竞赛必须设置费用金额且大于0");
+            }
+        } else if ("免费".equals(jingsaixinxi.getJiaofeimoshi()) || jingsaixinxi.getJiaofeimoshi() == null) {
+            jingsaixinxi.setJingsaiFeiyong(java.math.BigDecimal.ZERO);
         }
             
         try {
@@ -635,6 +655,16 @@ public class JingsaixinxiController {
         if (!StringUtils.hasText(jingsaixinxi.getJingsaimingcheng())) {
             log.warn("修改竞赛失败：竞赛名称为空，ID: {}", jingsaixinxi.getId());
             return R.error("竞赛名称不能为空");
+        }
+        
+        // 1.5 付费竞赛必须配置费用金额
+        if ("付费".equals(jingsaixinxi.getJiaofeimoshi())) {
+            if (jingsaixinxi.getJingsaiFeiyong() == null || jingsaixinxi.getJingsaiFeiyong().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+                log.warn("修改竞赛失败：付费竞赛费用金额未设置或为0");
+                return R.error("付费竞赛必须设置费用金额且大于0");
+            }
+        } else if ("免费".equals(jingsaixinxi.getJiaofeimoshi())) {
+            jingsaixinxi.setJingsaiFeiyong(java.math.BigDecimal.ZERO);
         }
         
         try {

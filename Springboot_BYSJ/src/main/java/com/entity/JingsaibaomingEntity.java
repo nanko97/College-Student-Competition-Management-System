@@ -174,6 +174,12 @@ public class JingsaibaomingEntity<T> implements Serializable {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long jingsaiId;
 
+       /**
+     * 缴费模式（非数据库字段，通过关联竞赛信息填充）
+     */
+    @TableField(exist = false)
+    private String jiaofeimoshi;
+
 
     @JsonFormat(locale = "zh", timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat
@@ -487,6 +493,14 @@ public class JingsaibaomingEntity<T> implements Serializable {
      */
     public Long getJingsaiId() {
         return jingsaiId;
+    }
+
+    public String getJiaofeimoshi() {
+        return jiaofeimoshi;
+    }
+
+    public void setJiaofeimoshi(String jiaofeimoshi) {
+        this.jiaofeimoshi = jiaofeimoshi;
     }
 
 }

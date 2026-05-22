@@ -179,7 +179,7 @@ $info-color: #339af0; // 标准蓝
       border-radius: 8px;
     }
 
-    // 排序标识增强
+    // 排序标识增强 - 保持position:absolute，不设置display
     .sort-caret {
       opacity: 0.35;
     }
@@ -213,6 +213,15 @@ $info-color: #339af0; // 标准蓝
     th.ascending,
     th.descending {
       background: rgba($primary-color, 0.04);
+    }
+
+    // 确保表头文字和箭头在同一行 - inline-flex保持Element UI默认排列
+    th .cell {
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
     }
   }
   

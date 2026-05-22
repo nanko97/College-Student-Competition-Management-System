@@ -125,7 +125,7 @@
             <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="nianfen"
                 header-align="center"
-                width="90"
+                width="110"
                 label="年份">
               <template slot-scope="scope">
                 <span style="font-weight: 600; color: #f76707;">{{scope.row.nianfen || '-'}}</span>
@@ -134,7 +134,7 @@
             <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jingsaiJibie"
                 header-align="center"
-                width="100"
+                width="120"
                 label="竞赛级别">
               <template slot-scope="scope">
                 <el-tag :type="scope.row.jingsaiJibie === 'A类' ? 'danger' : scope.row.jingsaiJibie === 'B类' ? 'warning' : 'success'" size="small">{{scope.row.jingsaiJibie || '-'}}</el-tag>
@@ -192,7 +192,26 @@
                 width="100"
                 label="模式">
               <template slot-scope="scope">
-                <el-tag type="success" size="small">{{scope.row.moshi || '-'}}</el-tag>
+                <el-tag :type="moshiTagType(scope.row.moshi)" size="small" effect="dark">{{scope.row.moshi || '-'}}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column :sortable="contents.tableSortable" align="center"
+                prop="jiaofeimoshi"
+                header-align="center"
+                width="100"
+                label="缴费模式">
+              <template slot-scope="scope">
+                <el-tag :type="jiaofeimoshiTagType(scope.row.jiaofeimoshi)" size="small" effect="dark">{{scope.row.jiaofeimoshi || '-'}}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column :sortable="contents.tableSortable" align="center"
+                prop="jingsaiFeiyong"
+                header-align="center"
+                width="120"
+                label="费用金额">
+              <template slot-scope="scope">
+                <span v-if="scope.row.jiaofeimoshi==='免费'" style="color: #67c23a;">免费</span>
+                <span v-else style="font-weight: 700; color: #ff5252;">¥{{scope.row.jingsaiFeiyong || '0'}}</span>
               </template>
             </el-table-column>
             <el-table-column :sortable="contents.tableSortable" align="center" 
@@ -302,6 +321,16 @@ export default {
   },
   components: { AddOrUpdate },
   methods: {
+    // 模式标签颜色
+    moshiTagType(moshi) {
+      const map = { '线上': 'primary', '线下': 'warning', '结合': 'success' };
+      return map[moshi] || 'info';
+    },
+    // 缴费模式标签颜色
+    jiaofeimoshiTagType(jiaofeimoshi) {
+      const map = { '付费': 'danger', '免费': 'success' };
+      return map[jiaofeimoshi] || 'info';
+    },
     contentPageStyleChange(){
       let arr = []
       if(this.contents.pageTotal) arr.push('total')

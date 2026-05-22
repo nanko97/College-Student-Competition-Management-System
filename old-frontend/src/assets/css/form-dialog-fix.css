@@ -539,17 +539,18 @@
    使升降序箭头更醒目、更美观
    ----------------- */
 
-/* 排序触发区域悬停效果 */
+/* 排序触发区域 - 保持默认inline-flex布局，仅添加交互增强 */
 .el-table__column-sort-trigger {
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-left: 4px;
 }
 
 .el-table__column-sort-trigger:hover {
   transform: scale(1.2);
 }
 
-/* 排序箭头默认半透明 */
+/* 排序箭头默认半透明 - 不设置display，保持position:absolute */
 .el-table .sort-caret {
   opacity: 0.35;
 }
@@ -570,23 +571,32 @@
   border-right-width: 6px !important;
 }
 
-/* 升序激活状态 - 箭头完全显示 */
+/* 升序激活状态 */
 .el-table .ascending .sort-caret.ascending {
   opacity: 1 !important;
 }
 
-/* 降序激活状态 - 箭头完全显示 */
+/* 降序激活状态 */
 .el-table .descending .sort-caret.descending {
   opacity: 1 !important;
 }
 
-/* 可排序列的表头悬停提示 */
+/* 可排序列悬停 */
 .el-table th.is-sortable:hover {
   background: rgba(92, 124, 250, 0.06) !important;
 }
 
-/* 已排序列的表头微妙高亮 */
+/* 已排序列高亮 */
 .el-table th.ascending,
 .el-table th.descending {
   background: rgba(92, 124, 250, 0.04) !important;
+}
+
+/* 确保表头文字和箭头在同一行 - 使用inline布局保持默认排列 */
+.el-table th .cell {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }

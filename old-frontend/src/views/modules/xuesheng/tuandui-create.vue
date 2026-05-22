@@ -155,7 +155,7 @@ export default {
         params: {
           page: 1,
           limit: 1000,
-          sfsh: '是'  // 只显示审核通过的竞赛
+          sfsh: '通过'  // 只显示审核通过的竞赛
         }
       }).then(({ data }) => {
         console.log('竞赛列表API响应:', data)
@@ -205,7 +205,7 @@ export default {
         method: 'get',
         params: {
           jingsaiId: jingsaiId,
-          sfsh: '是'
+          sfsh: '通过'
         }
       }).then(({ data }) => {
         console.log('赛道列表API响应:', data)

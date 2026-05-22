@@ -812,7 +812,7 @@ public class JingsaibaomingController {
                     if (jingsai.getJingsaishijian().before(new Date())) {
                         // 只有审核操作（教师审核通过/驳回）才允许在截止后执行
                         String newSfsh = jingsaibaoming.getSfsh();
-                        boolean isShenheOnly = "是".equals(newSfsh) || "已通过".equals(newSfsh) || "否".equals(newSfsh);
+                        boolean isShenheOnly = "通过".equals(newSfsh) || "未通过".equals(newSfsh);
                         if (!isShenheOnly) {
                             log.warn("报名截止锁定：竞赛{}已结束，不允许修改报名，ID：{}", jingsai.getJingsaimingcheng(), jingsaibaoming.getId());
                             return R.error("该竞赛已结束（截止时间：" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(jingsai.getJingsaishijian()) + "），报名信息已锁定，不允许修改");
@@ -826,8 +826,8 @@ public class JingsaibaomingController {
             
             // 4. 【核心】检查是否为审核操作（sfsh字段变更）
             String newSfsh = jingsaibaoming.getSfsh();
-            boolean isShenheAction = "是".equals(newSfsh) || "已通过".equals(newSfsh);
-            boolean isBohuiAction = "否".equals(newSfsh) || "未通过".equals(newSfsh);
+            boolean isShenheAction = "通过".equals(newSfsh);
+            boolean isBohuiAction = "未通过".equals(newSfsh);
             
             if (isShenheAction || isBohuiAction) {
                 // 查询原报名记录，判断是否从未审核状态变为通过/驳回
@@ -835,11 +835,11 @@ public class JingsaibaomingController {
                 if (oldBaoming != null) {
                     String oldSfsh = oldBaoming.getSfsh();
                     // 【幂等保护】如果已审核通过或已驳回，不允许重复审核
-                    if ("是".equals(oldSfsh) || "已通过".equals(oldSfsh) || "否".equals(oldSfsh)) {
+                    if ("通过".equals(oldSfsh) || "未通过".equals(oldSfsh)) {
                         log.warn("报名已审核，当前状态：{}，ID：{}，请勿重复操作", oldSfsh, jingsaibaoming.getId());
                         return R.error("该报名已审核，当前状态为【" + oldSfsh + "】，请勿重复操作");
                     }
-                    boolean wasNotApproved = !"是".equals(oldSfsh) && !"已通过".equals(oldSfsh);
+                    boolean wasNotApproved = !"通过".equals(oldSfsh);
                     
                     // 如果是首次审核通过，生成缴费记录
                     if (isShenheAction && wasNotApproved) {
@@ -970,8 +970,7 @@ public class JingsaibaomingController {
         // 定义常量
         final String STATUS_APPROVED = "已通过";
         final String STATUS_UNPAID = "未缴费";
-        final String STATUS_NO_FEE_REQUIRED = "否";
-        final String MSG_AUTO_APPROVE = "该竞赛无需缴费，系统自动通过";
+        final String MSG_AUTO_APPROVE_FREE = "免费竞赛，系统自动通过";
             
         try {
             log.info("开始生成缴费记录，报名ID: {}, 学号: {}, 竞赛: {}", 
@@ -981,7 +980,6 @@ public class JingsaibaomingController {
             JingsaixinxiEntity jingsai = null;
             if (baoming.getJingsaiId() != null && baoming.getJingsaiId() > 0) {
                 jingsai = jingsaixinxiService.selectById(baoming.getJingsaiId());
-                log.debug("通过ID查询竞赛，ID: {}, 结果: {}", baoming.getJingsaiId(), jingsai != null ? "找到" : "未找到");
             }
                 
             // 如果jingsaiId为空或查询失败，尝试通过竞赛名称查询
@@ -989,27 +987,27 @@ public class JingsaibaomingController {
                 EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
                 jingsaiEw.eq("jingsaimingcheng", baoming.getJingsaimingcheng());
                 jingsai = jingsaixinxiService.selectOne(jingsaiEw);
-                log.debug("通过名称查询竞赛，名称: {}, 结果: {}", baoming.getJingsaimingcheng(), jingsai != null ? "找到" : "未找到");
             }
                 
             if (jingsai == null) {
-                log.error("生成缴费记录失败：竞赛不存在，报名ID: {}, 竞赛ID: {}, 竞赛名称: {}", 
-                        baoming.getId(), baoming.getJingsaiId(), baoming.getJingsaimingcheng());
+                log.error("生成缴费记录失败：竞赛不存在，报名ID: {}", baoming.getId());
                 throw new RuntimeException("竞赛信息不存在，无法生成缴费记录");
             }
                 
-            // 2. 查询竞赛费用配置
-            com.entity.JingsaiFeiyongEntity feiyong = jingsaiFeiyongService.getByJingsaiId(jingsai.getId());
-            log.debug("竞赛费用配置，竞赛ID: {}, 配置: {}", jingsai.getId(), feiyong != null ? "存在" : "不存在");
-                
-            // 3. 检查是否已存在缴费记录（防止重复生成）
+            // 2. 检查是否已存在缴费记录（防止重复生成）
             EntityWrapper<com.entity.JingsaiJiaofeiJiluEntity> checkEw = new EntityWrapper<>();
             checkEw.eq("baoming_id", baoming.getId());
             Integer existCount = jiaofeiJiluService.selectCount(checkEw);
             if (existCount != null && existCount > 0) {
-                log.warn("报名ID: {} 已存在缴费记录（{}条），跳过生成", baoming.getId(), existCount);
+                log.warn("报名ID: {} 已存在缴费记录，跳过生成", baoming.getId());
                 return;
             }
+                
+            // 3. 【核心】根据竞赛的缴费模式(jiaofeimoshi)决定缴费流程
+            // jiaofeimoshi='免费' -> 不需要缴费，自动通过
+            // jiaofeimoshi='付费' -> 需要缴费，等待学生提交凭证
+            String jiaofeimoshi = jingsai.getJiaofeimoshi();
+            boolean isFreeCompetition = "免费".equals(jiaofeimoshi);
                 
             // 4. 创建缴费记录
             com.entity.JingsaiJiaofeiJiluEntity jiaofeiJilu = new com.entity.JingsaiJiaofeiJiluEntity();
@@ -1022,41 +1020,37 @@ public class JingsaibaomingController {
             jiaofeiJilu.setJiaofeiShijian(new Date());
             jiaofeiJilu.setAddtime(new Date());
                 
-            // 5. 【重要】根据竞赛费用配置决定缴费状态
-            boolean isFreeCompetition = (feiyong != null && STATUS_NO_FEE_REQUIRED.equals(feiyong.getShifouShoufei()));
-                
             if (isFreeCompetition) {
-                // 竞赛不需要缴费，直接设置为"已通过"
+                // 免费竞赛：直接设置为"已通过"，金额0.00
                 jiaofeiJilu.setJiaofeiJine(new java.math.BigDecimal("0.00"));
                 jiaofeiJilu.setJiaofeiZhuangtai(STATUS_APPROVED);
-                jiaofeiJilu.setShenheYijian(MSG_AUTO_APPROVE);
+                jiaofeiJilu.setShenheYijian(MSG_AUTO_APPROVE_FREE);
                 jiaofeiJilu.setShenheShijian(new Date());
                     
-                log.info("✓ 免费竞赛，报名ID: {}, 竞赛: {}, 自动通过缴费", 
-                        baoming.getId(), baoming.getJingsaimingcheng());
+                log.info("✓ 免费竞赛，报名ID: {}, 自动通过缴费", baoming.getId());
             } else {
-                // 竞赛需要缴费，设置为"未缴费"状态
-                java.math.BigDecimal feeAmount = new java.math.BigDecimal("0.00");
-                if (feiyong != null && feiyong.getBaomingfei() != null) {
-                    feeAmount = feiyong.getBaomingfei();
+                // 付费竞赛：设置为"未缴费"，等待学生提交缴费凭证
+                // 从竞赛信息中直接获取费用金额
+                java.math.BigDecimal feeAmount = jingsai.getJingsaiFeiyong();
+                if (feeAmount == null || feeAmount.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+                    log.warn("付费竞赛费用金额为空或0，报名ID: {}, 竞赛ID: {}", baoming.getId(), jingsai.getId());
+                    feeAmount = java.math.BigDecimal.ZERO;
                 }
                 jiaofeiJilu.setJiaofeiJine(feeAmount);
                 jiaofeiJilu.setJiaofeiZhuangtai(STATUS_UNPAID);
                     
-                log.info("✓ 收费竞赛，报名ID: {}, 竞赛: {}, 金额: {}, 等待学生缴费", 
-                        baoming.getId(), baoming.getJingsaimingcheng(), feeAmount);
+                log.info("✓ 付费竞赛，报名ID: {}, 金额: {}, 等待学生缴费", baoming.getId(), feeAmount);
             }
                 
-            // 6. 保存缴费记录
+            // 5. 保存缴费记录
             jiaofeiJiluService.insert(jiaofeiJilu);
-            log.info("✓ 缴费记录生成成功，报名ID: {}, 缴费ID: {}, 状态: {}", 
-                    baoming.getId(), jiaofeiJilu.getId(), jiaofeiJilu.getJiaofeiZhuangtai());
+            log.info("✓ 缴费记录生成成功，报名ID: {}, 状态: {}", baoming.getId(), jiaofeiJilu.getJiaofeiZhuangtai());
                 
-            // 7. 如果是免费竞赛，同步更新报名表的支付状态
+            // 6. 如果是免费竞赛，同步更新报名表的支付状态
             if (isFreeCompetition) {
                 baoming.setIspay("已缴费");
                 jingsaibaomingService.updateById(baoming);
-                log.info("✓ 报名表支付状态已更新，报名ID: {}, ispay: 已缴费", baoming.getId());
+                log.info("✓ 免费竞赛，报名表支付状态已更新，报名ID: {}, ispay: 已缴费", baoming.getId());
             }
                 
         } catch (RuntimeException e) {

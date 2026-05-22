@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container tech-theme animate-fade-in-up">
     <!-- 页面标题 -->
     <div class="page-header">
@@ -82,8 +82,8 @@
             <el-form-item label="审核状态">
               <el-select v-model="searchForm.sfsh" placeholder="请选择" clearable style="width: 150px;">
                 <el-option label="待审核" value="待审核"></el-option>
-                <el-option label="已通过" value="是"></el-option>
-                <el-option label="已驳回" value="否"></el-option>
+                <el-option label="已通过" value="通过"></el-option>
+                <el-option label="已驳回" value="未通过"></el-option>
               </el-select>
             </el-form-item>
             <el-form-item>
@@ -207,11 +207,11 @@
                     @click="addOrUpdateHandler(scope.row.id,'info')">详情</el-button>
                   <template v-if="isAuth('jingsaibaoming','审核') && (!scope.row.sfsh || scope.row.sfsh === '待审核')">
                     <el-button type="warning" icon="el-icon-check" size="mini"
-                      @click="shenheHandler(scope.row, '是')">通过</el-button>
+                      @click="shenheHandler(scope.row, '通过')">通过</el-button>
                     <el-button type="danger" icon="el-icon-close" size="mini"
-                      @click="shenheHandler(scope.row, '否')">驳回</el-button>
+                      @click="shenheHandler(scope.row, '未通过')">驳回</el-button>
                   </template>
-                  <el-tag v-else-if="isAuth('jingsaibaoming','审核') && scope.row.sfsh && scope.row.sfsh !== '待审核'" size="small" :type="scope.row.sfsh === '是' || scope.row.sfsh === '通过' ? 'success' : 'danger'">已审核</el-tag>
+                  <el-tag v-else-if="isAuth('jingsaibaoming','审核') && scope.row.sfsh && scope.row.sfsh !== '待审核'" size="small" :type="scope.row.sfsh === '通过' ? 'success' : 'danger'">已审核</el-tag>
                   <el-button v-if="isAuth('jingsaibaoming','删除')"
                     type="danger" icon="el-icon-delete" size="mini"
                     @click="deleteHandler(scope.row.id)">删除</el-button>
@@ -323,8 +323,8 @@ export default {
     },
     getStatusType(status) {
       if (!status) return 'warning'
-      if (status === '是' || status.includes('通过') || status.includes('成功')) return 'success'
-      if (status === '否' || status.includes('拒绝') || status.includes('失败')) return 'danger'
+      if (status === '通过' || status.includes('成功')) return 'success'
+      if (status === '未通过' || status.includes('拒绝') || status.includes('失败')) return 'danger'
       if (status.includes('待')) return 'warning'
       return 'info'
     },
@@ -440,7 +440,7 @@ export default {
     },
     // 审核报名
     shenheHandler(row, result) {
-      let tip = result === '是' ? '通过' : '驳回';
+      let tip = result === '通过' ? '通过' : '驳回';
       this.$confirm(`确定审核${tip}该报名申请?`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',

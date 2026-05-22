@@ -91,7 +91,7 @@ public class JingsaiJiaofeiJiluServiceImpl extends ServiceImpl<JingsaiJiaofeiJil
             JingsaibaomingEntity baoming = jingsaibaomingService.selectById(jiaofei.getBaomingId());
             if (baoming != null) {
                 if ("已通过".equals(zhuangtai)) {
-                    baoming.setIspay("已支付");
+                    baoming.setIspay("已缴费");
                 } else if ("已驳回".equals(zhuangtai)) {
                     baoming.setIspay("已驳回");
                 }
