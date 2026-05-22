@@ -11,18 +11,26 @@
 
 package com.controller;
 
+import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.entity.JingsaibaomingEntity;
 import com.entity.JingsaiJiaofeiJiluEntity;
 import com.entity.JingsaixinxiEntity;
+import com.entity.TokenEntity;
 import com.service.JingsaibaomingService;
 import com.service.JingsaiJiaofeiJiluService;
 import com.service.JingsaixinxiService;
+import com.service.TokenService;
 import com.utils.PageUtils;
 import com.utils.R;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -61,6 +69,9 @@ public class ZuopinController {
 
     @Autowired
     private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
+
+    @Autowired
+    private TokenService tokenService;
 
     // 【论文3.1.1(4)】版本控制：保留最近3个版本
     private static final int MAX_VERSIONS = 3;
@@ -267,9 +278,14 @@ public class ZuopinController {
 
         // 【关键修复】教师角色：Java层内存过滤
         if (teacherJingsaiIds != null && page.getList() != null) {
+            log.info("【调试】教师竞赛ID列表：{}", teacherJingsaiIds);
             List<JingsaibaomingEntity> filteredList = new java.util.ArrayList<>();
             for (Object obj : page.getList()) {
                 JingsaibaomingEntity entity = (JingsaibaomingEntity) obj;
+                log.info("【调试】报名记录 - ID:{}, jingsaiId:{}, jingsaiId类型:{}, jingsaimingcheng:{}", 
+                    entity.getId(), entity.getJingsaiId(), 
+                    entity.getJingsaiId() != null ? entity.getJingsaiId().getClass().getName() : "null",
+                    entity.getJingsaimingcheng());
                 if (entity.getJingsaiId() != null && teacherJingsaiIds.contains(entity.getJingsaiId())) {
                     filteredList.add(entity);
                 }
@@ -822,6 +838,114 @@ public class ZuopinController {
         } catch (Exception e) {
             log.error("作品统计数据查询异常：", e);
             return R.error("统计查询失败，请重试");
+        }
+    }
+
+    /**
+     * 下载参赛作品
+     * 支持Token URL参数认证（用于前端window.open下载）
+     * 教师：只能下载自己管理的竞赛的作品
+     * 学生：只能下载自己的作品
+     * 管理员：可下载所有作品
+     *
+     * @param baomingId 报名ID
+     * @param request HTTP请求
+     * @return 文件内容（带下载头）
+     */
+    @IgnoreAuth
+    @GetMapping("/download")
+    public ResponseEntity<byte[]> download(@RequestParam String baomingId, HttpServletRequest request) {
+        try {
+            // 支持通过Token参数认证（用于前端直接下载）
+            String tokenParam = request.getParameter("Token");
+            if (tokenParam != null && !tokenParam.isEmpty()) {
+                TokenEntity tokenEntity = tokenService.getTokenEntity(tokenParam);
+                if (tokenEntity != null) {
+                    request.getSession().setAttribute("userId", tokenEntity.getUserid());
+                    request.getSession().setAttribute("role", tokenEntity.getRole());
+                    request.getSession().setAttribute("tableName", tokenEntity.getTablename());
+                    request.getSession().setAttribute("username", tokenEntity.getUsername());
+                }
+            }
+
+            // 1. 权限验证
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String username = (String) request.getSession().getAttribute("username");
+            if (tableName == null || username == null) {
+                log.warn("作品下载失败：未登录");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .body("{\"code\":401,\"msg\":\"请先登录\"}".getBytes());
+            }
+
+            // 2. 查询报名记录
+            Long id = Long.parseLong(baomingId);
+            JingsaibaomingEntity baoming = jingsaibaomingService.selectById(id);
+            if (baoming == null) {
+                log.warn("作品下载失败：报名信息不存在，ID：{}", id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .body("{\"code\":404,\"msg\":\"报名信息不存在\"}".getBytes());
+            }
+
+            // 3. 权限控制
+            if ("jiaoshi".equals(tableName)) {
+                // 教师：只能下载自己管理的竞赛的作品
+                if (baoming.getJingsaiId() != null) {
+                    JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(baoming.getJingsaiId());
+                    if (jingsai == null || !jingsai.getGonghao().equalsIgnoreCase(username)) {
+                        log.warn("教师 {} 尝试下载非自己管理的竞赛作品，竞赛ID：{}", username, baoming.getJingsaiId());
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                                .body("{\"code\":403,\"msg\":\"权限不足，只能下载自己管理的竞赛的作品\"}".getBytes());
+                    }
+                }
+            } else if ("xuesheng".equals(tableName)) {
+                // 学生：只能下载自己的作品
+                if (!username.equalsIgnoreCase(baoming.getXuehao())) {
+                    log.warn("学生 {} 尝试下载其他学生的作品，报名ID：{}", username, id);
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .body("{\"code\":403,\"msg\":\"权限不足，只能下载自己的作品\"}".getBytes());
+                }
+            }
+            // 管理员可下载所有作品
+
+            // 4. 获取作品文件
+            String cansaizuopin = baoming.getCansaizuopin();
+            if (cansaizuopin == null || cansaizuopin.isEmpty()) {
+                log.warn("作品下载失败：未提交作品，报名ID：{}", id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .body("{\"code\":404,\"msg\":\"该报名未提交作品\"}".getBytes());
+            }
+
+            String projectRoot = System.getProperty("user.dir");
+            File file = new File(projectRoot, cansaizuopin);
+            if (!file.exists()) {
+                log.warn("作品下载失败：文件不存在，路径：{}", file.getAbsolutePath());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .body("{\"code\":404,\"msg\":\"文件不存在\"}".getBytes());
+            }
+
+            // 5. 返回文件（设置Content-Disposition强制下载）
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            // 解决中文文件名乱码
+            String encodeFileName = new String(file.getName().getBytes("UTF-8"), "ISO-8859-1");
+            headers.setContentDispositionFormData("attachment", encodeFileName);
+            headers.setContentLength(file.length());
+
+            byte[] fileBytes = FileUtils.readFileToByteArray(file);
+            log.info("作品下载成功：用户{}，报名ID：{}，文件：{}，大小：{}字节", tableName, id, file.getName(), fileBytes.length);
+            return new ResponseEntity<>(fileBytes, headers, HttpStatus.OK);
+
+        } catch (Exception e) {
+            log.error("作品下载异常：baomingId={}", baomingId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body("{\"code\":500,\"msg\":\"下载失败\"}".getBytes());
         }
     }
 }

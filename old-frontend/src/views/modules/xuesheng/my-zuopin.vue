@@ -480,7 +480,10 @@ export default {
     },
     downloadHandler(row) {
       if (row.cansaizuopin) {
-        window.open(this.$imageUrl(row.cansaizuopin))
+        // 使用zuopin/download接口下载，确保二进制文件(docx/zip等)能正确下载而非在浏览器中打开
+        const token = this.$storage.get('Token')
+        const url = '/BYSJ_Springboot/zuopin/download?baomingId=' + row.id + '&Token=' + token
+        window.open(url)
       }
     }
   }

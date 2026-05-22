@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>教师打分数据测试工具</title>
+    <style>
+        body { font-family: 'Microsoft YaHei', sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; }
+        .success { color: #27ae60; font-weight: bold; }
+        .error { color: #e74c3c; font-weight: bold; }
+        .info { color: #2980b9; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; border: none; border-radius: 4px; font-size: 14px; }
+        .btn-primary { background: #2980b9; color: white; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        #log { background: #f5f5f5; padding: 15px; border-radius: 4px; margin-top: 15px; white-space: pre-wrap; font-size: 13px; max-height: 500px; overflow-y: auto; }
+        h2 { border-bottom: 2px solid #2980b9; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <h2>教师打分数据测试工具</h2>
+    <p>此工具用于验证"我的打分"页面修复效果。步骤：</p>
+    <ol>
+        <li>登录教师账号</li>
+        <li>插入测试打分数据</li>
+        <li>查询验证数据显示</li>
+    </ol>
+
+    <div>
+        <label>教师工号: <input id="gonghao" value="text002" style="width:100px"/></label>
+        <label>密码: <input id="password" value="123456" type="password" style="width:100px"/></label>
+    </div>
+    <br>
+    <button class="btn-primary" onclick="doLogin()">1. 登录教师账号</button>
+    <button class="btn-success" onclick="addTestData()">2. 添加5条测试打分数据</button>
+    <button class="btn-success" onclick="queryPage()">3. 查询打分列表（验证修复）</button>
+    <button class="btn-danger" onclick="clearTestData()">4. 清除测试数据</button>
+    
+    <div id="log"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:9090/BYSJ_Springboot';
+        let token = '';
+        let addedIds = [];
+
+        function log(msg, type = '') {
+            const div = document.getElementById('log');
+            div.innerHTML += `<span class="${type}">${new Date().toLocaleTimeString()} - ${msg}</span>\n`;
+        }
+
+        async function doLogin() {
+            const gonghao = document.getElementById('gonghao').value;
+            const password = document.getElementById('password').value;
+            log(`正在登录教师 ${gonghao}...`);
+            
+            try {
+                const res = await fetch(`${API_BASE}/jiaoshi/login?username=${gonghao}&password=${password}`);
+                const data = await res.json();
+                if (data.code === 0) {
+                    token = data.token;
+                    log(`登录成功! token=${token}, 教师姓名=${data.jiaoshixingming}`, 'success');
+                } else {
+                    log(`登录失败: ${data.msg}`, 'error');
+                }
+            } catch (e) {
+                log(`登录异常: ${e.message}`, 'error');
+            }
+        }
+
+        async function addOne(data) {
+            try {
+                const res = await fetch(`${API_BASE}/zuopindafen/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'token': token },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.code === 0) {
+                    log(`添加成功: 学号=${data.xuehao}, 竞赛=${data.jingsaimingcheng}, 分数=${data.zuopinpingfen}`, 'success');
+                    return true;
+                } else {
+                    log(`添加失败: ${result.msg}`, 'error');
+                    return false;
+                }
+            } catch (e) {
+                log(`添加异常: ${e.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function addTestData() {
+            if (!token) { log('请先登录!', 'error'); return; }
+            const gonghao = document.getElementById('gonghao').value;
+            log(`开始为教师 ${gonghao} 添加5条测试打分数据...`, 'info');
+
+            const testDatas = [
+                { xuehao: '2022001', xueshengxingming: '张志强', jingsaimingcheng: '全国大学生程序设计竞赛（ACM-ICPC）', jingsaileixing: '算法竞赛', zuopinpingfen: 88, pingjianeirong: '算法实现基本正确，优化空间较大', pingjiashijian: '2026-05-22' },
+                { xuehao: '2022003', xueshengxingming: '王浩然', jingsaimingcheng: '全国大学生程序设计竞赛（ACM-ICPC）', jingsaileixing: '算法竞赛', zuopinpingfen: 82, pingjianeirong: '代码风格良好，边界处理需改进', pingjiashijian: '2026-05-22' },
+                { xuehao: '2022001', xueshengxingming: '张志强', jingsaimingcheng: '全国大学生数学建模竞赛', jingsaileixing: '数学建模', zuopinpingfen: 90, pingjianeirong: '模型建立合理，论文表达清晰', pingjiashijian: '2026-05-21' },
+                { xuehao: '2022005', xueshengxingming: '陈俊杰', jingsaimingcheng: '全国大学生数学建模竞赛', jingsaileixing: '数学建模', zuopinpingfen: 85, pingjianeirong: '数据分析完整，结论有待验证', pingjiashijian: '2026-05-21' },
+                { xuehao: '2022002', xueshengxingming: '李雨婷', jingsaimingcheng: '蓝桥杯全国软件和信息技术专业人才大赛', jingsaileixing: '软件开发', zuopinpingfen: 78, pingjianeirong: '基础题目完成良好，进阶题目有待提升', pingjiashijian: '2026-05-20' }
+            ];
+
+            for (let i = 0; i < testDatas.length; i++) {
+                log(`添加第 ${i+1} 条数据...`, 'info');
+                await addOne(testDatas[i]);
+            }
+            log('所有测试数据添加完成!', 'success');
+        }
+
+        async function queryPage() {
+            if (!token) { log('请先登录!', 'error'); return; }
+            const gonghao = document.getElementById('gonghao').value;
+            log(`查询教师 ${gonghao} 的打分列表...`, 'info');
+
+            try {
+                const res = await fetch(`${API_BASE}/zuopindafen/page?page=1&limit=10&sort=id`, {
+                    headers: { 'token': token }
+                });
+                const data = await res.json();
+                if (data.code === 0) {
+                    const total = data.data.total;
+                    const list = data.data.list || [];
+                    log(`查询成功! 总记录数: ${total}`, 'success');
+                    if (list.length > 0) {
+                        log('--- 打分列表 ---', 'info');
+                        for (const item of list) {
+                            log(`  ID=${item.id}, 学号=${item.xuehao}, 学生=${item.xueshengxingming}, 竞赛=${item.jingsaimingcheng}, 分数=${item.zuopinpingfen}, 工号=${item.gonghao}`, 'info');
+                            addedIds.push(item.id);
+                        }
+                        log('--- SQL层面过滤修复验证成功! 教师只能看到自己的打分记录 ---', 'success');
+                    } else {
+                        log('列表为空，说明该教师目前没有打分记录', 'error');
+                    }
+                } else {
+                    log(`查询失败: ${data.msg}`, 'error');
+                }
+            } catch (e) {
+                log(`查询异常: ${e.message}`, 'error');
+            }
+        }
+
+        async function clearTestData() {
+            if (!token) { log('请先登录!', 'error'); return; }
+            if (addedIds.length === 0) {
+                log('没有记录需要清除。先执行查询获取ID列表。', 'info');
+                await queryPage();
+                if (addedIds.length === 0) { log('仍然没有数据', 'info'); return; }
+            }
+            log(`准备删除 ${addedIds.length} 条测试数据...`, 'info');
+            
+            try {
+                const res = await fetch(`${API_BASE}/zuopindafen/delete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'token': token },
+                    body: JSON.stringify(addedIds.map(id => id.toString()))
+                });
+                const data = await res.json();
+                if (data.code === 0) {
+                    log(`成功删除 ${addedIds.length} 条测试数据!`, 'success');
+                    addedIds = [];
+                } else {
+                    log(`删除失败: ${data.msg}`, 'error');
+                }
+            } catch (e) {
+                log(`删除异常: ${e.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

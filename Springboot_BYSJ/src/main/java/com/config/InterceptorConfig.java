@@ -45,6 +45,7 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
                 "/users/resetPass",              // 重置密码
                 "/registration/**",              // 统一注册接口
                 "/file/download",                // 文件下载接口
+                "/zuopin/download",              // 作品下载接口
                 "/jingsaixinxi/list",            // 竞赛列表（公开）
                 "/jingsaixinxi/page",            // 竞赛分页（公开）
                 "/jingsaixinxi/detail/**",       // 竞赛详情（公开）

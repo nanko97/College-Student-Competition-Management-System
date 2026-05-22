@@ -86,6 +86,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         "/zuopin/my/page",
         "/zuopin/upload",
         "/zuopin/delete",
+        "/zuopin/download",  // 作品下载
         "/zuopin/statistics",
         "/zuopin/versions",  // 【论文3.1.1(4)】作品版本历史查询
         "/zuopin/chunkUpload",  // 【论文5.2.3】分片上传
