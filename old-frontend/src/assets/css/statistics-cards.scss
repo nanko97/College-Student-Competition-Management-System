@@ -137,3 +137,27 @@
     }
   }
 }
+
+// 响应式设计 - 超小屏幕设备
+@media screen and (max-width: 480px) {
+  .statistics-wrapper {
+    .stat-card {
+      padding: 10px;
+      
+      .stat-icon {
+        font-size: 24px;
+        margin-right: 8px;
+      }
+      
+      .stat-content {
+        .stat-value {
+          font-size: 18px;
+        }
+        
+        .stat-label {
+          font-size: 11px;
+        }
+      }
+    }
+  }
+}

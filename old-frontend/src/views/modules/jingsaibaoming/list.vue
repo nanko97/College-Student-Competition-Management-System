@@ -12,6 +12,12 @@
       <span>提示：此处仅显示您的个人报名记录</span>
     </div>
 
+    <!-- 教师提示信息 -->
+    <div class="role-tip" v-if="isTeacher">
+      <i class="el-icon-info"></i>
+      <span>提示：此处仅显示您组织的竞赛的报名记录</span>
+    </div>
+
     <!-- 管理员提示信息 -->
     <div class="role-tip" v-if="!isStudent && !isTeacher">
       <i class="el-icon-info"></i>
@@ -199,12 +205,13 @@
                   <el-button v-if="isAuth('jingsaibaoming','查看')"
                     type="primary" icon="el-icon-view" size="mini"
                     @click="addOrUpdateHandler(scope.row.id,'info')">详情</el-button>
-                  <el-button v-if="isAuth('jingsaibaoming','审核') && (!scope.row.sfsh || scope.row.sfsh === '待审核')"
-                    type="warning" icon="el-icon-check" size="mini"
-                    @click="shenheHandler(scope.row, '是')">通过</el-button>
-                  <el-button v-if="isAuth('jingsaibaoming','审核') && (!scope.row.sfsh || scope.row.sfsh === '待审核')"
-                    type="danger" icon="el-icon-close" size="mini"
-                    @click="shenheHandler(scope.row, '否')">驳回</el-button>
+                  <template v-if="isAuth('jingsaibaoming','审核') && (!scope.row.sfsh || scope.row.sfsh === '待审核')">
+                    <el-button type="warning" icon="el-icon-check" size="mini"
+                      @click="shenheHandler(scope.row, '是')">通过</el-button>
+                    <el-button type="danger" icon="el-icon-close" size="mini"
+                      @click="shenheHandler(scope.row, '否')">驳回</el-button>
+                  </template>
+                  <el-tag v-else-if="isAuth('jingsaibaoming','审核') && scope.row.sfsh && scope.row.sfsh !== '待审核'" size="small" :type="scope.row.sfsh === '是' || scope.row.sfsh === '通过' ? 'success' : 'danger'">已审核</el-tag>
                   <el-button v-if="isAuth('jingsaibaoming','删除')"
                     type="danger" icon="el-icon-delete" size="mini"
                     @click="deleteHandler(scope.row.id)">删除</el-button>
@@ -268,12 +275,18 @@ export default {
       if (tableName === "xuesheng") {
         return "我的报名";
       }
+      if (tableName === "jiaoshi") {
+        return "我的竞赛报名";
+      }
       return "竞赛报名管理";
     },
     pageSubtitle() {
       const tableName = this.$storage.get("sessionTable");
       if (tableName === "xuesheng") {
         return "My Registration Records";
+      }
+      if (tableName === "jiaoshi") {
+        return "My Competition Registrations";
       }
       return "Competition Registration Management";
     },
@@ -324,20 +337,20 @@ export default {
       this.dataListLoading = true;
       let params = { page: this.pageIndex, limit: this.pageSize, sort: 'id' }
       
-      // 学生用户只能查看自己的报名记录
+      // 根据用户角色过滤数据
       const tableName = this.$storage.get("sessionTable");
       
       if (tableName === "xuesheng") {
-        // 尝试多种可能的key获取学号
+        // 学生用户只能查看自己的报名记录
         let xuehao = this.$storage.get("username");
         if (!xuehao) {
           xuehao = this.$storage.get("adminName");
         }
-        
         if (xuehao) {
           params['xuehao'] = xuehao;
         }
       }
+      // 教师和管理员可以查看所有竞赛的报名信息（报名管理需要显示所有竞赛的报名）
       
       // 添加模糊查询条件
       if(this.searchForm.jingsaimingcheng && this.searchForm.jingsaimingcheng.trim()) {
@@ -452,11 +465,9 @@ export default {
     },
     // 获取统计信息
     getStatistics() {
-      // 报名管理页面：教师和管理员都能看到全部数据，不传递gonghao参数
       this.$http({
         url: 'jingsaibaoming/statistics',
-        method: 'get',
-        params: {}  // 空参数，查询全部数据
+        method: 'get'
       }).then(({data}) => {
         if (data && data.code === 0) {
           this.statistics = data.data || {}
@@ -531,12 +542,7 @@ export default {
 
 .tech-pagination { margin-top: 20px; }
 
-/* 响应式设计 - 平板设备 */
-@media screen and (max-width: 1200px) {
-  .stat-value {
-    font-size: 24px;
-  }
-}
+
 
 /* 响应式设计 - 手机设备 */
 @media screen and (max-width: 768px) {
@@ -584,14 +590,6 @@ export default {
 
 /* 响应式设计 - 超小屏幕设备 */
 @media screen and (max-width: 480px) {
-  .stat-value {
-    font-size: 18px;
-  }
-  
-  .stat-label {
-    font-size: 11px;
-  }
-  
   .el-table {
     font-size: 11px;
   }

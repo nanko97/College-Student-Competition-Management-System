@@ -319,67 +319,10 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/css/tech-theme.scss';
+@import '@/assets/css/statistics-cards.scss';
 
 .search-wrapper {
   margin-bottom: 20px;
-}
-
-.statistics-wrapper {
-  margin-bottom: 20px;
-  
-  .stat-card {
-    padding: 20px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-    transition: all 0.3s;
-    
-    &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    }
-    
-    .stat-icon {
-      font-size: 40px;
-      margin-right: 15px;
-      opacity: 0.8;
-    }
-    
-    .stat-content {
-      flex: 1;
-      
-      .stat-value {
-        font-size: 32px;
-        font-weight: bold;
-        line-height: 1;
-        margin-bottom: 8px;
-        color: #fff;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-      }
-      
-      .stat-label {
-        font-size: 16px;
-        font-weight: 600;
-        color: #fff;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        letter-spacing: 1px;
-      }
-    }
-  }
-  
-  .stat-pending {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  }
-  
-  .stat-approved {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  }
-  
-  .stat-rejected {
-    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-  }
 }
 
 .tech-search-form {

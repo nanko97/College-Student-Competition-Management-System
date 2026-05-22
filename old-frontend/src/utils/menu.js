@@ -22,7 +22,7 @@ const menu = {
                 "menu": "竞赛管理"
             }, {
                 "child": [
-                    {"buttons": ["查看", "删除"], "menu": "报名管理", "menuJump": "列表", "tableName": "jingsaibaoming"},
+                    {"buttons": ["查看", "审核", "删除"], "menu": "报名管理", "menuJump": "列表", "tableName": "jingsaibaoming"},
                     {"buttons": ["查看", "审核"], "menu": "我的报名", "menuJump": "列表", "tableName": "jingsaibaoming_my", "routePath": "/jingsaibaoming-my"}
                 ],
                 "menu": "报名管理"
@@ -56,8 +56,8 @@ const menu = {
                 "menu": "团队管理"
             }, {
                 "child": [
-                    {"buttons": ["新增", "查看", "修改", "删除"], "menu": "作品打分", "menuJump": "列表", "tableName": "zuopindafen"},
-                    {"buttons": ["查看", "下载", "评分"], "menu": "作品查看", "menuJump": "列表", "tableName": "zuopin"}
+                    {"buttons": ["新增", "查看", "修改", "删除"], "menu": "我的打分", "menuJump": "列表", "tableName": "zuopindafen"},
+                    {"buttons": ["查看", "下载", "评分"], "menu": "作品打分", "menuJump": "列表", "tableName": "zuopin"}
                 ],
                 "menu": "作品管理"
             }, {
@@ -163,9 +163,9 @@ const menu = {
                 ], "menu": "报名管理"
             }, {
                 "child": [
-                    {"buttons": ["查看", "修改", "删除"], "menu": "作品打分", "menuJump": "列表", "tableName": "zuopindafen"},
+                    {"buttons": ["查看", "修改", "删除"], "menu": "我的打分", "menuJump": "列表", "tableName": "zuopindafen"},
                     {"buttons": ["查看", "审核"], "menu": "成绩复核审核", "menuJump": "列表", "tableName": "zuopindafen_fuhe_shenhe"},
-                    {"buttons": ["查看", "下载", "评分"], "menu": "作品查看", "menuJump": "列表", "tableName": "zuopin"}
+                    {"buttons": ["查看", "下载", "评分"], "menu": "作品打分", "menuJump": "列表", "tableName": "zuopin"}
                 ],
                 "menu": "作品管理"
             }, {

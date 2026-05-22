@@ -115,17 +115,22 @@ public class JingsaixinxiController {
                   JingsaixinxiEntity jingsaixinxi,
                   HttpServletRequest request) {
         try {
-            // 1. 权限控制：根据前端传递的参数进行过滤
-            // 注意：不在这里自动过滤教师的竞赛，因为“竞赛信息”页面需要显示所有竞赛
-            // 如果前端需要只显示教师的竞赛，会通过params传递gonghao参数
+            // 1. 权限控制：教师只能查看自己发布的竞赛
             String tableName = (String) request.getSession().getAttribute("tableName");
-            log.debug("当前用户角色：{}", tableName);
-            
+            String role = (String) request.getSession().getAttribute("role");
+            log.info("当前用户角色tableName：{}，role：{}", tableName, role);
+                        
             // 2. 构建查询条件 (支持模糊查询、区间查询、排序)
             EntityWrapper<JingsaixinxiEntity> ew = new EntityWrapper<>();
-            
-            // 如果前端传递了gonghao参数，则进行过滤（用于“我的竞赛”页面）
-            if (params.get("gonghao") != null && !params.get("gonghao").toString().isEmpty()) {
+                        
+            // 教师角色自动过滤：只能查看自己发布的竞赛
+            if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                ew.eq("gonghao", gonghao);
+                log.info("教师 {} 只能查看自己发布的竞赛", gonghao);
+            }
+            // 如果前端传递了gonghao参数，也进行过滤（用于"我的竞赛"页面等）
+            else if (params.get("gonghao") != null && !params.get("gonghao").toString().isEmpty()) {
                 ew.eq("gonghao", params.get("gonghao").toString());
                 log.debug("按工号过滤：{}", params.get("gonghao"));
             }
@@ -225,13 +230,22 @@ public class JingsaixinxiController {
      * @return R 统一返回结果，包含列表数据
      */
     @RequestMapping("/lists")
-    public R list(JingsaixinxiEntity jingsaixinxi) {
+    public R list(JingsaixinxiEntity jingsaixinxi, HttpServletRequest request) {
         try {
             // 1. 构建查询条件 (精确匹配)
             EntityWrapper<JingsaixinxiEntity> ew = new EntityWrapper<>();
             ew.allEq(MPUtil.allEQMapPre(jingsaixinxi, "jingsaixinxi"));
             
-            // 2. 查询列表
+            // 2. 教师角色过滤：只能查看自己发布的竞赛
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String role = (String) request.getSession().getAttribute("role");
+            if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                ew.eq("gonghao", gonghao);
+                log.info("教师 {} 下拉列表只显示自己发布的竞赛", gonghao);
+            }
+            
+            // 3. 查询列表
             return R.ok().put("data", jingsaixinxiService.selectListView(ew));
             
         } catch (Exception e) {
@@ -651,7 +665,7 @@ public class JingsaixinxiController {
             String gonghao = (String) request.getSession().getAttribute("username");
             
             if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
-                if (!gonghao.equals(existingJingsai.getGonghao())) {
+                if (gonghao == null || !gonghao.equalsIgnoreCase(existingJingsai.getGonghao())) {
                     log.warn("教师 {} 尝试修改不属于自己的竞赛 ID: {}，竞赛创建者: {}",
                             gonghao, jingsaixinxi.getId(), existingJingsai.getGonghao());
                     return R.error("只能修改自己创建的竞赛");
@@ -909,7 +923,7 @@ public class JingsaixinxiController {
                         return R.error("竞赛 ID " + id + " 不存在");
                     }
                     
-                    if (!gonghao.equals(jingsai.getGonghao())) {
+                    if (gonghao == null || !gonghao.equalsIgnoreCase(jingsai.getGonghao())) {
                         log.warn("教师 {} 尝试删除不属于自己的竞赛 ID: {}，竞赛创建者: {}",
                                 gonghao, id, jingsai.getGonghao());
                         return R.error("只能删除自己创建的竞赛");

@@ -70,21 +70,43 @@ public class ZuopindafenFuheController {
             String gonghao = (String) request.getSession().getAttribute("username");
             logger.info("教师 {} 查询成绩复核申请", gonghao);
             
-            // 查询该教师创建的所有竞赛ID
+            // 查询该教师创建的所有竞赛
             EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
             jingsaiEw.eq("gonghao", gonghao);
             List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
             
             if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
-                // 提取竞赛ID列表
-                List<Long> jingsaiIds = myJingsaiList.stream()
-                        .map(JingsaixinxiEntity::getId)
+                // 提取竞赛名称列表（zuopindafen表使用jingsaimingcheng而非jingsai_id）
+                List<String> jingsaiNames = myJingsaiList.stream()
+                        .map(JingsaixinxiEntity::getJingsaimingcheng)
+                        .filter(name -> name != null && !name.isEmpty())
                         .collect(java.util.stream.Collectors.toList());
                 
-                // 只查询这些竞赛的成绩复核申请
-                // 需要通过zuopindafen_id关联查询
-                params.put("jingsaiIds", jingsaiIds);
-                logger.info("教师 {} 只能审核自己创建的 {} 个竞赛的成绩复核申请", gonghao, jingsaiIds.size());
+                if (!jingsaiNames.isEmpty()) {
+                    // 先查询这些竞赛的所有作品打分ID
+                    EntityWrapper<ZuopindafenEntity> zuopinEw = new EntityWrapper<>();
+                    zuopinEw.in("jingsaimingcheng", jingsaiNames);
+                    List<ZuopindafenEntity> zuopinList = zuopindafenService.selectList(zuopinEw);
+                    
+                    if (zuopinList != null && !zuopinList.isEmpty()) {
+                        List<Long> zuopinIds = zuopinList.stream()
+                                .map(ZuopindafenEntity::getId)
+                                .collect(java.util.stream.Collectors.toList());
+                        // 直接传递作品打分ID列表给Service层
+                        params.put("zuopinIds", zuopinIds);
+                        logger.info("教师 {} 只能审核自己创建的 {} 个竞赛的成绩复核申请，对应 {} 个作品打分记录", gonghao, jingsaiNames.size(), zuopinIds.size());
+                    } else {
+                        // 没有作品打分记录，返回空列表
+                        logger.info("教师 {} 的竞赛没有作品打分记录，返回空列表", gonghao);
+                        return R.ok().put("data", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1))
+                                   .put("page", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1));
+                    }
+                } else {
+                    // 竞赛都没有名称
+                    logger.info("教师 {} 的竞赛都没有名称，返回空列表", gonghao);
+                    return R.ok().put("data", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1))
+                               .put("page", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1));
+                }
             } else {
                 // 如果教师没有创建任何竞赛，返回空列表
                 logger.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
@@ -320,35 +342,45 @@ public class ZuopindafenFuheController {
             jingsaiEw.eq("gonghao", gonghao);
             List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
             if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
-                List<Long> jingsaiIds = myJingsaiList.stream()
-                    .map(JingsaixinxiEntity::getId)
+                // 提取竞赛名称列表（zuopindafen表使用jingsaimingcheng而非jingsai_id）
+                List<String> jingsaiNames = myJingsaiList.stream()
+                    .map(JingsaixinxiEntity::getJingsaimingcheng)
+                    .filter(name -> name != null && !name.isEmpty())
                     .collect(java.util.stream.Collectors.toList());
-                // 通过zuopindafen_id关联过滤
-                EntityWrapper<ZuopindafenEntity> scoreEw = new EntityWrapper<>();
-                scoreEw.in("jingsai_id", jingsaiIds);
-                List<ZuopindafenEntity> myScores = zuopindafenService.selectList(scoreEw);
-                if (myScores != null && !myScores.isEmpty()) {
-                    List<Long> myScoreIds = myScores.stream().map(ZuopindafenEntity::getId).collect(java.util.stream.Collectors.toList());
-                    Map<String, Object> stats = new HashMap<>();
-                    // 总数
-                    EntityWrapper<ZuopindafenFuheEntity> totalEw = new EntityWrapper<>();
-                    totalEw.in("zuopindafen_id", myScoreIds);
-                    stats.put("total", zuopindafenFuheService.selectCount(totalEw));
-                    // 待审核
-                    EntityWrapper<ZuopindafenFuheEntity> pendingEw = new EntityWrapper<>();
-                    pendingEw.in("zuopindafen_id", myScoreIds).eq("fuhe_status", "待审核");
-                    stats.put("pendingCount", zuopindafenFuheService.selectCount(pendingEw));
-                    // 已通过
-                    EntityWrapper<ZuopindafenFuheEntity> approvedEw = new EntityWrapper<>();
-                    approvedEw.in("zuopindafen_id", myScoreIds).eq("fuhe_status", "已通过");
-                    stats.put("approvedCount", zuopindafenFuheService.selectCount(approvedEw));
-                    // 已驳回
-                    EntityWrapper<ZuopindafenFuheEntity> rejectedEw = new EntityWrapper<>();
-                    rejectedEw.in("zuopindafen_id", myScoreIds).eq("fuhe_status", "已驳回");
-                    stats.put("rejectedCount", zuopindafenFuheService.selectCount(rejectedEw));
-                    return R.ok().put("data", stats);
+                
+                if (!jingsaiNames.isEmpty()) {
+                    // 通过jingsaimingcheng关联过滤
+                    EntityWrapper<ZuopindafenEntity> scoreEw = new EntityWrapper<>();
+                    scoreEw.in("jingsaimingcheng", jingsaiNames);
+                    List<ZuopindafenEntity> myScores = zuopindafenService.selectList(scoreEw);
+                    if (myScores != null && !myScores.isEmpty()) {
+                        List<Long> myScoreIds = myScores.stream().map(ZuopindafenEntity::getId).collect(java.util.stream.Collectors.toList());
+                        Map<String, Object> stats = new HashMap<>();
+                        // 总数
+                        EntityWrapper<ZuopindafenFuheEntity> totalEw = new EntityWrapper<>();
+                        totalEw.in("zuopindafen_id", myScoreIds);
+                        stats.put("total", zuopindafenFuheService.selectCount(totalEw));
+                        // 待审核
+                        EntityWrapper<ZuopindafenFuheEntity> pendingEw = new EntityWrapper<>();
+                        pendingEw.in("zuopindafen_id", myScoreIds).eq("fuhe_status", "待审核");
+                        stats.put("pendingCount", zuopindafenFuheService.selectCount(pendingEw));
+                        // 已通过
+                        EntityWrapper<ZuopindafenFuheEntity> approvedEw = new EntityWrapper<>();
+                        approvedEw.in("zuopindafen_id", myScoreIds).eq("fuhe_status", "已通过");
+                        stats.put("approvedCount", zuopindafenFuheService.selectCount(approvedEw));
+                        // 已驳回
+                        EntityWrapper<ZuopindafenFuheEntity> rejectedEw = new EntityWrapper<>();
+                        rejectedEw.in("zuopindafen_id", myScoreIds).eq("fuhe_status", "已驳回");
+                        stats.put("rejectedCount", zuopindafenFuheService.selectCount(rejectedEw));
+                        return R.ok().put("data", stats);
+                    } else {
+                        // 教师没有作品评分记录
+                        Map<String, Object> stats = new HashMap<>();
+                        stats.put("total", 0); stats.put("pendingCount", 0); stats.put("approvedCount", 0); stats.put("rejectedCount", 0);
+                        return R.ok().put("data", stats);
+                    }
                 } else {
-                    // 教师没有作品评分记录
+                    // 教师的竞赛都没有名称
                     Map<String, Object> stats = new HashMap<>();
                     stats.put("total", 0); stats.put("pendingCount", 0); stats.put("approvedCount", 0); stats.put("rejectedCount", 0);
                     return R.ok().put("data", stats);

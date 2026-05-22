@@ -49,8 +49,22 @@ public class ZuopindafenServiceImpl extends ServiceImpl<ZuopindafenDao, Zuopinda
 
     @Override
     public PageUtils queryPage(Map<String, Object> params, Wrapper<ZuopindafenEntity> wrapper) {
+        log.info("[Service层] queryPage被调用，wrapper类型：{}", wrapper != null ? wrapper.getClass().getSimpleName() : "null");
+        if (wrapper != null && wrapper instanceof EntityWrapper) {
+            EntityWrapper<ZuopindafenEntity> ew = (EntityWrapper<ZuopindafenEntity>) wrapper;
+            log.info("[Service层] wrapper条件：{}", ew.getSqlSegment());
+        }
+        
         Page<ZuopindafenView> page = new Query<ZuopindafenView>(params).getPage();
-        page.setRecords(baseMapper.selectListView(page, wrapper));
+        List<ZuopindafenView> records = baseMapper.selectListView(page, wrapper);
+        log.info("[Service层] 查询结果数量：{}", records != null ? records.size() : 0);
+        if (records != null && !records.isEmpty()) {
+            for (ZuopindafenView record : records) {
+                log.info("[Service层] 记录 - ID:{}, 竞赛名称:{}, 学生:{}", record.getId(), record.getJingsaimingcheng(), record.getXueshengxingming());
+            }
+        }
+        
+        page.setRecords(records);
         PageUtils pageUtil = new PageUtils(page);
         return pageUtil;
     }

@@ -10,7 +10,7 @@
     <div class="statistics-wrapper">
       <el-row :gutter="20">
         <el-col :span="6">
-          <div class="stat-card stat-blue">
+          <div class="stat-card stat-purple">
             <div class="stat-icon"><i class="el-icon-money"></i></div>
             <div class="stat-content">
               <div class="stat-value">{{ statistics.totalJiaofei || 0 }}</div>
@@ -28,7 +28,7 @@
           </div>
         </el-col>
         <el-col :span="6">
-          <div class="stat-card stat-green">
+          <div class="stat-card stat-blue">
             <div class="stat-icon"><i class="el-icon-success"></i></div>
             <div class="stat-content">
               <div class="stat-value">{{ statistics.yitongguo || 0 }}</div>
@@ -37,7 +37,7 @@
           </div>
         </el-col>
         <el-col :span="6">
-          <div class="stat-card stat-purple">
+          <div class="stat-card stat-cyan">
             <div class="stat-icon"><i class="el-icon-s-data"></i></div>
             <div class="stat-content">
               <div class="stat-value">{{ statistics.totalJiaofei || 0 }}</div>
@@ -128,9 +128,10 @@
           </el-table-column>
           <el-table-column fixed="right" header-align="center" align="center" width="200" label="操作">
             <template slot-scope="scope">
-              <el-button v-if="scope.row.jiaofeiZhuangtai === '已缴费'" type="success" icon="el-icon-check" size="mini" @click="approveHandler(scope.row)">通过</el-button>
-              <el-button v-if="scope.row.jiaofeiZhuangtai === '已缴费'" type="danger" icon="el-icon-close" size="mini" @click="rejectHandler(scope.row)">驳回</el-button>
-              <el-tag v-else size="small" :type="scope.row.jiaofeiZhuangtai === '已通过' ? 'success' : 'danger'">已审核</el-tag>
+              <el-button v-if="isAuth('jingsai_jiaofei_shenhe','审核') && scope.row.jiaofeiZhuangtai === '已缴费'" type="success" icon="el-icon-check" size="mini" @click="approveHandler(scope.row)">通过</el-button>
+              <el-button v-if="isAuth('jingsai_jiaofei_shenhe','审核') && scope.row.jiaofeiZhuangtai === '已缴费'" type="danger" icon="el-icon-close" size="mini" @click="rejectHandler(scope.row)">驳回</el-button>
+              <el-tag v-else-if="scope.row.jiaofeiZhuangtai === '已通过' || scope.row.jiaofeiZhuangtai === '已驳回'" size="small" :type="scope.row.jiaofeiZhuangtai === '已通过' ? 'success' : 'danger'">已审核</el-tag>
+              <el-tag v-else size="small" type="info">{{ scope.row.jiaofeiZhuangtai || '未知' }}</el-tag>
             </template>
           </el-table-column>
         </el-table>
@@ -320,6 +321,7 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/css/tech-theme.scss';
+@import '@/assets/css/statistics-cards.scss';
 
 .tech-search-form {
   ::v-deep .el-form-item {

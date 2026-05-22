@@ -467,7 +467,10 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/assets/css/tech-theme.scss';
+@import '@/assets/css/statistics-cards.scss';
+
 .page-container {
   padding: 20px;
 }
@@ -487,37 +490,6 @@ export default {
   font-size: 12px;
   color: #909399;
   margin: 5px 0 0 0;
-}
-
-.statistics-wrapper {
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  padding: 20px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  color: white;
-}
-
-.stat-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.stat-pink { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-.stat-blue { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-
-.stat-icon {
-  font-size: 36px;
-  margin-right: 15px;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.stat-label {
-  font-size: 12px;
-  margin-top: 5px;
 }
 
 .role-tip {

@@ -2,14 +2,26 @@
   <div class="page-container tech-theme animate-fade-in-up">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h2 class="page-title">作品管理</h2>
-      <p class="page-subtitle">Competition Works Management</p>
+      <h2 class="page-title">{{ pageTitle }}</h2>
+      <p class="page-subtitle">{{ pageSubtitle }}</p>
     </div>
 
-    <!-- 提示信息 -->
-    <div class="role-tip">
+    <!-- 教师提示信息 -->
+    <div class="role-tip" v-if="isTeacher">
+      <i class="el-icon-info"></i>
+      <span>提示：此处仅显示您管理的竞赛下的学生提交的作品信息</span>
+    </div>
+
+    <!-- 管理员提示信息 -->
+    <div class="role-tip" v-if="!isTeacher && !isStudent">
       <i class="el-icon-info"></i>
       <span>提示：管理所有学生提交的竞赛作品，可进行评分和审核操作</span>
+    </div>
+
+    <!-- 学生提示信息 -->
+    <div class="role-tip" v-if="isStudent">
+      <i class="el-icon-info"></i>
+      <span>提示：此处显示您的作品提交情况</span>
     </div>
 
     <!-- 搜索区域 -->
@@ -181,6 +193,22 @@ export default {
   activated() {
     this.getDataList()
     this.getStatistics()
+  },
+  computed: {
+    pageTitle() {
+      return "作品打分";
+    },
+    pageSubtitle() {
+      return "Work Scoring";
+    },
+    isTeacher() {
+      const tableName = this.$storage.get("sessionTable");
+      return tableName === "jiaoshi";
+    },
+    isStudent() {
+      const tableName = this.$storage.get("sessionTable");
+      return tableName === "xuesheng";
+    }
   },
   methods: {
     getStatistics() {
@@ -483,14 +511,7 @@ export default {
     }
   }
   
-  .stat-value {
-    font-size: 18px;
-  }
-  
-  .stat-label {
-    font-size: 11px;
-  }
-  
+
   .el-table {
     font-size: 11px;
   }

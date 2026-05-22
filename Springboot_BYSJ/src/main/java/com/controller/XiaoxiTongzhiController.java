@@ -107,12 +107,14 @@ public class XiaoxiTongzhiController {
                 return R.error("消息不存在");
             }
             
-            // 权限验证：确保用户只能标记自己的消息
+            // 权限验证：确保用户只能标记自己的消息（大小写不敏感）
             boolean canMark = false;
             if ("xuesheng".equals(tableName)) {
-                canMark = username.equals(entity.getJieshourenXuehao());
+                String receivedXuehao = entity.getJieshourenXuehao();
+                canMark = username != null && receivedXuehao != null && username.equalsIgnoreCase(receivedXuehao);
             } else if ("jiaoshi".equals(tableName)) {
-                canMark = username.equals(entity.getJieshourenGonghao());
+                String receivedGonghao = entity.getJieshourenGonghao();
+                canMark = username != null && receivedGonghao != null && username.equalsIgnoreCase(receivedGonghao);
             } else {
                 // 管理员可以标记所有消息
                 canMark = true;
@@ -207,35 +209,44 @@ public class XiaoxiTongzhiController {
     @Transactional(rollbackFor = Exception.class)
     public R update(@RequestBody XiaoxiTongzhiEntity entity, HttpServletRequest request) {
         try {
-            log.info("========== 更新消息开始，ID: {} ==========");
+            log.info("========== 更新消息开始，ID: {} ==========", entity.getId());
             log.info("前端传递的数据 - ID: {}, isRead: {}, readTime: {}", 
                     entity.getId(), entity.getIsRead(), entity.getReadTime());
-            
+                        
             String tableName = (String) request.getSession().getAttribute("tableName");
             String username = (String) request.getSession().getAttribute("username");
             log.info("当前用户 - tableName: {}, username: {}", tableName, username);
-            
+                        
             XiaoxiTongzhiEntity oldEntity = xiaoxiTongzhiService.selectById(entity.getId());
             if (oldEntity == null) {
                 log.warn("消息不存在，ID: {}", entity.getId());
                 return R.error("消息不存在");
             }
-            
-            log.info("更新前的消息状态 - isRead: {}", oldEntity.getIsRead());
-            
+                        
+            log.info("消息详情 - isRead: {}, jieshourenXuehao: {}, jieshourenGonghao: {}, jieshourenJuese: {}", 
+                    oldEntity.getIsRead(), oldEntity.getJieshourenXuehao(), 
+                    oldEntity.getJieshourenGonghao(), oldEntity.getJieshourenJuese());
+                        
             // 权限验证：确保用户只能更新自己的消息
             boolean canUpdate = false;
             if ("xuesheng".equals(tableName)) {
-                canUpdate = username.equals(oldEntity.getJieshourenXuehao());
+                String receivedXuehao = oldEntity.getJieshourenXuehao();
+                log.info("学生权限校验 - 当前username: {}, 消息接收人学号: {}", username, receivedXuehao);
+                canUpdate = username != null && receivedXuehao != null && username.equalsIgnoreCase(receivedXuehao);
             } else if ("jiaoshi".equals(tableName)) {
-                canUpdate = username.equals(oldEntity.getJieshourenGonghao());
+                String receivedGonghao = oldEntity.getJieshourenGonghao();
+                log.info("教师权限校验 - 当前username: {}, 消息接收人工号: {}", username, receivedGonghao);
+                canUpdate = username != null && receivedGonghao != null && username.equalsIgnoreCase(receivedGonghao);
             } else {
                 // 管理员可以更新所有消息
+                log.info("管理员权限 - 允许更新所有消息");
                 canUpdate = true;
             }
-            
+                        
             if (!canUpdate) {
-                log.warn("无权操作此消息，用户: {}, 消息ID: {}", username, entity.getId());
+                log.warn("无权操作此消息 - 用户: {}, 消息ID: {}, 消息接收人学号: {}, 消息接收人工号: {}, 消息接收人角色: {}", 
+                        username, entity.getId(), oldEntity.getJieshourenXuehao(), 
+                        oldEntity.getJieshourenGonghao(), oldEntity.getJieshourenJuese());
                 return R.error("无权操作此消息");
             }
             

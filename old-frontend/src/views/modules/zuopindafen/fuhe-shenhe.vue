@@ -36,7 +36,7 @@
           </div>
         </el-col>
         <el-col :span="6">
-          <div class="stat-card stat-green">
+          <div class="stat-card stat-orange">
             <div class="stat-icon"><i class="el-icon-circle-close"></i></div>
             <div class="stat-content">
               <div class="stat-value">{{ statistics.rejectedCount || 0 }}</div>

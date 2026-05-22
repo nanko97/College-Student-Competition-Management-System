@@ -105,7 +105,7 @@ const routes = [{
     }
     , {
       path: '/zuopindafen',
-      name: '作品打分',
+      name: '我的打分',
       component: zuopindafen
     }
     , {
@@ -205,7 +205,7 @@ const routes = [{
     }
     , {
       path: '/zuopin',
-      name: '作品管理',
+      name: '作品打分',
       component: zuopinList
     }
     , {

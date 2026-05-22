@@ -6,7 +6,7 @@
         <el-col :span="6">
           <div class="stat-card stat-purple">
             <div class="stat-icon"><i class="el-icon-document"></i></div>
-            <div class="stat-info">
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.total || 0 }}</div>
               <div class="stat-label">日志总数</div>
             </div>
@@ -15,16 +15,16 @@
         <el-col :span="6">
           <div class="stat-card stat-blue">
             <div class="stat-icon"><i class="el-icon-success"></i></div>
-            <div class="stat-info">
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.successCount || 0 }}</div>
               <div class="stat-label">操作成功</div>
             </div>
           </div>
         </el-col>
         <el-col :span="6">
-          <div class="stat-card stat-pink">
+          <div class="stat-card stat-orange">
             <div class="stat-icon"><i class="el-icon-error"></i></div>
-            <div class="stat-info">
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.failCount || 0 }}</div>
               <div class="stat-label">操作失败</div>
             </div>
@@ -33,7 +33,7 @@
         <el-col :span="6">
           <div class="stat-card stat-green">
             <div class="stat-icon"><i class="el-icon-time"></i></div>
-            <div class="stat-info">
+            <div class="stat-content">
               <div class="stat-value">{{ statistics.todayCount || 0 }}</div>
               <div class="stat-label">今日操作</div>
             </div>
@@ -229,7 +229,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/styles/statistics-cards.scss';
+@import '@/assets/css/statistics-cards.scss';
 .main-content {
   padding: 20px;
 }

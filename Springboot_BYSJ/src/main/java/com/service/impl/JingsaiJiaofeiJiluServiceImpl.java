@@ -27,6 +27,9 @@ public class JingsaiJiaofeiJiluServiceImpl extends ServiceImpl<JingsaiJiaofeiJil
     @Autowired
     private JingsaibaomingService jingsaibaomingService;
 
+    @Autowired
+    private com.service.XiaoxiTongzhiService xiaoxiTongzhiService;
+
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         // 构建查询条件
@@ -93,6 +96,43 @@ public class JingsaiJiaofeiJiluServiceImpl extends ServiceImpl<JingsaiJiaofeiJil
                     baoming.setIspay("已驳回");
                 }
                 jingsaibaomingService.updateById(baoming);
+            }
+
+            // 发送缴费审核结果通知给学生
+            try {
+                String studentXuehao = jiaofei.getXuehao();
+                String studentName = jiaofei.getXueshengxingming();
+                String competitionName = jiaofei.getJingsaimingcheng();
+                
+                String title, content;
+                if ("已通过".equals(zhuangtai)) {
+                    title = "缴费审核通过";
+                    content = String.format("您的「%s」竞赛缴费已审核通过，现在可以提交作品了。", competitionName);
+                    if (yijian != null && !yijian.isEmpty()) {
+                        content += " 审核意见：" + yijian;
+                    }
+                } else {
+                    title = "缴费审核未通过";
+                    content = String.format("您的「%s」竞赛缴费审核未通过，请重新提交缴费凭证。", competitionName);
+                    if (yijian != null && !yijian.isEmpty()) {
+                        content += " 驳回原因：" + yijian;
+                    }
+                }
+                
+                xiaoxiTongzhiService.sendTongzhi(
+                    title,
+                    content,
+                    "缴费审核",
+                    shenheRen,
+                    studentXuehao,
+                    null,
+                    "xuesheng",
+                    jiaofeiId,
+                    "jiaofei"
+                );
+                log.info("✓ 发送缴费审核{}消息给学生: {}, 缴费ID: {}", zhuangtai, studentXuehao, jiaofeiId);
+            } catch (Exception e) {
+                log.error("发送缴费审核通知异常", e);
             }
 
             return R.ok("审核完成");

@@ -16,7 +16,7 @@
     <div class="statistics-wrapper">
       <el-row :gutter="20">
         <el-col :span="6">
-          <div class="stat-card stat-orange">
+          <div class="stat-card stat-pink">
             <div class="stat-icon"><i class="el-icon-time"></i></div>
             <div class="stat-content">
               <div class="stat-value">{{ statistics.pendingCount || 0 }}</div>
@@ -25,7 +25,7 @@
           </div>
         </el-col>
         <el-col :span="6">
-          <div class="stat-card stat-green">
+          <div class="stat-card stat-blue">
             <div class="stat-icon"><i class="el-icon-check"></i></div>
             <div class="stat-content">
               <div class="stat-value">{{ statistics.approvedCount || 0 }}</div>
@@ -34,7 +34,7 @@
           </div>
         </el-col>
         <el-col :span="6">
-          <div class="stat-card stat-pink">
+          <div class="stat-card stat-orange">
             <div class="stat-icon"><i class="el-icon-close"></i></div>
             <div class="stat-content">
               <div class="stat-value">{{ statistics.rejectedCount || 0 }}</div>
@@ -43,7 +43,7 @@
           </div>
         </el-col>
         <el-col :span="6">
-          <div class="stat-card stat-blue">
+          <div class="stat-card stat-purple">
             <div class="stat-icon"><i class="el-icon-document"></i></div>
             <div class="stat-content">
               <div class="stat-value">{{ statistics.totalCount || 0 }}</div>

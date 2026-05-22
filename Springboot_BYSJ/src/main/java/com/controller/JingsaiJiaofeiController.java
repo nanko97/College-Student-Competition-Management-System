@@ -297,40 +297,8 @@ public class JingsaiJiaofeiController {
             }
             log.info("审核通过缴费 - 工号: {}, 姓名: {}", gonghao, shenheRen);
 
-            // 先查询缴费记录，用于发送通知
-            JingsaiJiaofeiJiluEntity jiaofeiJilu = jingsaiJiaofeiJiluService.selectById(jiaofeiId);
-
             R result = jingsaiJiaofeiJiluService.shenheJiaofei(jiaofeiId, "已通过", yijian, shenheRen);
-            
-            // 发送审核通过消息给学生
-            if ((Integer) result.get("code") == 0 && jiaofeiJilu != null) {
-                try {
-                    String studentXuehao = jiaofeiJilu.getXuehao();
-                    String studentName = jiaofeiJilu.getXueshengxingming();
-                    String competitionName = jiaofeiJilu.getJingsaimingcheng();
-                    
-                    String title = "缴费审核通过";
-                    String content = String.format("您的「%s」竞赛缴费已审核通过。", competitionName);
-                    if (yijian != null && !yijian.isEmpty()) {
-                        content += "审核意见：" + yijian;
-                    }
-                    
-                    xiaoxiTongzhiService.sendTongzhi(
-                        title,
-                        content,
-                        "缴费审核",
-                        shenheRen,
-                        studentXuehao,
-                        null,
-                        "xuesheng",
-                        jiaofeiId,
-                        "jiaofei"
-                    );
-                    log.info("✓ 发送缴费审核通过消息给学生: {}, 缴费ID: {}", studentXuehao, jiaofeiId);
-                } catch (Exception e) {
-                    log.error("发送缴费审核通知异常", e);
-                }
-            }
+            // 消息通知已由Service层统一发送
             
             return result;
         } catch (Exception e) {
@@ -358,38 +326,8 @@ public class JingsaiJiaofeiController {
             }
             log.info("审核驳回缴费 - 工号: {}, 姓名: {}", gonghao, shenheRen);
 
-            // 先查询缴费记录，用于发送通知
-            JingsaiJiaofeiJiluEntity jiaofeiJilu = jingsaiJiaofeiJiluService.selectById(jiaofeiId);
-
             R result = jingsaiJiaofeiJiluService.shenheJiaofei(jiaofeiId, "已驳回", yijian, shenheRen);
-            
-            // 发送审核驳回消息给学生
-            if ((Integer) result.get("code") == 0 && jiaofeiJilu != null) {
-                try {
-                    String studentXuehao = jiaofeiJilu.getXuehao();
-                    String studentName = jiaofeiJilu.getXueshengxingming();
-                    String competitionName = jiaofeiJilu.getJingsaimingcheng();
-                    
-                    String title = "缴费审核未通过";
-                    String content = String.format("您的「%s」竞赛缴费审核未通过，请重新上传。", competitionName);
-                    content += "审核意见：" + yijian;
-                    
-                    xiaoxiTongzhiService.sendTongzhi(
-                        title,
-                        content,
-                        "缴费审核",
-                        shenheRen,
-                        studentXuehao,
-                        null,
-                        "xuesheng",
-                        jiaofeiId,
-                        "jiaofei"
-                    );
-                    log.info("✓ 发送缴费审核驳回消息给学生: {}, 缴费ID: {}", studentXuehao, jiaofeiId);
-                } catch (Exception e) {
-                    log.error("发送缴费审核通知异常", e);
-                }
-            }
+            // 消息通知已由Service层统一发送
             
             return result;
         } catch (Exception e) {

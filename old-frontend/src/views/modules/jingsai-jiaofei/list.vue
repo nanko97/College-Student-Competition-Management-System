@@ -332,13 +332,6 @@ export default {
 
 .tech-pagination { margin-top: 20px; }
 
-/* 响应式设计 - 平板设备 */
-@media screen and (max-width: 1200px) {
-  .stat-value {
-    font-size: 24px;
-  }
-}
-
 /* 响应式设计 - 手机设备 */
 @media screen and (max-width: 768px) {
   .el-row {
@@ -380,21 +373,6 @@ export default {
   
   ::v-deep .el-dialog__body {
     padding: 15px;
-  }
-}
-
-/* 响应式设计 - 超小屏幕设备 */
-@media screen and (max-width: 480px) {
-  .stat-value {
-    font-size: 18px;
-  }
-  
-  .stat-label {
-    font-size: 11px;
-  }
-  
-  .el-table {
-    font-size: 11px;
   }
 }
 

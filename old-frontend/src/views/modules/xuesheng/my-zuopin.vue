@@ -38,7 +38,7 @@
           </div>
         </el-col>
         <el-col :span="8">
-          <div class="stat-card stat-green">
+          <div class="stat-card stat-blue">
             <div class="stat-icon"><i class="el-icon-upload"></i></div>
             <div class="stat-content">
               <div class="stat-value">{{ statistics.submittedCount || 0 }}</div>
@@ -47,7 +47,7 @@
           </div>
         </el-col>
         <el-col :span="8">
-          <div class="stat-card stat-pink">
+          <div class="stat-card stat-orange">
             <div class="stat-icon"><i class="el-icon-warning-outline"></i></div>
             <div class="stat-content">
               <div class="stat-value">{{ statistics.unsubmittedCount || 0 }}</div>
@@ -64,12 +64,21 @@
         <el-table-column prop="jingsaimingcheng" header-align="center" align="center" label="竞赛名称" min-width="200" show-overflow-tooltip></el-table-column>
         <el-table-column prop="jingsaileixing" header-align="center" align="center" label="竞赛类型" width="130"></el-table-column>
         <el-table-column prop="cansaileixing" header-align="center" align="center" label="参赛类型" width="100"></el-table-column>
-        <el-table-column prop="sfsh" header-align="center" align="center" label="审核状态" width="100">
+        <el-table-column prop="sfsh" header-align="center" align="center" label="报名审核" width="100">
           <template slot-scope="scope">
-            <el-tag v-if="scope.row.sfsh === '通过'" type="success" effect="dark">已通过</el-tag>
-            <el-tag v-else-if="scope.row.sfsh === '待审核'" type="warning">待审核</el-tag>
-            <el-tag v-else-if="scope.row.sfsh === '不通过'" type="danger">未通过</el-tag>
+            <el-tag v-if="isSfshPass(scope.row.sfsh)" type="success" effect="dark">已通过</el-tag>
+            <el-tag v-else-if="scope.row.sfsh === '待审核' || !scope.row.sfsh" type="warning">待审核</el-tag>
+            <el-tag v-else-if="scope.row.sfsh === '否' || scope.row.sfsh === '不通过'" type="danger">未通过</el-tag>
             <el-tag v-else type="info">{{ scope.row.sfsh || '未知' }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="ispay" header-align="center" align="center" label="缴费状态" width="100">
+          <template slot-scope="scope">
+            <el-tag v-if="scope.row.ispay === '已支付'" type="success" effect="dark">缴费通过</el-tag>
+            <el-tag v-else-if="scope.row.ispay === '已缴费'" type="warning">待审核</el-tag>
+            <el-tag v-else-if="scope.row.ispay === '已驳回'" type="danger">缴费驳回</el-tag>
+            <el-tag v-else-if="scope.row.ispay === '未缴费'" type="info">未缴费</el-tag>
+            <el-tag v-else type="info">{{ scope.row.ispay || '未缴费' }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="cansaizuopin" header-align="center" align="center" label="作品状态" width="100">
@@ -79,13 +88,14 @@
           </template>
         </el-table-column>
         <el-table-column prop="shenqingriqi" header-align="center" align="center" label="报名日期" width="110"></el-table-column>
-        <el-table-column fixed="right" header-align="center" align="center" width="220" label="操作">
+        <el-table-column fixed="right" header-align="center" align="center" width="280" label="操作">
           <template slot-scope="scope">
-            <el-button v-if="scope.row.sfsh === '通过' && !scope.row.cansaizuopin" type="success" size="mini" icon="el-icon-upload2" @click="uploadHandler(scope.row)">提交作品</el-button>
-            <el-button v-if="scope.row.sfsh === '通过' && scope.row.cansaizuopin" type="primary" size="mini" icon="el-icon-refresh" @click="updateHandler(scope.row)">更新</el-button>
-            <el-button v-if="scope.row.sfsh === '通过' && scope.row.cansaizuopin" type="info" size="mini" icon="el-icon-download" @click="downloadHandler(scope.row)">下载</el-button>
-            <el-button v-if="scope.row.sfsh === '通过' && scope.row.cansaizuopin" type="warning" size="mini" icon="el-icon-document" @click="exportPdfHandler(scope.row)">成绩单</el-button>
-            <el-tag v-if="scope.row.sfsh !== '通过'" type="info" size="mini" effect="dark">{{ scope.row.sfsh === '待审核' ? '等待审核' : '审核未通过' }}</el-tag>
+            <el-button v-if="isSfshPass(scope.row.sfsh) && scope.row.ispay === '已支付' && !scope.row.cansaizuopin" type="success" size="mini" icon="el-icon-upload2" @click="uploadHandler(scope.row)">提交作品</el-button>
+            <el-button v-if="isSfshPass(scope.row.sfsh) && scope.row.ispay === '已支付' && scope.row.cansaizuopin" type="primary" size="mini" icon="el-icon-refresh" @click="updateHandler(scope.row)">更新</el-button>
+            <el-button v-if="isSfshPass(scope.row.sfsh) && scope.row.ispay === '已支付' && scope.row.cansaizuopin" type="info" size="mini" icon="el-icon-download" @click="downloadHandler(scope.row)">下载</el-button>
+            <el-button v-if="isSfshPass(scope.row.sfsh) && scope.row.ispay === '已支付' && scope.row.cansaizuopin" type="warning" size="mini" icon="el-icon-document" @click="exportPdfHandler(scope.row)">成绩单</el-button>
+            <el-tag v-if="isSfshPass(scope.row.sfsh) && scope.row.ispay !== '已支付'" type="warning" size="mini" effect="dark">{{ getIspayTip(scope.row) }}</el-tag>
+            <el-tag v-if="!isSfshPass(scope.row.sfsh)" type="info" size="mini" effect="dark">{{ scope.row.sfsh === '待审核' || !scope.row.sfsh ? '等待审核' : '审核未通过' }}</el-tag>
           </template>
         </el-table-column>
       </el-table>
@@ -189,6 +199,17 @@ export default {
     this.getStatistics()
   },
   methods: {
+    // 报名审核状态兼容判断（数据库中"是"和"通过"都表示审核通过）
+    isSfshPass(sfsh) {
+      return sfsh === '通过' || sfsh === '是'
+    },
+    // 缴费状态提示
+    getIspayTip(row) {
+      if (row.ispay === '已缴费') return '缴费待审核'
+      if (row.ispay === '已驳回') return '缴费被驳回'
+      if (row.ispay === '未缴费' || !row.ispay) return '未缴费'
+      return '未完成缴费'
+    },
     getStatistics() {
       this.$http({
         url: 'zuopin/statistics',
@@ -486,12 +507,7 @@ export default {
   margin-top: 0;
 }
 
-/* 响应式设计 - 平板设备 */
-@media screen and (max-width: 1200px) {
-  .stat-value {
-    font-size: 24px;
-  }
-}
+
 
 /* 响应式设计 - 手机设备 */
 @media screen and (max-width: 768px) {
@@ -543,14 +559,6 @@ export default {
 
 /* 响应式设计 - 超小屏幕设备 */
 @media screen and (max-width: 480px) {
-  .stat-value {
-    font-size: 18px;
-  }
-  
-  .stat-label {
-    font-size: 11px;
-  }
-  
   .el-table {
     font-size: 11px;
   }

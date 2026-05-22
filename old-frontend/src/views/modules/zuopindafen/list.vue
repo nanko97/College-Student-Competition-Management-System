@@ -31,7 +31,7 @@
           </div>
         </el-col>
         <el-col :span="8">
-          <div class="stat-card stat-orange">
+          <div class="stat-card stat-cyan">
             <div class="stat-icon"><i class="el-icon-star-on"></i></div>
             <div class="stat-content">
               <div class="stat-value">{{ statistics.avgScore || 0 }}</div>
@@ -339,18 +339,18 @@ export default {
     pageTitle() {
       const tableName = this.$storage.get("sessionTable");
       if (tableName === "xuesheng") {
-        return "我的竞赛成绩";
+        return "我的打分";
       } else if (tableName === "jiaoshi") {
-        return "作品打分管理";
+        return "我的打分";
       }
-      return "作品打分管理";
+      return "我的打分";
     },
     pageSubtitle() {
       const tableName = this.$storage.get("sessionTable");
       if (tableName === "xuesheng") {
-        return "My Competition Scores";
+        return "My Scoring";
       }
-      return "Work Scoring Management";
+      return "My Scoring";
     },
     // 判断是否为教师角色
     isTeacher() {
@@ -614,12 +614,7 @@ export default {
 
 .tech-pagination { margin-top: 20px; }
 
-/* 响应式设计 - 平板设备 */
-@media screen and (max-width: 1200px) {
-  .stat-value {
-    font-size: 24px;
-  }
-}
+
 
 /* 响应式设计 - 手机设备 */
 @media screen and (max-width: 768px) {

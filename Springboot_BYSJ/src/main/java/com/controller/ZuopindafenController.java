@@ -86,46 +86,111 @@ public class ZuopindafenController {
     public R page(@RequestParam Map<String, Object> params, 
                   ZuopindafenEntity zuopindafen,
                   HttpServletRequest request) {
+        log.info("=========== 作品打分分页查询开始 ===========");
+        log.info("请求参数：{}", params);
+        
         try {
-            // 1. 权限控制：根据用户角色过滤数据
+            // 1. 权限控制：根据用户角色和前端参数过滤数据
             String tableName = (String) request.getSession().getAttribute("tableName");
             String role = (String) request.getSession().getAttribute("role");
+            log.info("当前用户角色tableName：{}，role：{}", tableName, role);
             
-            if ("xuesheng".equals(tableName)) {
-                // 学生只能查看自己的作品得分
-                String xuehao = (String) request.getSession().getAttribute("username");
-                zuopindafen.setXuehao(xuehao);
-                log.debug("学生 {} 查询个人作品得分", xuehao);
-            } else if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
-                // 教师只能查看自己评分的作品，且只能看到自己创建的竞赛的作品
+            // 2. 构建查询条件（手动构建，避免likeOrEq与手动IN条件冲突）
+            EntityWrapper<ZuopindafenEntity> ew = new EntityWrapper<>();
+            
+            // 2.1 教师角色过滤：只能查看自己创建的竞赛的作品打分
+            // 【关键修复】不再使用ew.in()（MyBatis-Plus 2.x IN条件可能不生效），改为Java层内存过滤
+            List<String> teacherJingsaiNames = null; // 教师可查看的竞赛名称列表
+            if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
-                zuopindafen.setGonghao(gonghao);
+                log.info("教师 {} 查询作品打分列表", gonghao);
                 
-                // 进一步过滤：只能查看自己创建的竞赛的作品
-                // 通过 jingsai_id 关联查询教师创建的竞赛
+                // 查询该教师创建的所有竞赛名称
                 EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
                 jingsaiEw.eq("gonghao", gonghao);
                 List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
                 
                 if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
-                    // 在查询条件中添加竞赛ID过滤
-                    params.put("jingsaiId", myJingsaiList.stream().map(JingsaixinxiEntity::getId).collect(java.util.stream.Collectors.toList()));
-                    log.debug("教师 {} 只能查看自己创建的 {} 个竞赛的作品评分", gonghao, myJingsaiList.size());
+                    teacherJingsaiNames = myJingsaiList.stream()
+                            .map(JingsaixinxiEntity::getJingsaimingcheng)
+                            .filter(name -> name != null && !name.isEmpty())
+                            .collect(java.util.stream.Collectors.toList());
+                    log.info("教师 {} 可查看的竞赛名称：{}", gonghao, teacherJingsaiNames);
                 } else {
-                    log.debug("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
-                    return R.ok().put("data", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1))
-                               .put("page", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1));
+                    // 教师没有创建任何竞赛，返回空列表
+                    log.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+                    Map<String, Object> emptyResult = new HashMap<>();
+                    emptyResult.put("total", 0);
+                    emptyResult.put("rows", new java.util.ArrayList<>());
+                    return R.ok().put("data", emptyResult).put("page", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1));
+                }
+            } else if ("xuesheng".equals(tableName)) {
+                // 学生只能查看自己的作品得分
+                String xuehao = (String) request.getSession().getAttribute("username");
+                ew.eq("xuehao", xuehao);
+                log.info("学生 {} 查询个人作品得分", xuehao);
+            }
+            // 管理员能看到全部数据，不进行权限过滤
+            
+            // 2.2 处理前端传递的模糊查询参数
+            if (params.get("jingsaimingcheng") != null) {
+                String value = params.get("jingsaimingcheng").toString();
+                if (value.contains("%")) {
+                    ew.like("jingsaimingcheng", value.replace("%", ""));
+                } else {
+                    ew.eq("jingsaimingcheng", value);
                 }
             }
-            
-            // 2. 构建查询条件
-            EntityWrapper<ZuopindafenEntity> ew = new EntityWrapper<>();
+            if (params.get("xueshengxingming") != null) {
+                String value = params.get("xueshengxingming").toString();
+                if (value.contains("%")) {
+                    ew.like("xueshengxingming", value.replace("%", ""));
+                } else {
+                    ew.eq("xueshengxingming", value);
+                }
+            }
+            if (params.get("xuehao") != null) {
+                String value = params.get("xuehao").toString();
+                if (value.contains("%")) {
+                    ew.like("xuehao", value.replace("%", ""));
+                } else {
+                    ew.eq("xuehao", value);
+                }
+            }
+            if (params.get("gonghao") != null) {
+                String value = params.get("gonghao").toString();
+                if (value.contains("%")) {
+                    ew.like("gonghao", value.replace("%", ""));
+                } else {
+                    ew.eq("gonghao", value);
+                }
+            }
             
             // 3. 执行分页查询
             PageUtils page = zuopindafenService.queryPage(
                 params, 
-                MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zuopindafen), params), params)
+                MPUtil.sort(MPUtil.between(ew, params), params)
             );
+            
+            // 3.5 【关键修复】教师角色：Java层内存过滤，确保只返回该教师创建的竞赛的打分记录
+            if (teacherJingsaiNames != null && page.getList() != null) {
+                List<ZuopindafenEntity> filteredList = new java.util.ArrayList<>();
+                for (Object obj : page.getList()) {
+                    ZuopindafenEntity entity = (ZuopindafenEntity) obj;
+                    if (entity.getJingsaimingcheng() != null && teacherJingsaiNames.contains(entity.getJingsaimingcheng())) {
+                        filteredList.add(entity);
+                    }
+                }
+                log.info("教师内存过滤：原始{}条，过滤后{}条，允许的竞赛名称：{}", page.getList().size(), filteredList.size(), teacherJingsaiNames);
+                // 重新构建分页结果
+                int pageIndex = Integer.parseInt(params.getOrDefault("page", "1").toString());
+                int pageSize = Integer.parseInt(params.getOrDefault("limit", "10").toString());
+                int total = filteredList.size();
+                int fromIndex = (pageIndex - 1) * pageSize;
+                int toIndex = Math.min(fromIndex + pageSize, total);
+                List<ZuopindafenEntity> pageList = fromIndex < total ? filteredList.subList(fromIndex, toIndex) : new java.util.ArrayList<>();
+                page = new PageUtils(pageList, total, pageSize, pageIndex);
+            }
             
             // 4. 如果是学生查询，关联复核状态和复核次数
             if ("xuesheng".equals(tableName)) {
@@ -146,13 +211,10 @@ public class ZuopindafenController {
                         if (fuheList != null && !fuheList.isEmpty()) {
                             // 取最新的复核记录
                             ZuopindafenFuheEntity latestFuhe = fuheList.get(fuheList.size() - 1);
-                            // 通过反射动态添加属性
                             score.setFuheStatus(latestFuhe.getFuheStatus());
-                            // 添加复核次数
                             score.setFuheCount(fuheList.size());
                             log.info("[学生查询] 设置状态：{}, 次数：{}", latestFuhe.getFuheStatus(), fuheList.size());
                         } else {
-                            // 没有复核记录，设置次数为0
                             score.setFuheCount(0);
                         }
                     }
@@ -181,14 +243,100 @@ public class ZuopindafenController {
                   ZuopindafenEntity zuopindafen,
                   HttpServletRequest request) {
         try {
-            // 1. 构建查询条件
+            // 1. 权限控制：根据用户角色过滤数据
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String role = (String) request.getSession().getAttribute("role");
+            
+            // 2. 构建查询条件（手动构建，避免likeOrEq与手动IN条件冲突）
             EntityWrapper<ZuopindafenEntity> ew = new EntityWrapper<>();
             
-            // 2. 执行分页查询
+            // 2.1 教师角色过滤：【关键修复】不再使用ew.in()，改为Java层内存过滤
+            List<String> teacherJingsaiNames = null; // 教师可查看的竞赛名称列表
+            if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                log.info("教师 {} 查询作品打分列表(list)", gonghao);
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", gonghao);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    teacherJingsaiNames = myJingsaiList.stream()
+                            .map(JingsaixinxiEntity::getJingsaimingcheng)
+                            .filter(name -> name != null && !name.isEmpty())
+                            .collect(java.util.stream.Collectors.toList());
+                    log.info("教师 {} 可查看的竞赛名称：{}", gonghao, teacherJingsaiNames);
+                } else {
+                    // 教师没有创建任何竞赛，返回空列表
+                    log.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+                    Map<String, Object> emptyResult = new HashMap<>();
+                    emptyResult.put("total", 0);
+                    emptyResult.put("rows", new java.util.ArrayList<>());
+                    return R.ok().put("data", emptyResult).put("page", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1));
+                }
+            } else if ("xuesheng".equals(tableName)) {
+                String xuehao = (String) request.getSession().getAttribute("username");
+                ew.eq("xuehao", xuehao);
+            }
+            
+            // 2.2 处理前端传递的模糊查询参数
+            if (params.get("jingsaimingcheng") != null) {
+                String value = params.get("jingsaimingcheng").toString();
+                if (value.contains("%")) {
+                    ew.like("jingsaimingcheng", value.replace("%", ""));
+                } else {
+                    ew.eq("jingsaimingcheng", value);
+                }
+            }
+            if (params.get("xueshengxingming") != null) {
+                String value = params.get("xueshengxingming").toString();
+                if (value.contains("%")) {
+                    ew.like("xueshengxingming", value.replace("%", ""));
+                } else {
+                    ew.eq("xueshengxingming", value);
+                }
+            }
+            if (params.get("xuehao") != null) {
+                String value = params.get("xuehao").toString();
+                if (value.contains("%")) {
+                    ew.like("xuehao", value.replace("%", ""));
+                } else {
+                    ew.eq("xuehao", value);
+                }
+            }
+            if (params.get("gonghao") != null) {
+                String value = params.get("gonghao").toString();
+                if (value.contains("%")) {
+                    ew.like("gonghao", value.replace("%", ""));
+                } else {
+                    ew.eq("gonghao", value);
+                }
+            }
+            
+            // 3. 执行分页查询
             PageUtils page = zuopindafenService.queryPage(
                 params, 
-                MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zuopindafen), params), params)
+                MPUtil.sort(MPUtil.between(ew, params), params)
             );
+            
+            // 3.5 【关键修复】教师角色：Java层内存过滤
+            if (teacherJingsaiNames != null && page.getList() != null) {
+                List<ZuopindafenEntity> filteredList = new java.util.ArrayList<>();
+                for (Object obj : page.getList()) {
+                    ZuopindafenEntity entity = (ZuopindafenEntity) obj;
+                    if (entity.getJingsaimingcheng() != null && teacherJingsaiNames.contains(entity.getJingsaimingcheng())) {
+                        filteredList.add(entity);
+                    }
+                }
+                log.info("教师内存过滤(list)：原始{}条，过滤后{}条", page.getList().size(), filteredList.size());
+                // 重新构建分页结果
+                int pageIndex = Integer.parseInt(params.getOrDefault("page", "1").toString());
+                int pageSize = Integer.parseInt(params.getOrDefault("limit", "10").toString());
+                int total = filteredList.size();
+                int fromIndex = (pageIndex - 1) * pageSize;
+                int toIndex = Math.min(fromIndex + pageSize, total);
+                List<ZuopindafenEntity> pageList = fromIndex < total ? filteredList.subList(fromIndex, toIndex) : new java.util.ArrayList<>();
+                page = new PageUtils(pageList, total, pageSize, pageIndex);
+            }
             
             return R.ok().put("data", page).put("page", page);
             
@@ -206,14 +354,52 @@ public class ZuopindafenController {
      * @return R 统一返回结果，包含列表数据
      */
     @RequestMapping("/lists")
-    public R list(ZuopindafenEntity zuopindafen) {
+    public R list(ZuopindafenEntity zuopindafen, HttpServletRequest request) {
         try {
-            // 1. 构建查询条件 (精确匹配)
+            // 1. 权限控制：根据用户角色过滤数据
+            String tableName = (String) request.getSession().getAttribute("tableName");
+            String role = (String) request.getSession().getAttribute("role");
+            
             EntityWrapper<ZuopindafenEntity> ew = new EntityWrapper<>();
             ew.allEq(MPUtil.allEQMapPre(zuopindafen, "zuopindafen"));
             
+            // 【关键修复】教师角色：不再使用ew.in()，改为Java层内存过滤
+            List<String> teacherJingsaiNames = null;
+            if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
+                String gonghao = (String) request.getSession().getAttribute("username");
+                log.info("教师 {} 查询作品打分列表(lists)", gonghao);
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", gonghao);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    teacherJingsaiNames = myJingsaiList.stream()
+                            .map(JingsaixinxiEntity::getJingsaimingcheng)
+                            .filter(name -> name != null && !name.isEmpty())
+                            .collect(java.util.stream.Collectors.toList());
+                    log.info("教师 {} 可查看的竞赛名称：{}", gonghao, teacherJingsaiNames);
+                } else {
+                    log.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
+                    return R.ok().put("data", new java.util.ArrayList<>());
+                }
+            } else if ("xuesheng".equals(tableName)) {
+                String xuehao = (String) request.getSession().getAttribute("username");
+                ew.eq("xuehao", xuehao);
+            }
+            
             // 2. 查询列表
-            return R.ok().put("data", zuopindafenService.selectListView(ew));
+            List<ZuopindafenView> resultList = zuopindafenService.selectListView(ew);
+            
+            // 2.5 【关键修复】教师角色：Java层内存过滤
+            if (teacherJingsaiNames != null && resultList != null) {
+                final List<String> finalTeacherJingsaiNames = teacherJingsaiNames;
+                resultList = resultList.stream()
+                    .filter(entity -> entity.getJingsaimingcheng() != null && finalTeacherJingsaiNames.contains(entity.getJingsaimingcheng()))
+                    .collect(java.util.stream.Collectors.toList());
+                log.info("教师内存过滤(lists)：过滤后{}条", resultList.size());
+            }
+            
+            return R.ok().put("data", resultList);
             
         } catch (Exception e) {
             log.error("作品打分列表查询异常：", e);
@@ -615,7 +801,7 @@ public class ZuopindafenController {
                 return R.error("评分记录不存在");
             }
             
-            if (!gonghao.equals(existingRecord.getGonghao())) {
+            if (gonghao == null || !gonghao.equalsIgnoreCase(existingRecord.getGonghao())) {
                 log.warn("教师 {} 尝试修改其他教师的评分记录，ID: {}, 记录工号：{}", 
                          gonghao, zuopindafen.getId(), existingRecord.getGonghao());
                 return R.error("只能修改自己的评分记录");
@@ -706,7 +892,7 @@ public class ZuopindafenController {
                         log.warn("删除评分失败：评分记录不存在，ID: {}", id);
                         return R.error("评分记录不存在");
                     }
-                    if (!gonghao.equals(zuopindafen.getGonghao())) {
+                    if (gonghao == null || !gonghao.equalsIgnoreCase(zuopindafen.getGonghao())) {
                         log.warn("教师 {} 尝试删除其他教师的评分记录，ID: {}, 记录工号：{}", 
                                  gonghao, id, zuopindafen.getGonghao());
                         return R.error("只能删除自己的评分记录");
@@ -784,23 +970,58 @@ public class ZuopindafenController {
             
             // 4. 权限控制：根据用户角色过滤
             String tableName = (String) request.getSession().getAttribute("tableName");
+            String role = (String) request.getSession().getAttribute("role");
             if (tableName != null) {
                 if ("xuesheng".equals(tableName)) {
                     String xuehao = (String) request.getSession().getAttribute("username");
                     wrapper.eq("xuehao", xuehao);
                     log.debug("学生 {} 查询评分提醒", xuehao);
-                } else if ("jiaoshi".equals(tableName)) {
+                } else if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
+                    // 教师只能看到自己创建的竞赛的评分提醒
+                    // 【关键修复】不再使用wrapper.in()（MyBatis-Plus 2.x IN条件可能不生效），改为Java层内存过滤
                     String gonghao = (String) request.getSession().getAttribute("username");
-                    wrapper.eq("gonghao", gonghao);
-                    log.debug("教师 {} 查询评分提醒", gonghao);
+                    EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                    jingsaiEw.eq("gonghao", gonghao);
+                    List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                                
+                    if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                        List<String> teacherJingsaiNames = myJingsaiList.stream()
+                                .map(JingsaixinxiEntity::getJingsaimingcheng)
+                                .filter(name -> name != null && !name.isEmpty())
+                                .collect(java.util.stream.Collectors.toList());
+                        // 不再使用 wrapper.in("jingsaimingcheng", teacherJingsaiNames)
+                        // 改为在查询后用Java层过滤
+                        map.put("teacherJingsaiNames", teacherJingsaiNames);
+                    } else {
+                        // 教师没有创建任何竞赛，直接返回count=0
+                        log.debug("教师 {} 没有创建任何竞赛，提醒数量返回0", gonghao);
+                        return R.ok().put("count", 0);
+                    }
+                    log.debug("教师 {} 查询评分提醒，竞赛名称：{}", gonghao, map.get("teacherJingsaiNames"));
                 }
             }
             
             // 5. 统计数量
-            int count = zuopindafenService.selectCount(wrapper);
-            
-            log.debug("作品评分提醒查询成功，字段：{}, 类型：{}, 数量：{}", columnName, type, count);
-            return R.ok().put("count", count);
+            // 【关键修复】教师角色：先用selectList查出数据，再在Java层过滤，最后计数
+            List<String> teacherJingsaiNames = (List<String>) map.get("teacherJingsaiNames");
+            if (teacherJingsaiNames != null) {
+                // 教师角色：先查出所有符合时间条件的记录，再用竞赛名称过滤
+                List<ZuopindafenEntity> remindList = zuopindafenService.selectList(wrapper);
+                int count = 0;
+                if (remindList != null) {
+                    for (ZuopindafenEntity entity : remindList) {
+                        if (entity.getJingsaimingcheng() != null && teacherJingsaiNames.contains(entity.getJingsaimingcheng())) {
+                            count++;
+                        }
+                    }
+                }
+                log.debug("教师提醒过滤后数量：{}", count);
+                return R.ok().put("count", count);
+            } else {
+                int count = zuopindafenService.selectCount(wrapper);
+                log.debug("作品评分提醒查询成功，字段：{}, 类型：{}, 数量：{}", columnName, type, count);
+                return R.ok().put("count", count);
+            }
             
         } catch (Exception e) {
             log.error("作品评分提醒查询异常：", e);
@@ -824,14 +1045,43 @@ public class ZuopindafenController {
             
             // 使用 EntityWrapper 缩小查询范围，避免全表扫描
             EntityWrapper<ZuopindafenEntity> scoreEw = new EntityWrapper<>();
+            List<String> teacherJingsaiNames = null; // 教师角色：用于Java层内存过滤
             if ("xuesheng".equals(tableName)) {
                 String xuehao = (String) request.getSession().getAttribute("username");
                 scoreEw.eq("xuehao", xuehao);
             } else if ("jiaoshi".equals(tableName)) {
+                // 教师只能统计自己创建的竞赛的作品打分数据
+                // 【关键修复】不再使用scoreEw.in()（MyBatis-Plus 2.x IN条件可能不生效），改为Java层内存过滤
                 String gonghao = (String) request.getSession().getAttribute("username");
-                scoreEw.eq("gonghao", gonghao);
+                EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
+                jingsaiEw.eq("gonghao", gonghao);
+                List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
+                
+                if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
+                    teacherJingsaiNames = myJingsaiList.stream()
+                            .map(JingsaixinxiEntity::getJingsaimingcheng)
+                            .filter(name -> name != null && !name.isEmpty())
+                            .collect(java.util.stream.Collectors.toList());
+                    log.info("教师 {} 统计自己创建的 {} 个竞赛的作品打分", gonghao, teacherJingsaiNames.size());
+                } else {
+                    log.info("教师 {} 没有创建任何竞赛，统计返回0", gonghao);
+                }
             }
             List<ZuopindafenEntity> allScores = zuopindafenService.selectList(scoreEw);
+            
+            // 【关键修复】教师角色：Java层内存过滤
+            if ("jiaoshi".equals(tableName) && teacherJingsaiNames != null) {
+                if (allScores != null) {
+                    final List<String> finalTeacherJingsaiNames = teacherJingsaiNames;
+                    allScores = allScores.stream()
+                        .filter(entity -> entity.getJingsaimingcheng() != null && finalTeacherJingsaiNames.contains(entity.getJingsaimingcheng()))
+                        .collect(java.util.stream.Collectors.toList());
+                    log.info("教师统计内存过滤后：{}条记录", allScores.size());
+                }
+            } else if ("jiaoshi".equals(tableName) && teacherJingsaiNames == null) {
+                // 教师没有创建任何竞赛，返回空结果
+                allScores = new java.util.ArrayList<>();
+            }
             
             // 1. 统计评分总数
             int totalCount = allScores != null ? allScores.size() : 0;
@@ -861,25 +1111,44 @@ public class ZuopindafenController {
                 log.info("平均分：0（无评分记录）");
             }
             
-            // 3. 统计复核申请数 - 使用 EntityWrapper 缩小范围
+            // 3. 统计复核申请数 - 【关键修复】不再使用fuheEw.in()，改为Java层内存过滤
             EntityWrapper<ZuopindafenFuheEntity> fuheEw = new EntityWrapper<>();
+            List<Long> teacherScoreIds = null; // 教师角色：用于Java层内存过滤复核记录
             if ("xuesheng".equals(tableName)) {
                 String xuehao = (String) request.getSession().getAttribute("username");
                 fuheEw.eq("xuehao", xuehao);
             } else if ("jiaoshi".equals(tableName)) {
-                // 教师需要过滤自己评分的作品的复核记录
+                // 教师需要过滤自己创建的竞赛的作品的复核记录
                 if (allScores != null && !allScores.isEmpty()) {
-                    List<Long> myScoreIds = allScores.stream()
+                    teacherScoreIds = allScores.stream()
                         .map(ZuopindafenEntity::getId)
                         .collect(java.util.stream.Collectors.toList());
-                    fuheEw.in("zuopindafen_id", myScoreIds);
+                    // 不再使用 fuheEw.in("zuopindafen_id", teacherScoreIds)
                 } else {
-                    fuheEw.eq("zuopindafen_id", -1); // 无数据时返回0
+                    // 教师没有评分记录，复核数必然为0
                 }
             }
-            int fuheCount = zuopindafenFuheService.selectCount(fuheEw);
-            log.info("复核申请数：{}", fuheCount);
-            stats.put("fuheCount", fuheCount);
+            if (teacherScoreIds != null) {
+                // 教师角色：查出所有复核记录，再用Java层过滤
+                List<ZuopindafenFuheEntity> allFuheList = zuopindafenFuheService.selectList(fuheEw);
+                int fuheCount = 0;
+                if (allFuheList != null) {
+                    for (ZuopindafenFuheEntity fuhe : allFuheList) {
+                        if (fuhe.getZuopindafenId() != null && teacherScoreIds.contains(fuhe.getZuopindafenId())) {
+                            fuheCount++;
+                        }
+                    }
+                }
+                log.info("教师复核内存过滤后数量：{}", fuheCount);
+                stats.put("fuheCount", fuheCount);
+            } else if ("jiaoshi".equals(tableName)) {
+                // 教师没有评分记录，复核数为0
+                stats.put("fuheCount", 0);
+            } else {
+                int fuheCount = zuopindafenFuheService.selectCount(fuheEw);
+                log.info("复核申请数：{}", fuheCount);
+                stats.put("fuheCount", fuheCount);
+            }
             
             log.info("统计数据查询成功，角色：{}", tableName);
             return R.ok().put("data", stats);
@@ -942,26 +1211,40 @@ public class ZuopindafenController {
             
             // 2. 查询成绩数据
             EntityWrapper<ZuopindafenEntity> ew = new EntityWrapper<>();
+            List<String> teacherJingsaiNames = null; // 教师角色：用于Java层内存过滤
             if (queryXuehao != null && !queryXuehao.isEmpty()) {
                 ew.eq("xuehao", queryXuehao);
             }
             if ("jiaoshi".equals(tableName)) {
+                // 【关键修复】不再使用ew.in()（MyBatis-Plus 2.x IN条件可能不生效），改为Java层内存过滤
                 String gonghao = (String) request.getSession().getAttribute("username");
                 EntityWrapper<JingsaixinxiEntity> jingsaiEw = new EntityWrapper<>();
                 jingsaiEw.eq("gonghao", gonghao);
                 List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
                 if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
-                    List<Long> jingsaiIds = myJingsaiList.stream()
-                        .map(JingsaixinxiEntity::getId)
+                    teacherJingsaiNames = myJingsaiList.stream()
+                        .map(JingsaixinxiEntity::getJingsaimingcheng)
+                        .filter(name -> name != null && !name.isEmpty())
                         .collect(java.util.stream.Collectors.toList());
-                    ew.in("jingsai_id", jingsaiIds);
                 }
+                // 教师没有创建任何竞赛时 teacherJingsaiNames 为 null
             }
             if (jingsaimingcheng != null && !jingsaimingcheng.isEmpty()) {
                 ew.eq("jingsaimingcheng", jingsaimingcheng);
             }
             ew.orderBy("pingjiashijian", false);
             List<ZuopindafenEntity> scoreList = zuopindafenService.selectList(ew);
+            
+            // 【关键修复】教师角色：Java层内存过滤
+            if (teacherJingsaiNames != null && scoreList != null) {
+                final List<String> finalTeacherJingsaiNames = teacherJingsaiNames;
+                scoreList = scoreList.stream()
+                    .filter(entity -> entity.getJingsaimingcheng() != null && finalTeacherJingsaiNames.contains(entity.getJingsaimingcheng()))
+                    .collect(java.util.stream.Collectors.toList());
+            } else if ("jiaoshi".equals(tableName) && teacherJingsaiNames == null) {
+                // 教师没有创建任何竞赛，返回空结果
+                scoreList = new java.util.ArrayList<>();
+            }
             
             if (scoreList == null || scoreList.isEmpty()) {
                 response.setContentType("application/json;charset=UTF-8");

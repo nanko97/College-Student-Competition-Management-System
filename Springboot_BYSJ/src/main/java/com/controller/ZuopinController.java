@@ -224,7 +224,7 @@ public class ZuopinController {
         log.info("当前用户角色tableName：{}", tableName);
 
         EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<>();
-        ew.eq("sfsh", "通过"); // 只显示审核通过的报名
+        ew.andNew("sfsh = '是' OR sfsh = '通过'"); // 兼容两种审核通过值
         ew.isNotNull("cansaizuopin"); // 只显示已提交作品的
         
         // 教师只能查看自己创建的竞赛的作品
@@ -430,14 +430,14 @@ public class ZuopinController {
                 return R.error("报名信息不存在");
             }
 
-            // 验证是否为当前学生的报名
+            // 验证是否为当前学生的报名（大小写不敏感）
             String xuehao = (String) request.getSession().getAttribute("username");
-            if (!xuehao.equals(baoming.getXuehao())) {
+            if (xuehao == null || !xuehao.equalsIgnoreCase(baoming.getXuehao())) {
                 return R.error("无权操作此报名记录");
             }
 
-            // 验证报名是否已审核通过
-            if (!"通过".equals(baoming.getSfsh())) {
+            // 验证报名是否已审核通过（兼容"是"和"通过"两种值）
+            if (!"通过".equals(baoming.getSfsh()) && !"是".equals(baoming.getSfsh())) {
                 return R.error("报名信息未审核通过，无法提交作品");
             }
 
@@ -586,14 +586,14 @@ public class ZuopinController {
                 return R.error("报名信息不存在");
             }
 
-            // 5. 验证是否为当前学生的报名
+            // 5. 验证是否为当前学生的报名（大小写不敏感）
             String xuehao = (String) request.getSession().getAttribute("username");
-            if (!xuehao.equals(baoming.getXuehao())) {
+            if (xuehao == null || !xuehao.equalsIgnoreCase(baoming.getXuehao())) {
                 return R.error("无权操作此报名记录");
             }
 
-            // 6. 验证报名是否已审核通过
-            if (!"通过".equals(baoming.getSfsh())) {
+            // 验证报名是否已审核通过（兼容"是"和"通过"两种值）
+            if (!"通过".equals(baoming.getSfsh()) && !"是".equals(baoming.getSfsh())) {
                 return R.error("报名信息未审核通过，无法提交作品");
             }
             
@@ -670,9 +670,9 @@ public class ZuopinController {
                 return R.error("报名信息不存在");
             }
 
-            // 验证是否为当前学生的报名
+            // 验证是否为当前学生的报名（大小写不敏感）
             String xuehao = (String) request.getSession().getAttribute("username");
-            if (!xuehao.equals(baoming.getXuehao())) {
+            if (xuehao == null || !xuehao.equalsIgnoreCase(baoming.getXuehao())) {
                 return R.error("无权操作此报名记录");
             }
 
@@ -723,7 +723,7 @@ public class ZuopinController {
                     // 查询这些竞赛的所有报名记录
                     EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
                     baomingEw.in("jingsai_id", jingsaiIds);
-                    baomingEw.eq("sfsh", "通过");
+                    baomingEw.andNew("sfsh = '是' OR sfsh = '通过'");
                     List<JingsaibaomingEntity> myBaomings = jingsaibaomingService.selectList(baomingEw);
                     
                     // 统计已提交作品的
@@ -776,7 +776,7 @@ public class ZuopinController {
             } else {
                 // 管理员端：统计所有审核通过的报名的作品提交情况
                 EntityWrapper<JingsaibaomingEntity> baomingEw = new EntityWrapper<>();
-                baomingEw.eq("sfsh", "通过");
+                baomingEw.andNew("sfsh = '是' OR sfsh = '通过'");
                 List<JingsaibaomingEntity> allBaomings = jingsaibaomingService.selectList(baomingEw);
                 
                 int totalBaoming = 0;
