@@ -115,7 +115,7 @@ public class JingsaixinxiController {
                   JingsaixinxiEntity jingsaixinxi,
                   HttpServletRequest request) {
         try {
-            // 1. 权限控制：教师只能查看自己发布的竞赛
+            // 1. 竞赛信息页面为公共信息页，所有角色都能查看所有竞赛
             String tableName = (String) request.getSession().getAttribute("tableName");
             String role = (String) request.getSession().getAttribute("role");
             log.info("当前用户角色tableName：{}，role：{}", tableName, role);
@@ -123,14 +123,8 @@ public class JingsaixinxiController {
             // 2. 构建查询条件 (支持模糊查询、区间查询、排序)
             EntityWrapper<JingsaixinxiEntity> ew = new EntityWrapper<>();
                         
-            // 教师角色自动过滤：只能查看自己发布的竞赛
-            if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
-                String gonghao = (String) request.getSession().getAttribute("username");
-                ew.eq("gonghao", gonghao);
-                log.info("教师 {} 只能查看自己发布的竞赛", gonghao);
-            }
-            // 如果前端传递了gonghao参数，也进行过滤（用于"我的竞赛"页面等）
-            else if (params.get("gonghao") != null && !params.get("gonghao").toString().isEmpty()) {
+            // 如果前端传递了gonghao参数，进行过滤（用于"我的竞赛"等特定页面）
+            if (params.get("gonghao") != null && !params.get("gonghao").toString().isEmpty()) {
                 ew.eq("gonghao", params.get("gonghao").toString());
                 log.debug("按工号过滤：{}", params.get("gonghao"));
             }
@@ -236,16 +230,7 @@ public class JingsaixinxiController {
             EntityWrapper<JingsaixinxiEntity> ew = new EntityWrapper<>();
             ew.allEq(MPUtil.allEQMapPre(jingsaixinxi, "jingsaixinxi"));
             
-            // 2. 教师角色过滤：只能查看自己发布的竞赛
-            String tableName = (String) request.getSession().getAttribute("tableName");
-            String role = (String) request.getSession().getAttribute("role");
-            if ("jiaoshi".equals(tableName) || "教师".equals(role)) {
-                String gonghao = (String) request.getSession().getAttribute("username");
-                ew.eq("gonghao", gonghao);
-                log.info("教师 {} 下拉列表只显示自己发布的竞赛", gonghao);
-            }
-            
-            // 3. 查询列表
+            // 2. 查询列表 (竞赛信息为公共数据，所有角色都能看到所有竞赛)
             return R.ok().put("data", jingsaixinxiService.selectListView(ew));
             
         } catch (Exception e) {

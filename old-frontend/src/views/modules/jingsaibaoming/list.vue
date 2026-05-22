@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container tech-theme animate-fade-in-up">
     <!-- 页面标题 -->
     <div class="page-header">
@@ -118,7 +118,7 @@
           :show-header="contents.tableShowHeader"
           :header-row-style="headerRowStyle"
           :header-cell-style="headerCellStyle"
-          :border="contents.tableBorder"
+          border
           :fit="contents.tableFit"
           :stripe="contents.tableStripe"
           :row-style="rowStyle"
@@ -134,7 +134,7 @@
                 width="50">
             </el-table-column>
             <el-table-column label="索引" v-if="contents.tableIndex" type="index" width="70" align="center" />
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jingsaimingcheng"
                 header-align="center"
                 min-width="350"
@@ -144,7 +144,7 @@
                 <span style="font-weight: 600; color: #5c7cfa;">{{scope.row.jingsaimingcheng}}</span>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jingsaileixing"
                 header-align="center"
                 width="150"
@@ -153,7 +153,7 @@
                 <el-tag type="info" size="small">{{scope.row.jingsaileixing}}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="xuehao"
                 header-align="center"
                 width="150"
@@ -162,7 +162,7 @@
                 {{scope.row.xuehao}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="xueshengxingming"
                 header-align="center"
                 width="120"
@@ -171,7 +171,7 @@
                 {{scope.row.xueshengxingming}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="shenqingriqi"
                 header-align="center"
                 width="150"
@@ -180,7 +180,7 @@
                 {{scope.row.shenqingriqi}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="cansaileixing"
                 header-align="center"
                 width="120"
@@ -189,7 +189,7 @@
                 <el-tag type="info" size="small">{{scope.row.cansaileixing || '未设置'}}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="sfsh"
                 header-align="center"
                 width="120"
@@ -198,7 +198,7 @@
                 <el-tag :type="getStatusType(scope.row.sfsh)" size="small">{{scope.row.sfsh || '待审核'}}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column width="280" :align="contents.tableAlign"
+            <el-table-column width="280" align="center"
                 header-align="center"
                 label="操作">
                 <template slot-scope="scope">

@@ -1,5 +1,6 @@
 package com.config;
 
+import com.interceptor.ApiAccessLogInterceptor;
 import com.interceptor.AuthorizationInterceptor;
 import com.interceptor.RateLimitInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,9 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
 
     @Autowired
     private RateLimitInterceptor rateLimitInterceptor;  // 【论文4.4.5节】请求限流拦截器
+    
+    @Autowired
+    private ApiAccessLogInterceptor apiAccessLogInterceptor;  // API访问日志拦截器
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -30,6 +34,19 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
                 "/static/**", "/upload/**", "/admin/**", "/front/**",
                 "/**/*.html", "/**/*.js", "/**/*.css",
                 "/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.ico", "/**/*.woff2"
+            );
+        
+        // 注册API访问日志拦截器
+        registry.addInterceptor(apiAccessLogInterceptor)
+            .addPathPatterns("/**")
+            .excludePathPatterns(
+                "/upload/**",     // 【重要】排除上传文件，允许直接访问
+                "/static/**",
+                "/css/**",
+                "/js/**",
+                "/images/**",
+                "/favicon.ico",
+                "/error"
             );
         
         // 注册权限校验拦截器
@@ -60,8 +77,6 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
                 "/**/*.woff2",                   // 字体文件
                 "/actuator/**"                   // 监控端点
             );
-        // 注意：不再调用 super.addInterceptors(registry)，
-        // 因为限流拦截器已经单独注册过了
     }
 
     /**
@@ -69,15 +84,20 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 获取项目运行目录（兼容 Jar 包部署）
+        String uploadPath = System.getProperty("user.dir") + "/upload/";
+        
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/resources/")
                 .addResourceLocations("classpath:/static/")
                 // 使用文件路径访问前端资源（实际存在的路径）
                 .addResourceLocations("file:./src/main/resources/admin/")
                 .addResourceLocations("classpath:/public/");
-        // 【重要】单独添加上传文件目录映射，避免覆盖其他静态资源路径
+        
+        // 【重要】单独添加上传文件目录映射，使用绝对路径
         registry.addResourceHandler("/upload/**")
-                .addResourceLocations("file:./upload/");
+                .addResourceLocations("file:" + uploadPath);
+        
         super.addResourceHandlers(registry);
     }
 

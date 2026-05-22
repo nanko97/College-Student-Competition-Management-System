@@ -52,7 +52,7 @@
       <div class="table-wrapper">
         <el-table class="tech-table" :size="contents.tableSize" :show-header="contents.tableShowHeader"
             :header-row-style="headerRowStyle" :header-cell-style="headerCellStyle"
-            :border="contents.tableBorder"
+            border
             :fit="contents.tableFit"
             :stripe="contents.tableStripe"
             :row-style="rowStyle"
@@ -73,7 +73,7 @@
                 {{ (pageIndex - 1) * pageSize + scope.$index + 1 }}
               </template>
             </el-table-column>
-                <el-table-column  :sortable="contents.tableSortable" :align="contents.tableAlign"
+                <el-table-column  :sortable="contents.tableSortable" align="center"
                     prop="name"
                     header-align="center"
 		    label="名称">
@@ -81,7 +81,7 @@
                        {{scope.row.name}}
                      </template>
                 </el-table-column>
-                  <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign" prop="value"
+                  <el-table-column :sortable="contents.tableSortable" align="center" prop="value"
                     header-align="center"
                     width="200"
                     label="值">
@@ -92,7 +92,7 @@
                       <div v-else>无图片</div>
                     </template>
                   </el-table-column>
-            <el-table-column width="300" :align="contents.tableAlign"
+            <el-table-column width="300" align="center"
                 header-align="center"
                 label="操作">
                 <template slot-scope="scope">

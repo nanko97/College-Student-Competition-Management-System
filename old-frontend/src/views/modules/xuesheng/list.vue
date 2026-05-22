@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container tech-theme animate-fade-in-up">
     <!-- 页面标题 -->
     <div class="page-header">
@@ -60,7 +60,7 @@
           :show-header="contents.tableShowHeader"
           :header-row-style="headerRowStyle" 
           :header-cell-style="headerCellStyle"
-          :border="contents.tableBorder"
+          border
           :fit="contents.tableFit"
           :stripe="contents.tableStripe"
           :row-style="rowStyle"
@@ -80,7 +80,7 @@
                 {{ (pageIndex - 1) * pageSize + scope.$index + 1 }}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="xuehao"
                 header-align="center"
                 label="学号">
@@ -88,7 +88,7 @@
                 {{scope.row.xuehao}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="xueshengxingming"
                 header-align="center"
                 label="学生姓名">
@@ -96,7 +96,7 @@
                 {{scope.row.xueshengxingming}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="xingbie"
                 header-align="center"
                 label="性别">
@@ -106,7 +106,7 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="xueyuanmingcheng"
                 header-align="center"
                 label="学院名称">
@@ -114,7 +114,7 @@
                 {{scope.row.xueyuanmingcheng}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="banji"
                 header-align="center"
                 label="班级">
@@ -122,7 +122,7 @@
                 {{scope.row.banji}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="shouji"
                 header-align="center"
                 label="手机号码">
@@ -130,7 +130,7 @@
                 {{scope.row.shouji}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="youxiang"
                 header-align="center"
                 label="邮箱">
@@ -138,7 +138,7 @@
                 {{scope.row.youxiang}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign" 
+            <el-table-column :sortable="contents.tableSortable" align="center" 
                 prop="zhaopian"
                 header-align="center"
                 width="200"
@@ -150,7 +150,7 @@
                 <div v-else class="no-image">无图片</div>
               </template>
             </el-table-column>
-            <el-table-column width="300" :align="contents.tableAlign"
+            <el-table-column width="300" align="center"
                 header-align="center"
                 label="操作">
                 <template slot-scope="scope">

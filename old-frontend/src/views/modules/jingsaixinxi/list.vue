@@ -96,7 +96,7 @@
           :show-header="contents.tableShowHeader"
           :header-row-style="headerRowStyle" 
           :header-cell-style="headerCellStyle"
-          :border="contents.tableBorder"
+          border
           :fit="contents.tableFit"
           :stripe="contents.tableStripe"
           :row-style="rowStyle"
@@ -112,7 +112,7 @@
                 width="50">
             </el-table-column>
             <el-table-column label="索引" v-if="contents.tableIndex" type="index" width="70" align="center" />
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jingsaimingcheng"
                 header-align="center"
                 min-width="250"
@@ -122,7 +122,7 @@
                 <span style="font-weight: 600; color: #5c7cfa;">{{scope.row.jingsaimingcheng}}</span>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="nianfen"
                 header-align="center"
                 width="90"
@@ -131,7 +131,7 @@
                 <span style="font-weight: 600; color: #f76707;">{{scope.row.nianfen || '-'}}</span>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jingsaiJibie"
                 header-align="center"
                 width="100"
@@ -140,7 +140,7 @@
                 <el-tag :type="scope.row.jingsaiJibie === 'A类' ? 'danger' : scope.row.jingsaiJibie === 'B类' ? 'warning' : 'success'" size="small">{{scope.row.jingsaiJibie || '-'}}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jingsaileixing"
                 header-align="center"
                 width="130"
@@ -149,7 +149,7 @@
                 <el-tag type="info" size="small">{{scope.row.jingsaileixing || '-'}}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jingsaididian"
                 header-align="center"
                 width="150"
@@ -159,7 +159,7 @@
                 {{scope.row.jingsaididian || '-'}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jingsaishijian"
                 header-align="center"
                 width="160"
@@ -168,7 +168,7 @@
                 {{scope.row.jingsaishijian || '-'}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="shifouYouSaidao"
                 header-align="center"
                 width="110"
@@ -177,7 +177,7 @@
                 <el-tag :type="scope.row.shifouYouSaidao === '是' ? 'success' : 'info'" size="small">{{scope.row.shifouYouSaidao || '-'}}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="shifouXuyaoJinji"
                 header-align="center"
                 width="110"
@@ -186,7 +186,7 @@
                 <el-tag :type="scope.row.shifouXuyaoJinji === '是' ? 'success' : 'info'" size="small">{{scope.row.shifouXuyaoJinji || '-'}}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="moshi"
                 header-align="center"
                 width="100"
@@ -195,7 +195,7 @@
                 <el-tag type="success" size="small">{{scope.row.moshi || '-'}}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign" 
+            <el-table-column :sortable="contents.tableSortable" align="center" 
                 prop="fengmiantupian"
                 header-align="center"
                 width="120"
@@ -207,7 +207,7 @@
                 <div v-else class="no-image">无图片</div>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="gonghao"
                 header-align="center"
                 width="130"
@@ -216,7 +216,7 @@
                 {{scope.row.gonghao}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jiaoshixingming"
                 header-align="center"
                 width="120"
@@ -225,7 +225,7 @@
                 {{scope.row.jiaoshixingming}}
               </template>
             </el-table-column>
-            <el-table-column width="200" :align="contents.tableAlign"
+            <el-table-column width="200" align="center"
                 header-align="center"
                 label="操作">
                 <template slot-scope="scope">
@@ -537,12 +537,28 @@ export default {
     },
     // 图片加载错误处理
     handleImageError(e) {
-      // 如果已经是默认图片仍然失败，则隐藏图片
-      if (e.target.src.includes('upload/比赛.png')) {
+      // 检查是否已经是默认图片（避免无限重试）
+      if (e.target.dataset.isDefault) {
+        // 默认图片也加载失败，隐藏图片
         e.target.style.display = 'none';
-      } else {
-        // 尝试加载默认图片
+        return;
+      }
+      
+      // 首次失败，尝试加载默认图片
+      if (!e.target.dataset.retryCount) {
+        e.target.dataset.retryCount = '0';
+      }
+      
+      const retryCount = parseInt(e.target.dataset.retryCount);
+      
+      // 最多重试1次
+      if (retryCount === 0) {
+        e.target.dataset.retryCount = '1';
+        e.target.dataset.isDefault = 'true';
         e.target.src = this.$imageUrl('upload/比赛.png');
+      } else {
+        // 重试也失败，隐藏图片
+        e.target.style.display = 'none';
       }
     },
   }

@@ -57,10 +57,10 @@ export default {
   },
   mounted() {
     this.loadUnreadCount()
-    // 每30秒刷新一次未读数量
+    // 每60秒刷新一次未读数量（避免频繁请求触发限流）
     this.timer = setInterval(() => {
       this.loadUnreadCount()
-    }, 30000)
+    }, 60000)
   },
   beforeDestroy() {
     if (this.timer) {
@@ -76,6 +76,11 @@ export default {
           this.unreadCount = data.count || 0
         }
       } catch (error) {
+        // 静默处理限流错误（429），避免频繁报错
+        if (error.response && error.response.status === 429) {
+          console.warn('请求频率过高，跳过本次刷新')
+          return
+        }
         console.error('获取未读消息数量失败:', error)
       }
     },

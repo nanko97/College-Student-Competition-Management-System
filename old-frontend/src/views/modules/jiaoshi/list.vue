@@ -60,7 +60,7 @@
           :show-header="contents.tableShowHeader"
           :header-row-style="headerRowStyle" 
           :header-cell-style="headerCellStyle"
-          :border="contents.tableBorder"
+          border
           :fit="contents.tableFit"
           :stripe="contents.tableStripe"
           :row-style="rowStyle"
@@ -76,25 +76,28 @@
                 width="50">
             </el-table-column>
             <el-table-column label="索引" v-if="contents.tableIndex" type="index" width="50" />
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="gonghao"
                 header-align="center"
+                width="120"
                 label="工号">
               <template slot-scope="scope">
                 {{scope.row.gonghao}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jiaoshixingming"
                 header-align="center"
+                width="120"
                 label="教师姓名">
               <template slot-scope="scope">
                 {{scope.row.jiaoshixingming}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="xingbie"
                 header-align="center"
+                width="80"
                 label="性别">
               <template slot-scope="scope">
                 <el-tag :type="scope.row.xingbie === '男' ? 'primary' : 'danger'" size="small">
@@ -102,42 +105,47 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="xueyuanmingcheng"
                 header-align="center"
+                min-width="150"
+                show-overflow-tooltip
                 label="学院名称">
               <template slot-scope="scope">
                 {{scope.row.xueyuanmingcheng}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="zhicheng"
                 header-align="center"
+                width="100"
                 label="职称">
               <template slot-scope="scope">
                 <el-tag type="info" size="small">{{scope.row.zhicheng}}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="shouji"
                 header-align="center"
+                width="130"
                 label="手机号码">
               <template slot-scope="scope">
                 {{scope.row.shouji}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="youxiang"
                 header-align="center"
+                width="150"
                 label="邮箱">
               <template slot-scope="scope">
                 {{scope.row.youxiang}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign" 
+            <el-table-column :sortable="contents.tableSortable" align="center" 
                 prop="zhaopian"
                 header-align="center"
-                width="200"
+                width="100"
                 label="照片">
               <template slot-scope="scope">
                 <div v-if="scope.row.zhaopian" class="image-preview">
@@ -146,7 +154,7 @@
                 <div v-else class="no-image">无图片</div>
               </template>
             </el-table-column>
-            <el-table-column width="300" :align="contents.tableAlign"
+            <el-table-column width="200" align="center"
                 header-align="center"
                 label="操作">
                 <template slot-scope="scope">

@@ -1,6 +1,6 @@
 <template>
-  <el-dialog :title="!dataForm.id ? '新增' : '修改'" :close-on-click-modal="false" :visible.sync="visible" width="700px">
-    <el-form :model="dataForm" :rules="dataRule" ref="dataForm" label-width="120px">
+  <el-dialog :title="!dataForm.id ? '新增级别版本' : '修改级别版本'" :close-on-click-modal="false" :visible.sync="visible" width="600px" center custom-class="banben-dialog">
+    <el-form :model="dataForm" :rules="dataRule" ref="dataForm" label-width="120px" class="centered-form">
       <el-form-item label="竞赛名称" prop="jingsaimingcheng">
         <el-select v-model="dataForm.jingsaimingcheng" placeholder="请选择竞赛" filterable @change="jingsaiChange" style="width: 100%">
           <el-option v-for="item in jingsaiList" :key="item.id" :label="item.jingsaimingcheng" :value="item.jingsaimingcheng"></el-option>
@@ -159,3 +159,26 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* 弹窗表单居中 */
+.banben-dialog {
+  .el-dialog__body {
+    padding: 25px 30px !important;
+  }
+}
+
+.centered-form {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+::v-deep .el-form-item__label {
+  text-align: right;
+  padding-right: 12px;
+}
+
+::v-deep .el-form-item__content {
+  text-align: left;
+}
+</style>

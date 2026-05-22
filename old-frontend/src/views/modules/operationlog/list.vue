@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="main-content">
     <!-- 统计卡片 -->
     <div class="statistics-wrapper">

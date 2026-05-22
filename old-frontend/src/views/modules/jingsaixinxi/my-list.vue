@@ -558,12 +558,28 @@ export default {
     },
     // 图片加载错误处理
     handleImageError(e) {
-      // 如果已经是默认图片仍然失败，则隐藏图片
-      if (e.target.src.includes('upload/比赛.png')) {
+      // 检查是否已经是默认图片（避免无限重试）
+      if (e.target.dataset.isDefault) {
+        // 默认图片也加载失败，隐藏图片
         e.target.style.display = 'none';
-      } else {
-        // 尝试加载默认图片
+        return;
+      }
+      
+      // 首次失败，尝试加载默认图片
+      if (!e.target.dataset.retryCount) {
+        e.target.dataset.retryCount = '0';
+      }
+      
+      const retryCount = parseInt(e.target.dataset.retryCount);
+      
+      // 最多重试1次
+      if (retryCount === 0) {
+        e.target.dataset.retryCount = '1';
+        e.target.dataset.isDefault = 'true';
         e.target.src = this.$imageUrl('upload/比赛.png');
+      } else {
+        // 重试也失败，隐藏图片
+        e.target.style.display = 'none';
       }
     },
   }

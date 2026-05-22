@@ -9,17 +9,16 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Web MVC 配置类 - 产品化版本
+ * Web MVC 配置类 - 已禁用
  * 
- * 【功能说明】
- * 1. 注册 API 访问日志拦截器
- * 2. 配置静态资源处理
- * 3. 配置 CORS 跨域支持
+ * 【说明】
+ * 此配置类已被 InterceptorConfig 替代
+ * 因为 InterceptorConfig 继承 WebMvcConfigurationSupport，会导致本类的 WebMvcConfigurer 配置失效
+ * 所有配置已迁移至 InterceptorConfig
  * 
- * @author 产品化优化版本
- * @date 2026-04-06
+ * @deprecated 使用 InterceptorConfig 替代
  */
-@Configuration
+// @Configuration  // 已禁用，避免与 InterceptorConfig 冲突
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired

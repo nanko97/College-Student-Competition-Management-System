@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container tech-theme animate-fade-in-up">
     <!-- 页面标题 -->
     <div class="page-header">

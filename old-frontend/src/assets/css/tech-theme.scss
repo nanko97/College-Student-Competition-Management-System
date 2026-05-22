@@ -178,6 +178,42 @@ $info-color: #339af0; // 标准蓝
       background: rgba($primary-color, 0.02);
       border-radius: 8px;
     }
+
+    // 排序标识增强
+    .sort-caret {
+      opacity: 0.35;
+    }
+
+    .sort-caret.ascending {
+      border-bottom-color: $primary-color;
+      border-bottom-width: 6px;
+      border-left-width: 6px;
+      border-right-width: 6px;
+    }
+
+    .sort-caret.descending {
+      border-top-color: $primary-color;
+      border-top-width: 6px;
+      border-left-width: 6px;
+      border-right-width: 6px;
+    }
+
+    .ascending .sort-caret.ascending {
+      opacity: 1;
+    }
+
+    .descending .sort-caret.descending {
+      opacity: 1;
+    }
+
+    th.is-sortable:hover {
+      background: rgba($primary-color, 0.06);
+    }
+
+    th.ascending,
+    th.descending {
+      background: rgba($primary-color, 0.04);
+    }
   }
   
   // 按钮样式

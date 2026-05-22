@@ -89,7 +89,7 @@
           :show-header="contents.tableShowHeader"
           :header-row-style="headerRowStyle" 
           :header-cell-style="headerCellStyle"
-          :border="contents.tableBorder"
+          border
           :fit="contents.tableFit"
           :stripe="contents.tableStripe"
           :row-style="rowStyle"
@@ -109,68 +109,79 @@
                 {{ (pageIndex - 1) * pageSize + scope.$index + 1 }}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="xuehao"
                 header-align="center"
+                width="120"
                 label="学号">
               <template slot-scope="scope">
                 {{scope.row.xuehao}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="xueshengxingming"
                 header-align="center"
+                width="120"
                 label="学生姓名">
               <template slot-scope="scope">
                 {{scope.row.xueshengxingming}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jingsaimingcheng"
                 header-align="center"
+                min-width="200"
+                show-overflow-tooltip
                 label="竞赛名称">
               <template slot-scope="scope">
                 <span style="font-weight: 600; color: #5c7cfa;">{{scope.row.jingsaimingcheng}}</span>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jingsaileixing"
                 header-align="center"
+                width="120"
                 label="竞赛类型">
               <template slot-scope="scope">
-                <el-tag type="info" size="small">{{scope.row.jingsaileixing}}</el-tag>
+                <el-tag type="info" size="small">{{scope.row.jingsaileixing || '-'}}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="zuopinpingfen"
                 header-align="center"
+                width="120"
                 label="作品评分">
               <template slot-scope="scope">
                 <span style="font-weight: 700; color: #ff6b6b; font-size: 18px;">{{scope.row.zuopinpingfen}}</span>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="pingjiashijian"
                 header-align="center"
+                width="130"
                 label="评价时间">
               <template slot-scope="scope">
-                {{scope.row.pingjiashijian}}
+                <span v-if="scope.row.pingjiashijian">{{scope.row.pingjiashijian}}</span>
+                <span v-else style="color: #868e96;">-</span>
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="gonghao"
                 header-align="center"
+                width="120"
                 label="工号">
               <template slot-scope="scope">
                 {{scope.row.gonghao}}
               </template>
             </el-table-column>
-            <el-table-column :sortable="contents.tableSortable" :align="contents.tableAlign"
+            <el-table-column :sortable="contents.tableSortable" align="center"
                 prop="jiaoshixingming"
                 header-align="center"
+                width="120"
                 label="教师姓名">
               <template slot-scope="scope">
-                {{scope.row.jiaoshixingming}}
+                <span v-if="scope.row.jiaoshixingming">{{scope.row.jiaoshixingming}}</span>
+                <span v-else style="color: #868e96;">-</span>
               </template>
             </el-table-column>
             <!-- 学生端显示复核次数 -->
@@ -200,7 +211,7 @@
                 <span v-else style="color: #868e96;">未申请</span>
               </template>
             </el-table-column>
-            <el-table-column width="200" :align="contents.tableAlign"
+            <el-table-column width="200" align="center"
                 header-align="center"
                 label="操作">
                 <template slot-scope="scope">

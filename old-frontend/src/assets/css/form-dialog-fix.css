@@ -152,6 +152,21 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  background-color: #fff !important;
+}
+
+/* 强制所有弹窗内容区域白色背景 */
+.el-dialog__body {
+  background-color: #fff !important;
+}
+
+/* 强制所有表单弹窗白色背景 */
+.addEdit-block {
+  background-color: #fff !important;
+}
+
+.detail-form-content {
+  background-color: #fff !important;
 }
 
 .el-dialog__header {
@@ -517,4 +532,61 @@
   width: 16px;
   height: 16px;
   border: 3px solid #667eea;
+}
+
+/* -----------------
+   21. 表格排序标识增强
+   使升降序箭头更醒目、更美观
+   ----------------- */
+
+/* 排序触发区域悬停效果 */
+.el-table__column-sort-trigger {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.el-table__column-sort-trigger:hover {
+  transform: scale(1.2);
+}
+
+/* 排序箭头默认半透明 */
+.el-table .sort-caret {
+  opacity: 0.35;
+}
+
+/* 升序箭头 - 增大尺寸 + 主题色 */
+.el-table .sort-caret.ascending {
+  border-bottom-color: #5c7cfa !important;
+  border-bottom-width: 6px !important;
+  border-left-width: 6px !important;
+  border-right-width: 6px !important;
+}
+
+/* 降序箭头 - 增大尺寸 + 主题色 */
+.el-table .sort-caret.descending {
+  border-top-color: #5c7cfa !important;
+  border-top-width: 6px !important;
+  border-left-width: 6px !important;
+  border-right-width: 6px !important;
+}
+
+/* 升序激活状态 - 箭头完全显示 */
+.el-table .ascending .sort-caret.ascending {
+  opacity: 1 !important;
+}
+
+/* 降序激活状态 - 箭头完全显示 */
+.el-table .descending .sort-caret.descending {
+  opacity: 1 !important;
+}
+
+/* 可排序列的表头悬停提示 */
+.el-table th.is-sortable:hover {
+  background: rgba(92, 124, 250, 0.06) !important;
+}
+
+/* 已排序列的表头微妙高亮 */
+.el-table th.ascending,
+.el-table th.descending {
+  background: rgba(92, 124, 250, 0.04) !important;
 }
