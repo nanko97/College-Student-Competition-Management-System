@@ -84,6 +84,8 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         // 学生作品管理
         "/zuopin/my/list",
         "/zuopin/my/page",
+        "/zuopin/list",
+        "/zuopin/page",
         "/zuopin/upload",
         "/zuopin/delete",
         "/zuopin/download",  // 作品下载

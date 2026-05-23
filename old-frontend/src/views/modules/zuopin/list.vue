@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container tech-theme animate-fade-in-up">
     <!-- 页面标题 -->
     <div class="page-header">
@@ -91,7 +91,7 @@
         <el-table-column fixed="right" header-align="center" align="center" width="250" label="操作">
           <template slot-scope="scope">
             <el-button v-if="scope.row.cansaizuopin" type="info" size="mini" icon="el-icon-download" @click="downloadHandler(scope.row)">下载</el-button>
-            <el-button v-if="scope.row.cansaizuopin" type="primary" size="mini" icon="el-icon-edit" @click="scoreHandler(scope.row)">评分</el-button>
+            <el-button v-if="scope.row.cansaizuopin && !isStudent" type="primary" size="mini" icon="el-icon-edit" @click="scoreHandler(scope.row)">评分</el-button>
             <el-button v-if="scope.row.cansaizuopin" type="success" size="mini" icon="el-icon-view" @click="viewScoreHandler(scope.row)">查看评分</el-button>
           </template>
         </el-table-column>
@@ -223,15 +223,18 @@ export default {
     },
     getDataList() {
       this.dataListLoading = true
+      // 根据角色选择不同的API端点：学生用my/list，教师/管理员用list
+      const url = this.isStudent ? 'zuopin/my/list' : 'zuopin/list'
+      let params = {
+        'page': this.pageIndex,
+        'limit': this.pageSize
+      }
+      if (this.searchForm.jingsaimingcheng) params['jingsaimingcheng'] = this.searchForm.jingsaimingcheng
+      if (this.searchForm.xueshengxingming) params['xueshengxingming'] = this.searchForm.xueshengxingming
       this.$http({
-        url: 'zuopin/list',
+        url: url,
         method: 'get',
-        params: {
-          'page': this.pageIndex,
-          'limit': this.pageSize,
-          'jingsaimingcheng': this.searchForm.jingsaimingcheng,
-          'xueshengxingming': this.searchForm.xueshengxingming
-        }
+        params: params
       }).then(({data}) => {
         if (data && data.code === 0) {
           this.dataList = data.page ? data.page.list : []

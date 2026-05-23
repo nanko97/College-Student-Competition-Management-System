@@ -249,11 +249,43 @@ public class ZuopinController {
         log.info("当前用户角色tableName：{}", tableName);
 
         EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<>();
+        
+        // 学生角色：显示自己的所有报名记录（无需过滤sfsh和cansaizuopin，让学生看到自己的全部状态）
+        if ("xuesheng".equals(tableName)) {
+            String xuehao = (String) request.getSession().getAttribute("username");
+            log.info("学生 {} 查询作品列表", xuehao);
+            ew.eq("xuehao", xuehao);
+            
+            // 添加竞赛名称筛选
+            if (params.get("jingsaimingcheng") != null && !params.get("jingsaimingcheng").toString().isEmpty()) {
+                ew.like("jingsaimingcheng", params.get("jingsaimingcheng").toString());
+            }
+            
+            PageUtils page = jingsaibaomingService.queryPage(params, ew);
+            
+            // 为每个报名记录补充缴费模式信息
+            if (page.getList() != null) {
+                for (Object obj : page.getList()) {
+                    JingsaibaomingEntity entity = (JingsaibaomingEntity) obj;
+                    if (entity.getJingsaiId() != null) {
+                        JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(entity.getJingsaiId());
+                        if (jingsai != null) {
+                            entity.setJiaofeimoshi(jingsai.getJiaofeimoshi());
+                        }
+                    }
+                }
+            }
+            
+            log.info("学生作品查询结果 - 总数: {}", page.getTotal());
+            return R.ok().put("page", page);
+        }
+        
+        // 教师和管理员：只显示审核通过且已提交作品的记录
         ew.eq("sfsh", "通过");
         ew.isNotNull("cansaizuopin"); // 只显示已提交作品的
         
         // 教师只能查看自己创建的竞赛的作品
-        // 【关键修复】不再使用ew.in()（MyBatis-Plus 2.x IN条件可能不生效），改为Java层内存过滤
+        // 【关键修复】先查全部数据再在Java层内存过滤，避免分页截断导致教师数据丢失
         List<Long> teacherJingsaiIds = null;
         if ("jiaoshi".equals(tableName)) {
             String gonghao = (String) request.getSession().getAttribute("username");
@@ -265,16 +297,13 @@ public class ZuopinController {
             List<JingsaixinxiEntity> myJingsaiList = jingsaixinxiService.selectList(jingsaiEw);
             
             if (myJingsaiList != null && !myJingsaiList.isEmpty()) {
-                // 提取竞赛ID列表（仅用于后续Java层过滤）
                 teacherJingsaiIds = myJingsaiList.stream()
                         .map(JingsaixinxiEntity::getId)
                         .collect(java.util.stream.Collectors.toList());
                 log.info("教师 {} 可查看自己创建的 {} 个竞赛", gonghao, teacherJingsaiIds.size());
             } else {
-                // 如果教师没有创建任何竞赛，返回空列表
                 log.info("教师 {} 没有创建任何竞赛，返回空列表", gonghao);
-                return R.ok().put("data", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1))
-                           .put("page", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1));
+                return R.ok().put("page", new PageUtils(new java.util.ArrayList<>(), 0, 10, 1));
             }
         }
 
@@ -288,32 +317,36 @@ public class ZuopinController {
             ew.like("xueshengxingming", params.get("xueshengxingming").toString());
         }
 
-        PageUtils page = jingsaibaomingService.queryPage(params, ew);
-
-        // 【关键修复】教师角色：Java层内存过滤
-        if (teacherJingsaiIds != null && page.getList() != null) {
-            log.info("【调试】教师竞赛ID列表：{}", teacherJingsaiIds);
+        // 【关键修复】教师角色：先查全部数据再内存过滤再手动分页
+        if (teacherJingsaiIds != null) {
+            // 查询所有符合条件的记录（不分页），避免教师的数据被分页截断
+            List<JingsaibaomingEntity> allRecords = jingsaibaomingService.selectList(ew);
+            log.info("教师作品查询 - SQL查询全部记录数: {}", allRecords != null ? allRecords.size() : 0);
+            
             List<JingsaibaomingEntity> filteredList = new java.util.ArrayList<>();
-            for (Object obj : page.getList()) {
-                JingsaibaomingEntity entity = (JingsaibaomingEntity) obj;
-                log.info("【调试】报名记录 - ID:{}, jingsaiId:{}, jingsaiId类型:{}, jingsaimingcheng:{}", 
-                    entity.getId(), entity.getJingsaiId(), 
-                    entity.getJingsaiId() != null ? entity.getJingsaiId().getClass().getName() : "null",
-                    entity.getJingsaimingcheng());
-                if (entity.getJingsaiId() != null && teacherJingsaiIds.contains(entity.getJingsaiId())) {
-                    filteredList.add(entity);
+            if (allRecords != null) {
+                for (JingsaibaomingEntity entity : allRecords) {
+                    if (entity.getJingsaiId() != null && teacherJingsaiIds.contains(entity.getJingsaiId())) {
+                        filteredList.add(entity);
+                    }
                 }
             }
-            log.info("教师作品内存过滤：原始{}条，过滤后{}条", page.getList().size(), filteredList.size());
-            // 重新构建分页结果
+            log.info("教师作品内存过滤：原始{}条，过滤后{}条", allRecords != null ? allRecords.size() : 0, filteredList.size());
+            
+            // 手动分页
             int pageIndex = Integer.parseInt(params.getOrDefault("page", "1").toString());
             int pageSize = Integer.parseInt(params.getOrDefault("limit", "10").toString());
             int total = filteredList.size();
             int fromIndex = (pageIndex - 1) * pageSize;
             int toIndex = Math.min(fromIndex + pageSize, total);
             List<JingsaibaomingEntity> pageList = fromIndex < total ? filteredList.subList(fromIndex, toIndex) : new java.util.ArrayList<>();
-            page = new PageUtils(pageList, total, pageSize, pageIndex);
+            PageUtils page = new PageUtils(pageList, total, pageSize, pageIndex);
+            log.info("查询结果 - 总数: {}", page.getTotal());
+            return R.ok().put("page", page);
         }
+
+        // 管理员：直接分页查询
+        PageUtils page = jingsaibaomingService.queryPage(params, ew);
 
         log.info("查询结果 - 总数: {}", page.getTotal());
         return R.ok().put("page", page);
