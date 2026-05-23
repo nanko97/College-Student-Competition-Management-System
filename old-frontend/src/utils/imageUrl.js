@@ -4,7 +4,7 @@
  */
 
 // 后端基础URL（开发环境）
-const BASE_URL = 'http://localhost:9090/BYSJ_Springboot'
+const BASE_URL = '/BYSJ_Springboot'
 
 /**
  * 处理图片URL
