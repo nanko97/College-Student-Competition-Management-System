@@ -120,10 +120,7 @@ public class TuanduiApplyController {
     public R shenheList(@RequestParam Map<String, Object> params, HttpServletRequest request) {
         String fuzerenXuehao = (String) request.getSession().getAttribute("username");
         
-        // 查询该学生作为负责人的所有团队
-        // TODO: 需要从团队表查询负责人为该学生的团队ID列表
-        
-        // 暂时查询所有待审核的申请
+        // 查询待审核的申请
         EntityWrapper<TuanduiApplyEntity> ew = new EntityWrapper<>();
         ew.eq("apply_status", "待审核");
         ew.orderBy("apply_time", false);

@@ -1,4 +1,4 @@
-package com.entity.vo;
+﻿package com.entity.vo;
 
 import com.entity.ZuopindafenFuheEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -22,7 +22,7 @@ public class ZuopindafenFuheVO implements Serializable {
 		try {
 			BeanUtils.copyProperties(this, zuopindafenFuheEntity);
 		} catch (IllegalAccessException | InvocationTargetException e) {
-			e.printStackTrace();
+			throw new RuntimeException("鎿嶄綔澶辫触", e);
 		}
 	}
 

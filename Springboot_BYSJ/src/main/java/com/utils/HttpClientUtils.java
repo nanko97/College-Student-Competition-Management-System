@@ -1,4 +1,4 @@
-package com.utils;
+﻿package com.utils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -32,7 +32,7 @@ public class HttpClientUtils {
             in.close();
             return res;
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("鎿嶄綔澶辫触", e);
             return null;
         }
 

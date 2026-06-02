@@ -1,4 +1,4 @@
-
+﻿
 
 
 
@@ -648,12 +648,12 @@ public class ZuopinController {
             log.info("报名ID: {}", baomingId);
             log.info("文件名: {}", file.getOriginalFilename());
 
-            // 1. 验证文件
+            // 验证文件
             if (file.isEmpty()) {
                 return R.error("请选择要上传的文件");
             }
 
-            // 2. 验证文件类型
+            // 验证文件类型
             String originalFilename = file.getOriginalFilename();
             if (originalFilename == null || !originalFilename.contains(".")) {
                 return R.error("文件名非法");
@@ -671,18 +671,18 @@ public class ZuopinController {
                 return R.error("不支持的文件格式，请上传：doc、docx、pdf、zip、rar、7z、ppt、pptx、xls、xlsx");
             }
 
-            // 3. 验证文件大小（50MB）
+            // 验证文件大小（50MB）
             if (file.getSize() > 50 * 1024 * 1024) {
                 return R.error("文件大小不能超过50MB，当前文件：" + (file.getSize() / 1024 / 1024) + "MB");
             }
 
-            // 4. 查询报名记录
+            // 查询报名记录
             JingsaibaomingEntity baoming = jingsaibaomingService.selectById(baomingId);
             if (baoming == null) {
                 return R.error("报名信息不存在");
             }
 
-            // 5. 验证是否为当前学生的报名（大小写不敏感）
+            // 验证是否为当前学生的报名（大小写不敏感）
             String xuehao = (String) request.getSession().getAttribute("username");
             if (xuehao == null || !xuehao.equalsIgnoreCase(baoming.getXuehao())) {
                 return R.error("无权操作此报名记录");
@@ -740,7 +740,7 @@ public class ZuopinController {
             File destFile = new File(uploadDir, fileName);
             Files.copy(file.getInputStream(), destFile.toPath());
 
-            // 8. 更新报名记录的作品字段
+            // 更新报名记录的作品字段
             String oldFile = baoming.getCansaizuopin();
             baoming.setCansaizuopin("upload/zuopin/" + fileName);
             jingsaibaomingService.updateById(baoming);
@@ -941,7 +941,7 @@ public class ZuopinController {
                 }
             }
 
-            // 1. 权限验证
+            // 权限验证
             String tableName = (String) request.getSession().getAttribute("tableName");
             String username = (String) request.getSession().getAttribute("username");
             if (tableName == null || username == null) {
@@ -951,7 +951,7 @@ public class ZuopinController {
                         .body("{\"code\":401,\"msg\":\"请先登录\"}".getBytes());
             }
 
-            // 2. 查询报名记录
+            // 查询报名记录
             Long id = Long.parseLong(baomingId);
             JingsaibaomingEntity baoming = jingsaibaomingService.selectById(id);
             if (baoming == null) {
@@ -961,7 +961,7 @@ public class ZuopinController {
                         .body("{\"code\":404,\"msg\":\"报名信息不存在\"}".getBytes());
             }
 
-            // 3. 权限控制
+            // 权限控制
             if ("jiaoshi".equals(tableName)) {
                 // 教师：只能下载自己管理的竞赛的作品
                 if (baoming.getJingsaiId() != null) {
@@ -984,7 +984,7 @@ public class ZuopinController {
             }
             // 管理员可下载所有作品
 
-            // 4. 获取作品文件
+            // 获取作品文件
             String cansaizuopin = baoming.getCansaizuopin();
             if (cansaizuopin == null || cansaizuopin.isEmpty()) {
                 log.warn("作品下载失败：未提交作品，报名ID：{}", id);
@@ -1002,7 +1002,7 @@ public class ZuopinController {
                         .body("{\"code\":404,\"msg\":\"文件不存在\"}".getBytes());
             }
 
-            // 5. 返回文件（设置Content-Disposition强制下载）
+            // 返回文件（设置Content-Disposition强制下载）
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             // 解决中文文件名乱码

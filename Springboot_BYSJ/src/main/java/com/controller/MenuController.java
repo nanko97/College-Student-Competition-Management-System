@@ -1,4 +1,4 @@
-package com.controller;
+﻿package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.entity.TokenEntity;
@@ -32,14 +32,14 @@ public class MenuController {
     @GetMapping("")
     public R getMenus(HttpServletRequest request) {
         try {
-            // 1. 获取token
+            // 获取token
             String token = request.getHeader("token");
             if (!StringUtils.hasText(token)) {
                 log.warn("获取菜单失败：token为空");
                 return R.error(401, "请先登录");
             }
 
-            // 2. 验证token并获取用户角色
+            // 验证token并获取用户角色
             TokenEntity tokenEntity = tokenService.getTokenEntity(token);
             if (tokenEntity == null) {
                 log.warn("获取菜单失败：token无效");
@@ -49,7 +49,7 @@ public class MenuController {
             String role = tokenEntity.getRole();
             log.info("获取菜单成功：角色={}", role);
 
-            // 3. 根据角色返回菜单
+            // 根据角色返回菜单
             List<Map<String, Object>> menus = generateMenusByRole(role);
             return R.ok().put("data", menus);
         } catch (Exception e) {

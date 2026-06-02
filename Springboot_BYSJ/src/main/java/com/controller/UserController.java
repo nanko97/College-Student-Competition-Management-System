@@ -1,4 +1,4 @@
-package com.controller;
+﻿package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
@@ -82,13 +82,13 @@ public class UserController {
             }
         }
         
-        // 1. 基础参数校验
+        // 基础参数校验
         if (!StringUtils.hasText(username) || !StringUtils.hasText(password)) {
             log.warn("登录失败：用户名或密码为空，用户名：{}", username);
             return R.error("用户名和密码不能为空");
         }
 
-        // 2. 验证码校验（仅当 session 中存在验证码时才校验）
+        // 验证码校验（仅当 session 中存在验证码时才校验）
         HttpSession session = request.getSession();
         String sessionCaptcha = (String) session.getAttribute(CAPTCHA_SESSION_KEY);
         if (sessionCaptcha != null && StringUtils.hasText(sessionCaptcha)) {
@@ -101,7 +101,7 @@ public class UserController {
             session.removeAttribute(CAPTCHA_SESSION_KEY);
         }
 
-        // 3. 检查登录失败次数
+        // 检查登录失败次数
         Integer failCount = loginFailCountMap.getOrDefault(username, 0);
         if (failCount >= maxFailCount) {
             log.warn("登录失败：用户名{}登录失败次数超过限制（{}次）", username, maxFailCount);
@@ -109,26 +109,26 @@ public class UserController {
         }
 
         try {
-            // 4. 查询用户（适配旧版MyBatis-Plus：EntityWrapper）
+            // 查询用户（适配旧版MyBatis-Plus：EntityWrapper）
             EntityWrapper<UserEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("username", username);
             UserEntity user = userService.selectOne(queryWrapper); // 旧版方法：selectOne
 
-            // 5. 用户不存在或密码错误
+            // 用户不存在或密码错误
             if (user == null) {
                 loginFailCountMap.put(username, failCount + 1);
                 log.warn("登录失败：用户名{}不存在", username);
                 return R.error("账号或密码不正确");
             }
 
-            // 6. 密码校验（BCrypt加密对比，替换明文equals）
+            // 密码校验（BCrypt加密对比，替换明文equals）
             if (!passwordEncoder.matches(password, user.getPassword())) {
                 loginFailCountMap.put(username, failCount + 1);
                 log.warn("登录失败：用户名{}密码错误，失败次数：{}", username, failCount + 1);
                 return R.error("账号或密码不正确");
             }
 
-            // 7. 登录成功，重置失败次数
+            // 登录成功，重置失败次数
             loginFailCountMap.remove(username);
             String token = tokenService.generateToken(user.getId(), username, "users", user.getRole());
             log.info("用户{}登录成功，生成token：{}", username, token.substring(0, 10) + "****");
@@ -147,7 +147,7 @@ public class UserController {
     @IgnoreAuth
     @PostMapping(value = "/register")
     public R register(@RequestBody UserEntity user) {
-        // 1. 基础参数校验
+        // 基础参数校验
         if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
             log.warn("注册失败：用户名或密码为空，用户名：{}", user.getUsername());
             return R.error("用户名和密码不能为空");
@@ -160,7 +160,7 @@ public class UserController {
         }
 
         try {
-            // 2. 检查用户是否已存在（适配旧版：EntityWrapper）
+            // 检查用户是否已存在（适配旧版：EntityWrapper）
             EntityWrapper<UserEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("username", user.getUsername());
             if (userService.selectOne(queryWrapper) != null) { // 旧版方法：selectOne
@@ -168,14 +168,14 @@ public class UserController {
                 return R.error("用户已存在");
             }
 
-            // 3. 密码加密（注册时加密存储，避免明文）
+            // 密码加密（注册时加密存储，避免明文）
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             // 补充默认值（如创建时间，需根据实体类调整）
             if (user.getAddtime() == null) {
                 user.setAddtime(new Date());
             }
 
-            // 4. 保存用户（旧版方法：insert）
+            // 保存用户（旧版方法：insert）
             userService.insert(user);
             log.info("用户{}注册成功", user.getUsername());
             return R.ok("注册成功");
@@ -193,12 +193,12 @@ public class UserController {
     @GetMapping(value = "logout")
     public R logout(HttpServletRequest request) {
         try {
-            // 1. 清除session
+            // 清除session
             HttpSession session = request.getSession();
             Long userId = (Long) session.getAttribute("userId");
             session.invalidate();
 
-            // 2. Token失效（需在TokenService中实现token黑名单）
+            // Token失效（需在TokenService中实现token黑名单）
             String token = request.getHeader("token");
             if (StringUtils.hasText(token)) {
                 tokenService.invalidateToken(token);
@@ -219,14 +219,14 @@ public class UserController {
     @IgnoreAuth
     @PostMapping(value = "/resetPass") // 改为Post，更符合REST规范
     public R resetPass(@RequestParam String username, HttpServletRequest request) {
-        // 1. 参数校验
+        // 参数校验
         if (!StringUtils.hasText(username)) {
             log.warn("重置密码失败：用户名为空");
             return R.error("账号不能为空");
         }
 
         try {
-            // 2. 查询用户（适配旧版：EntityWrapper）
+            // 查询用户（适配旧版：EntityWrapper）
             EntityWrapper<UserEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("username", username);
             UserEntity user = userService.selectOne(queryWrapper); // 旧版方法：selectOne
@@ -235,7 +235,7 @@ public class UserController {
                 return R.error("账号不存在");
             }
 
-            // 3. 重置密码（加密存储，避免明文）
+            // 重置密码（加密存储，避免明文）
             user.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
             userService.updateById(user); // 旧版方法：updateById
             log.info("用户{}密码重置成功，默认密码：{}", username, DEFAULT_PASSWORD);
@@ -255,16 +255,16 @@ public class UserController {
     public R page(@RequestParam Map<String, Object> params, UserEntity user) {
         try {
             EntityWrapper<UserEntity> ew = new EntityWrapper<>();
-            // 1. 构建查询条件（复用你的MPUtil原有方法）
+            // 构建查询条件（复用你的MPUtil原有方法）
             MPUtil.allLike(ew, user);   // 模糊查询
             MPUtil.between(ew, params); // 时间区间查询
             MPUtil.sort(ew, params);    // 排序
 
-            // 2. 核心修改：用Query工具类创建分页对象（适配你的项目）
+            // 核心修改：用Query工具类创建分页对象（适配你的项目）
             Page<UserEntity> page = new Query<UserEntity>(params).getPage();
-            // 3. 执行分页查询（旧版selectPage方法）
+            // 执行分页查询（旧版selectPage方法）
             page = userService.selectPage(page, ew);
-            // 4. 封装分页结果
+            // 封装分页结果
             PageUtils pageUtils = new PageUtils(page);
 
             return R.ok().put("data", pageUtils);
@@ -301,25 +301,25 @@ public class UserController {
     @GetMapping("/info")
     public R getInfoByToken(@RequestParam(required = false) String token, HttpServletRequest request) {
         try {
-            // 1. 优先从header获取token
+            // 优先从header获取token
             if (!StringUtils.hasText(token)) {
                 token = request.getHeader("token");
             }
             
-            // 2. 参数校验
+            // 参数校验
             if (!StringUtils.hasText(token)) {
                 log.warn("获取用户信息失败：token为空");
                 return R.error("token不能为空");
             }
 
-            // 3. 通过token获取用户信息
+            // 通过token获取用户信息
             TokenEntity tokenEntity = tokenService.getTokenEntity(token);
             if (tokenEntity == null) {
                 log.warn("获取用户信息失败：token无效");
                 return R.error(401, "token无效或已过期");
             }
 
-            // 4. 查询用户信息
+            // 查询用户信息
             Long userId = tokenEntity.getUserid();
             if (userId == null || userId <= 0) {
                 log.warn("获取用户信息失败：userId无效");
@@ -332,7 +332,7 @@ public class UserController {
                 return R.error("用户不存在");
             }
 
-            // 5. 隐藏密码，避免敏感信息泄露
+            // 隐藏密码，避免敏感信息泄露
             user.setPassword(null);
             log.info("获取用户信息成功：userId={}, username={}", userId, user.getUsername());
             return R.ok().put("data", user);
@@ -348,7 +348,7 @@ public class UserController {
      */
     @GetMapping("/info/{id}")
     public R info(@PathVariable("id") Long id) { // 改为Long类型，匹配实体类主键类型
-        // 1. 参数校验
+        // 参数校验
         if (id == null || id <= 0) {
             log.warn("查询用户信息失败：ID非法，ID：{}", id);
             return R.error("用户ID非法");
@@ -406,14 +406,14 @@ public class UserController {
     @PostMapping("/save")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R save(@RequestBody UserEntity user) {
-        // 1. 参数校验
+        // 参数校验
         if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
             log.warn("保存用户失败：用户名或密码为空，用户名：{}", user.getUsername());
             return R.error("用户名和密码不能为空");
         }
 
         try {
-            // 2. 检查用户是否已存在（适配旧版：EntityWrapper）
+            // 检查用户是否已存在（适配旧版：EntityWrapper）
             EntityWrapper<UserEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("username", user.getUsername());
             if (userService.selectOne(queryWrapper) != null) { // 旧版方法：selectOne
@@ -421,7 +421,7 @@ public class UserController {
                 return R.error("用户已存在");
             }
 
-            // 3. 密码加密
+            // 密码加密
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             if (user.getAddtime() == null) {
                 user.setAddtime(new Date());
@@ -445,14 +445,14 @@ public class UserController {
     @PostMapping("/update")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R update(@RequestBody UserEntity user) {
-        // 1. 参数校验
+        // 参数校验
         if (user.getId() == null || user.getId() <= 0) {
             log.warn("修改用户失败：ID非法，ID：{}", user.getId());
             return R.error("用户ID非法");
         }
 
         try {
-            // 2. 用户名重复校验（排除自身，适配旧版）
+            // 用户名重复校验（排除自身，适配旧版）
             EntityWrapper<UserEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("username", user.getUsername())
                     .ne("id", user.getId()); // 旧版：字符串字段名
@@ -461,7 +461,7 @@ public class UserController {
                 return R.error("用户名已存在。");
             }
 
-            // 3. 若修改密码，重新加密
+            // 若修改密码，重新加密
             if (StringUtils.hasText(user.getPassword())) {
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
             } else {
@@ -488,7 +488,7 @@ public class UserController {
     @PostMapping("/delete")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R delete(@RequestBody Long[] ids) {
-        // 1. 参数校验
+        // 参数校验
         if (ids == null || ids.length == 0) {
             log.warn("删除用户失败：ID数组为空");
             return R.error("请选择要删除的用户");

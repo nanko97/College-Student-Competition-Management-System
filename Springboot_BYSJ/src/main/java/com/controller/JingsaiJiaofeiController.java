@@ -1,4 +1,4 @@
-package com.controller;
+﻿package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
@@ -111,13 +111,13 @@ public class JingsaiJiaofeiController {
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R submitJiaofei(@RequestBody JingsaiJiaofeiJiluEntity jiaofeiJilu, HttpServletRequest request) {
         try {
-            // 1. 验证报名信息
+            // 验证报名信息
             JingsaibaomingEntity baoming = jingsaibaomingService.selectById(jiaofeiJilu.getBaomingId());
             if (baoming == null) {
                 return R.error("报名信息不存在");
             }
 
-            // 2. 检查是否已缴费
+            // 检查是否已缴费
             EntityWrapper<JingsaiJiaofeiJiluEntity> ew = new EntityWrapper<>();
             ew.eq("baoming_id", jiaofeiJilu.getBaomingId());
             Integer count = jingsaiJiaofeiJiluService.selectCount(ew);
@@ -125,7 +125,7 @@ public class JingsaiJiaofeiController {
                 return R.error("该报名已提交缴费，请勿重复提交");
             }
 
-            // 3. 获取竞赛信息验证缴费
+            // 获取竞赛信息验证缴费
             JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(jiaofeiJilu.getJingsaiId());
             if (jingsai == null) {
                 return R.error("竞赛信息不存在");
@@ -138,7 +138,7 @@ public class JingsaiJiaofeiController {
                 return R.error("该竞赛未配置费用金额，请联系管理员");
             }
 
-            // 4. 验证缴费截止日期（从jingsai_feiyong表获取）
+            // 验证缴费截止日期（从jingsai_feiyong表获取）
             JingsaiFeiyongEntity feiyongConfig = jingsaiFeiyongService.getByJingsaiId(jiaofeiJilu.getJingsaiId());
             if (feiyongConfig != null && feiyongConfig.getJiaofeiJiezhiRiqi() != null) {
                 Date now = new Date();
@@ -149,12 +149,12 @@ public class JingsaiJiaofeiController {
                 }
             }
 
-            // 5. 验证金额
+            // 验证金额
             if (jiaofeiJilu.getJiaofeiJine().compareTo(feiyong) != 0) {
                 return R.error("缴费金额不正确，应为：" + feiyong);
             }
 
-            // 6. 保存缴费记录
+            // 保存缴费记录
             jiaofeiJilu.setId(IdWorker.getId());
             jiaofeiJilu.setJiaofeiZhuangtai("已缴费");
             jiaofeiJilu.setJiaofeiShijian(new Date());
@@ -162,7 +162,7 @@ public class JingsaiJiaofeiController {
             jiaofeiJilu.setXueshengxingming(baoming.getXueshengxingming());
             jingsaiJiaofeiJiluService.insert(jiaofeiJilu);
 
-            // 7. 更新报名表的支付状态
+            // 更新报名表的支付状态
             baoming.setIspay("待审核");
             jingsaibaomingService.updateById(baoming);
 
@@ -359,17 +359,17 @@ public class JingsaiJiaofeiController {
             log.info("接收到的jiaofeiId: {}", jiaofeiId);
             log.info("文件名: {}", file.getOriginalFilename());
             
-            // 1. 验证文件
+            // 验证文件
             if (file.isEmpty()) {
                 return R.error("请选择要上传的文件");
             }
 
-            // 2. 验证文件大小（5MB）
+            // 验证文件大小（5MB）
             if (file.getSize() > 5 * 1024 * 1024) {
                 return R.error("文件大小不能超过5MB");
             }
 
-            // 3. 验证文件类型
+            // 验证文件类型
             String originalFilename = file.getOriginalFilename();
             if (originalFilename == null || !originalFilename.contains(".")) {
                 return R.error("文件名非法");
@@ -379,19 +379,19 @@ public class JingsaiJiaofeiController {
                 return R.error("仅支持jpg、png格式的图片");
             }
 
-            // 4. 查询缴费记录
+            // 查询缴费记录
             JingsaiJiaofeiJiluEntity jiaofeiJilu = jingsaiJiaofeiJiluService.selectById(jiaofeiId);
             if (jiaofeiJilu == null) {
                 return R.error("缴费记录不存在");
             }
 
-            // 5. 检查缴费状态，未缴费或已驳回状态允许上传
+            // 检查缴费状态，未缴费或已驳回状态允许上传
             String status = jiaofeiJilu.getJiaofeiZhuangtai();
             if (!"未缴费".equals(status) && !"已驳回".equals(status)) {
                 return R.error("当前状态不允许上传凭证");
             }
 
-            // 6. 保存文件
+            // 保存文件
             String projectRoot = System.getProperty("user.dir");
             // 统一保存到项目根目录的 upload 文件夹
             String uploadPath = projectRoot + "/upload/";
@@ -405,13 +405,13 @@ public class JingsaiJiaofeiController {
             File destFile = new File(uploadDir, fileName);
             Files.copy(file.getInputStream(), destFile.toPath());
 
-            // 7. 更新缴费记录 - 保存相对路径，前端通过 /upload/ 访问
+            // 更新缴费记录 - 保存相对路径，前端通过 /upload/ 访问
             jiaofeiJilu.setPingzhengTupian("upload/" + fileName);
             jiaofeiJilu.setJiaofeiZhuangtai("已缴费");
             jiaofeiJilu.setJiaofeiShijian(new Date());
             jingsaiJiaofeiJiluService.updateById(jiaofeiJilu);
 
-            // 8. 更新报名表的支付状态
+            // 更新报名表的支付状态
             JingsaibaomingEntity baoming = jingsaibaomingService.selectById(jiaofeiJilu.getBaomingId());
             if (baoming != null) {
                 baoming.setIspay("待审核");

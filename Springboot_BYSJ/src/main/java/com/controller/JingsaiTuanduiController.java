@@ -1,4 +1,4 @@
-package com.controller;
+﻿package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
@@ -333,13 +333,13 @@ public class JingsaiTuanduiController {
         }
         
         try {
-            // 1. 删除所有团队成员记录（物理删除）
+            // 删除所有团队成员记录（物理删除）
             EntityWrapper<JingsaiTuanduiChengyuanEntity> memberEw = new EntityWrapper<>();
             memberEw.eq("tuandui_id", teamId);
             chengyuanService.delete(memberEw);
             log.info("已删除团队成员记录");
             
-            // 2. 删除团队（物理删除）
+            // 删除团队（物理删除）
             tuanduiService.deleteById(teamId);
             log.info("已删除团队记录");
             

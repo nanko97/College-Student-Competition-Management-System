@@ -1,4 +1,4 @@
-package com.entity.view;
+﻿package com.entity.view;
 
 import com.entity.XiaoxiTongzhiEntity;
 import com.baomidou.mybatisplus.annotations.TableName;
@@ -21,7 +21,7 @@ public class XiaoxiTongzhiView extends XiaoxiTongzhiEntity {
         try {
             BeanUtils.copyProperties(this, xiaoxiTongzhiEntity);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            throw new RuntimeException("鎿嶄綔澶辫触", e);
         }
     }
 }

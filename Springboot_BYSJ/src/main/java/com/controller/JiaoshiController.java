@@ -1,4 +1,4 @@
-package com.controller;
+﻿package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
@@ -94,7 +94,7 @@ public class JiaoshiController {
     @RequestMapping(value = "/login")
     public R login(String username, String password, String captcha, HttpServletRequest request) {
         try {
-            // 1. 基础参数校验
+            // 基础参数校验
             if (!StringUtils.hasText(username)) {
                 log.warn("教师登录失败：工号为空");
                 return R.error("工号不能为空");
@@ -105,7 +105,7 @@ public class JiaoshiController {
                 return R.error("密码不能为空");
             }
             
-            // 2. 【防暴力破解】检查账号是否处于锁定状态
+            // 【防暴力破解】检查账号是否处于锁定状态
             Long lockTime = lockTimeMap.get(username);
             if (lockTime != null) {
                 long remainingMs = lockTime - System.currentTimeMillis();
@@ -120,7 +120,7 @@ public class JiaoshiController {
                 }
             }
             
-            // 3. 【防暴力破解】检查登录失败次数
+            // 【防暴力破解】检查登录失败次数
             Integer failCount = loginFailCountMap.getOrDefault(username, 0);
             if (failCount >= maxFailCount) {
                 // 超过限制，锁定账号
@@ -130,23 +130,23 @@ public class JiaoshiController {
                 return R.error("登录失败次数过多，请10分钟后再试");
             }
             
-            // 4. 根据工号查询教师
+            // 根据工号查询教师
             EntityWrapper<JiaoshiEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("gonghao", username);
             JiaoshiEntity user = jiaoshiService.selectOne(queryWrapper);
             
-            // 5. 用户不存在或密码错误
+            // 用户不存在或密码错误
             if (user == null || !passwordEncoder.matches(password, user.getMima())) {
                 loginFailCountMap.put(username, failCount + 1);
                 log.warn("教师登录失败：工号{}账号或密码不正确，失败次数：{}", username, failCount + 1);
                 return R.error("账号或密码不正确");
             }
             
-            // 6. 【防暴力破解】登录成功，清除失败计数
+            // 【防暴力破解】登录成功，清除失败计数
             loginFailCountMap.remove(username);
             lockTimeMap.remove(username);
             
-            // 7. 登录成功，生成 Token
+            // 登录成功，生成 Token
             String token = tokenService.generateToken(user.getId(), username, "jiaoshi", "教师");
             log.info("教师 {} 登录成功", username);
             // 返回token和教师姓名
@@ -178,7 +178,7 @@ public class JiaoshiController {
     @RequestMapping("/register")
     public R register(@RequestBody JiaoshiEntity jiaoshi) {
         try {
-            // 1. 基础参数校验
+            // 基础参数校验
             if (!StringUtils.hasText(jiaoshi.getGonghao()) || !StringUtils.hasText(jiaoshi.getMima())) {
                 log.warn("教师注册失败：工号和密码不能为空");
                 return R.error("工号和密码不能为空");
@@ -190,13 +190,13 @@ public class JiaoshiController {
                 return R.error("账号格式不正确，只能包含字母、数字和下划线，长度7-20位");
             }
             
-            // 2. 密码强度校验（毕业设计模式：仅检查长度6位）
+            // 密码强度校验（毕业设计模式：仅检查长度6位）
             if (!PasswordValidator.isValidSimple(jiaoshi.getMima())) {
                 log.warn("教师注册失败：密码长度不能少于 6 位");
                 return R.error("密码长度不能少于 6 位");
             }
             
-            // 3. 检查账号是否存在
+            // 检查账号是否存在
             EntityWrapper<JiaoshiEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("gonghao", jiaoshi.getGonghao());
             JiaoshiEntity user = jiaoshiService.selectOne(queryWrapper);
@@ -205,15 +205,15 @@ public class JiaoshiController {
                 return R.error("注册用户已存在");
             }
             
-            // 4. 密码加密 (使用 BCrypt 加密)
+            // 密码加密 (使用 BCrypt 加密)
             jiaoshi.setMima(passwordEncoder.encode(jiaoshi.getMima()));
             
-            // 5. 生成 ID 并补充默认值
+            // 生成 ID 并补充默认值
             Long uId = IdWorker.getId();
             jiaoshi.setId(uId);
             jiaoshi.setAddtime(new Date());
             
-            // 6. 保存用户
+            // 保存用户
             jiaoshiService.insert(jiaoshi);
             log.info("教师 {} 注册成功", jiaoshi.getGonghao());
             return R.ok("注册成功");
@@ -260,7 +260,7 @@ public class JiaoshiController {
         try {
             Long id = null;
             
-            // 1. 优先从 Token 获取用户 ID
+            // 优先从 Token 获取用户 ID
             String token = request.getHeader("token");
             if (!StringUtils.hasText(token)) {
                 token = request.getParameter("token");
@@ -275,18 +275,18 @@ public class JiaoshiController {
                 }
             }
             
-            // 2. 如果 Token 无效，尝试从 Session 获取
+            // 如果 Token 无效，尝试从 Session 获取
             if (id == null || id <= 0) {
                 id = (Long) request.getSession().getAttribute("userId");
             }
             
-            // 3. 验证用户 ID
+            // 验证用户 ID
             if (id == null || id <= 0) {
                 log.warn("获取当前教师信息失败：无法获取用户 ID");
                 return R.error("请先登录");
             }
             
-            // 4. 查询教师信息
+            // 查询教师信息
             JiaoshiEntity user = jiaoshiService.selectById(id);
             if (user == null) {
                 log.warn("获取当前教师信息失败：ID{}不存在", id);
@@ -343,13 +343,13 @@ public class JiaoshiController {
     @RequestMapping(value = "/resetPass")
     public R resetPass(String username, HttpServletRequest request) {
         try {
-            // 1. 参数校验
+            // 参数校验
             if (!StringUtils.hasText(username)) {
                 log.warn("重置密码失败：工号为空");
                 return R.error("工号不能为空");
             }
             
-            // 2. 查询教师
+            // 查询教师
             EntityWrapper<JiaoshiEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("gonghao", username);
             JiaoshiEntity user = jiaoshiService.selectOne(queryWrapper);
@@ -359,7 +359,7 @@ public class JiaoshiController {
                 return R.error("账号不存在");
             }
             
-            // 3. 重置密码为默认密码 (使用 BCrypt 加密)
+            // 重置密码为默认密码 (使用 BCrypt 加密)
             user.setMima(passwordEncoder.encode("123456"));
             jiaoshiService.updateById(user);
             
@@ -388,10 +388,10 @@ public class JiaoshiController {
         try {
             log.info("教师分页查询，参数：{}", params);
             
-            // 1. 构建查询条件
+            // 构建查询条件
             EntityWrapper<JiaoshiEntity> ew = new EntityWrapper<>();
             
-            // 2. 处理姓名模糊查询
+            // 处理姓名模糊查询
             if (params.containsKey("jiaoshixingming") && params.get("jiaoshixingming") != null) {
                 String xingming = params.get("jiaoshixingming").toString();
                 if (!xingming.isEmpty()) {
@@ -400,7 +400,7 @@ public class JiaoshiController {
                 }
             }
             
-            // 3. 执行分页查询
+            // 执行分页查询
             PageUtils page = jiaoshiService.queryPage(
                 params, 
                 MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, jiaoshi), params), params)
@@ -429,10 +429,10 @@ public class JiaoshiController {
                   JiaoshiEntity jiaoshi,
                   HttpServletRequest request) {
         try {
-            // 1. 构建查询条件
+            // 构建查询条件
             EntityWrapper<JiaoshiEntity> ew = new EntityWrapper<>();
             
-            // 2. 执行分页查询
+            // 执行分页查询
             PageUtils page = jiaoshiService.queryPage(
                 params, 
                 MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, jiaoshi), params), params)
@@ -456,11 +456,11 @@ public class JiaoshiController {
     @RequestMapping("/lists")
     public R list(JiaoshiEntity jiaoshi) {
         try {
-            // 1. 构建查询条件 (精确匹配)
+            // 构建查询条件 (精确匹配)
             EntityWrapper<JiaoshiEntity> ew = new EntityWrapper<>();
             ew.allEq(MPUtil.allEQMapPre(jiaoshi, "jiaoshi"));
             
-            // 2. 查询列表
+            // 查询列表
             return R.ok().put("data", jiaoshiService.selectListView(ew));
             
         } catch (Exception e) {
@@ -479,11 +479,11 @@ public class JiaoshiController {
     @RequestMapping("/query")
     public R query(JiaoshiEntity jiaoshi) {
         try {
-            // 1. 构建查询条件
+            // 构建查询条件
             EntityWrapper<JiaoshiEntity> ew = new EntityWrapper<>();
             ew.allEq(MPUtil.allEQMapPre(jiaoshi, "jiaoshi"));
             
-            // 2. 查询视图数据 (关联查询)
+            // 查询视图数据 (关联查询)
             JiaoshiView jiaoshiView = jiaoshiService.selectView(ew);
             
             if (jiaoshiView == null) {
@@ -509,13 +509,13 @@ public class JiaoshiController {
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id) {
         try {
-            // 1. 参数校验
+            // 参数校验
             if (id == null || id <= 0) {
                 log.warn("查询教师详情失败：ID 非法，ID: {}", id);
                 return R.error("教师 ID 非法");
             }
             
-            // 2. 查询教师信息
+            // 查询教师信息
             JiaoshiEntity jiaoshi = jiaoshiService.selectById(id);
             
             if (jiaoshi == null) {
@@ -541,13 +541,13 @@ public class JiaoshiController {
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id) {
         try {
-            // 1. 参数校验
+            // 参数校验
             if (id == null || id <= 0) {
                 log.warn("查询教师详情失败：ID 非法，ID: {}", id);
                 return R.error("教师 ID 非法");
             }
             
-            // 2. 查询教师信息
+            // 查询教师信息
             JiaoshiEntity jiaoshi = jiaoshiService.selectById(id);
             
             if (jiaoshi == null) {
@@ -576,13 +576,13 @@ public class JiaoshiController {
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R save(@RequestBody JiaoshiEntity jiaoshi, HttpServletRequest request) {
         try {
-            // 1. 基础参数校验
+            // 基础参数校验
             if (!StringUtils.hasText(jiaoshi.getGonghao())) {
                 log.warn("保存教师失败：工号为空");
                 return R.error("工号不能为空");
             }
             
-            // 2. 检查工号是否已存在
+            // 检查工号是否已存在
             EntityWrapper<JiaoshiEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("gonghao", jiaoshi.getGonghao());
             if (jiaoshiService.selectOne(queryWrapper) != null) {
@@ -590,12 +590,12 @@ public class JiaoshiController {
                 return R.error("用户已存在");
             }
             
-            // 3. 密码加密 (如果有密码)
+            // 密码加密 (如果有密码)
             if (StringUtils.hasText(jiaoshi.getMima())) {
                 jiaoshi.setMima(passwordEncoder.encode(jiaoshi.getMima()));
             }
             
-            // 4. 生成 ID 并保存
+            // 生成 ID 并保存
             jiaoshi.setId(IdWorker.getId());
             ValidatorUtils.validateEntity(jiaoshi);
             jiaoshiService.insert(jiaoshi);
@@ -623,13 +623,13 @@ public class JiaoshiController {
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R add(@RequestBody JiaoshiEntity jiaoshi, HttpServletRequest request) {
         try {
-            // 1. 基础参数校验
+            // 基础参数校验
             if (!StringUtils.hasText(jiaoshi.getGonghao())) {
                 log.warn("添加教师失败：工号为空");
                 return R.error("工号不能为空");
             }
             
-            // 2. 检查工号是否已存在
+            // 检查工号是否已存在
             EntityWrapper<JiaoshiEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("gonghao", jiaoshi.getGonghao());
             if (jiaoshiService.selectOne(queryWrapper) != null) {
@@ -637,7 +637,7 @@ public class JiaoshiController {
                 return R.error("用户已存在");
             }
             
-            // 3. 密码加密 (如果有密码)
+            // 密码加密 (如果有密码)
             if (StringUtils.hasText(jiaoshi.getMima())) {
                 jiaoshi.setMima(passwordEncoder.encode(jiaoshi.getMima()));
             }
@@ -645,7 +645,7 @@ public class JiaoshiController {
             // 3.5 【关键修复】兜底处理：设置addtime（如果前端未传递或格式错误）
             EntityUtil.setAddtimeIfNull(jiaoshi);
             
-            // 4. 生成 ID 并保存
+            // 生成 ID 并保存
             jiaoshi.setId(IdWorker.getId());
             ValidatorUtils.validateEntity(jiaoshi);
             jiaoshiService.insert(jiaoshi);
@@ -671,7 +671,7 @@ public class JiaoshiController {
     @RequestMapping("/verifyPassword")
     public R verifyPassword(HttpServletRequest request, @RequestBody Map<String, Object> params) {
         try {
-            // 1. 获取当前登录用户
+            // 获取当前登录用户
             String token = request.getHeader("token");
             if (!StringUtils.hasText(token)) {
                 token = request.getParameter("token");
@@ -682,13 +682,13 @@ public class JiaoshiController {
                 return R.error("未登录或登录已过期");
             }
             
-            // 2. 查询教师信息
+            // 查询教师信息
             JiaoshiEntity jiaoshi = jiaoshiService.selectById(tokenEntity.getUserid());
             if (jiaoshi == null) {
                 return R.error("用户不存在");
             }
             
-            // 3. 验证密码
+            // 验证密码
             String oldPassword = params.get("oldPassword") != null ? params.get("oldPassword").toString() : "";
             if (!StringUtils.hasText(oldPassword)) {
                 return R.error("原密码不能为空");
@@ -720,13 +720,13 @@ public class JiaoshiController {
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R update(@RequestBody JiaoshiEntity jiaoshi, HttpServletRequest request) {
         try {
-            // 1. 参数校验
+            // 参数校验
             if (jiaoshi.getId() == null || jiaoshi.getId() <= 0) {
                 log.warn("修改教师失败：ID 非法，ID: {}", jiaoshi.getId());
                 return R.error("教师 ID 非法");
             }
             
-            // 2. 如果密码不为空，进行加密处理
+            // 如果密码不为空，进行加密处理
             if (StringUtils.hasText(jiaoshi.getMima())) {
                 // 判断是否是BCrypt加密过的密码（以$2a$开头）
                 if (!jiaoshi.getMima().startsWith("$2a$")) {
@@ -736,10 +736,10 @@ public class JiaoshiController {
                 }
             }
             
-            // 3. 执行更新
+            // 执行更新
             jiaoshiService.updateById(jiaoshi);
             
-            // 4. 【数据联动】同步更新所有关联表中的冗余数据
+            // 【数据联动】同步更新所有关联表中的冗余数据
             try {
                 dataSyncService.syncJiaoshiInfo(jiaoshi);
                 log.info("教师信息联动同步完成 - 工号: {}", jiaoshi.getGonghao());
@@ -770,14 +770,14 @@ public class JiaoshiController {
     @RequestMapping("/delete")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R delete(@RequestBody Long[] ids) {
-        // 1. 参数校验
+        // 参数校验
         if (ids == null || ids.length == 0) {
             log.warn("删除教师失败：ID 数组为空");
             return R.error("请选择要删除的教师");
         }
         
         try {
-            // 2. 批量删除
+            // 批量删除
             jiaoshiService.deleteBatchIds(Arrays.asList(ids));
             
             log.info("删除教师信息成功，IDs: {}", Arrays.toString(ids));
@@ -805,11 +805,11 @@ public class JiaoshiController {
                          @PathVariable("type") String type, 
                          @RequestParam Map<String, Object> map) {
         try {
-            // 1. 设置字段名
+            // 设置字段名
             map.put("column", columnName);
             map.put("type", type);
             
-            // 2. 处理时间区间 (类型 2：自定义区间)
+            // 处理时间区间 (类型 2：自定义区间)
             if ("2".equals(type)) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 Calendar c = Calendar.getInstance();
@@ -831,7 +831,7 @@ public class JiaoshiController {
                 }
             }
             
-            // 3. 构建查询条件
+            // 构建查询条件
             Wrapper<JiaoshiEntity> wrapper = new EntityWrapper<>();
             if (map.get("remindstart") != null) {
                 wrapper.ge(columnName, map.get("remindstart"));
@@ -840,7 +840,7 @@ public class JiaoshiController {
                 wrapper.le(columnName, map.get("remindend"));
             }
             
-            // 4. 统计数量
+            // 统计数量
             int count = jiaoshiService.selectCount(wrapper);
             
             log.debug("教师提醒查询成功，字段：{}, 类型：{}, 数量：{}", columnName, type, count);

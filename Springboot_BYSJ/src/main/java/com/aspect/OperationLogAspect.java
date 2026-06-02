@@ -21,24 +21,6 @@ import java.util.Date;
 
 /**
  * 操作日志切面
- * 
- * 【功能说明】
- * 1. 拦截标记了@OperationLog 注解的方法
- * 2. 自动记录操作人、操作时间、操作内容、请求参数等信息
- * 3. 记录方法执行耗时
- * 4. 记录异常信息（如果发生）
- * 
- * 【日志格式】
- * ===== 操作开始 =====
- * 操作人：admin
- * 操作方法：add
- * 操作描述：添加竞赛报名
- * 请求参数：{...}
- * ===== 操作成功 =====
- * 耗时：125ms
- * 
- * @author 毕业设计优化版
- * @date 2026-03-05
  */
 @Aspect
 @Component
@@ -180,7 +162,6 @@ public class OperationLogAspect {
         // 如果 Session 中没有，尝试从 Token 获取
         String token = request.getHeader("Token");
         if (token != null && !token.trim().isEmpty()) {
-            // TODO: 解析 Token 获取用户名（可根据实际 Token 实现调整）
             return "Token:" + token.substring(0, Math.min(10, token.length()));
         }
         

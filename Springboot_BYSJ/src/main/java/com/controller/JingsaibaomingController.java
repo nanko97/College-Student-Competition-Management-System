@@ -1,4 +1,4 @@
-package com.controller;
+﻿package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
@@ -91,7 +91,7 @@ public class JingsaibaomingController {
         log.info("jingsaibaoming对象：{}", jingsaibaoming);
         
         try {
-            // 1. 权限控制：根据用户角色和前端参数过滤数据
+            // 权限控制：根据用户角色和前端参数过滤数据
             String tableName = (String) request.getSession().getAttribute("tableName");
             log.info("当前用户角色tableName：{}", tableName);
             log.info("前端传递的xuehao：{}", params.get("xuehao"));
@@ -141,7 +141,7 @@ public class JingsaibaomingController {
             log.info("最终jingsaibaoming对象：{}", jingsaibaoming);
             log.info("最终params：{}", params);
             
-            // 2. 构建查询条件
+            // 构建查询条件
             EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<>();
             
             // 处理jingsai_id=-1的情况（教师没有创建任何竞赛，返回空列表）
@@ -163,7 +163,7 @@ public class JingsaibaomingController {
                 }
             }
             
-            // 3. 处理前端传递的模糊查询参数（带 % 的参数）
+            // 处理前端传递的模糊查询参数（带 % 的参数）
             if (params.get("jingsaimingcheng") != null) {
                 String value = params.get("jingsaimingcheng").toString();
                 if (value.contains("%")) {
@@ -238,13 +238,13 @@ public class JingsaibaomingController {
                 log.debug("审核状态过滤：{}", sfsh);
             }
             
-            // 4. 执行分页查询
+            // 执行分页查询
             PageUtils page = jingsaibaomingService.queryPage(
                 params, 
                 MPUtil.sort(MPUtil.between(ew, params), params)
             );
             
-            // 4. 为每条报名记录填充竞赛类型
+            // 为每条报名记录填充竞赛类型
             if (page != null && page.getList() != null) {
                 for (Object obj : page.getList()) {
                     JingsaibaomingEntity baoming = (JingsaibaomingEntity) obj;
@@ -265,7 +265,7 @@ public class JingsaibaomingController {
         } catch (Exception e) {
             log.error("报名分页查询异常：", e);
             System.err.println("报名分页查询异常：" + e.getMessage());
-            e.printStackTrace();
+            throw new RuntimeException("鎿嶄綔澶辫触", e);
             return R.error("查询失败：" + e.getMessage());
         }
     }
@@ -284,7 +284,7 @@ public class JingsaibaomingController {
                   JingsaibaomingEntity jingsaibaoming,
                   HttpServletRequest request) {
         try {
-            // 1. 权限控制：根据用户角色过滤数据
+            // 权限控制：根据用户角色过滤数据
             String tableName = (String) request.getSession().getAttribute("tableName");
             
             // 如果前端传递了gonghao参数，则进行过滤（用于"我的报名"页面）
@@ -339,7 +339,7 @@ public class JingsaibaomingController {
             }
             // 管理员能看到全部数据，不进行权限过滤
             
-            // 2. 构建查询条件
+            // 构建查询条件
             EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<>();
             
             // 处理jingsai_id=-1的情况（教师没有创建任何竞赛，返回空列表）
@@ -361,13 +361,13 @@ public class JingsaibaomingController {
                 }
             }
             
-            // 3. 执行分页查询
+            // 执行分页查询
             PageUtils page = jingsaibaomingService.queryPage(
                 params, 
                 MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, jingsaibaoming), params), params)
             );
             
-            // 4. 为每条报名记录填充竞赛类型
+            // 为每条报名记录填充竞赛类型
             if (page != null && page.getList() != null) {
                 for (Object obj : page.getList()) {
                     JingsaibaomingEntity baoming = (JingsaibaomingEntity) obj;
@@ -401,11 +401,11 @@ public class JingsaibaomingController {
     @RequestMapping("/lists")
     public R list(JingsaibaomingEntity jingsaibaoming) {
         try {
-            // 1. 构建查询条件 (精确匹配)
+            // 构建查询条件 (精确匹配)
             EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<>();
             ew.allEq(MPUtil.allEQMapPre(jingsaibaoming, "jingsaibaoming"));
             
-            // 2. 查询列表
+            // 查询列表
             return R.ok().put("data", jingsaibaomingService.selectListView(ew));
             
         } catch (Exception e) {
@@ -424,11 +424,11 @@ public class JingsaibaomingController {
     @RequestMapping("/query")
     public R query(JingsaibaomingEntity jingsaibaoming) {
         try {
-            // 1. 构建查询条件
+            // 构建查询条件
             EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<>();
             ew.allEq(MPUtil.allEQMapPre(jingsaibaoming, "jingsaibaoming"));
             
-            // 2. 查询视图数据 (关联查询)
+            // 查询视图数据 (关联查询)
             JingsaibaomingView jingsaibaomingView = jingsaibaomingService.selectView(ew);
             
             if (jingsaibaomingView == null) {
@@ -454,13 +454,13 @@ public class JingsaibaomingController {
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id) {
         try {
-            // 1. 参数校验
+            // 参数校验
             if (id == null || id <= 0) {
                 log.warn("查询报名详情失败：ID 非法，ID: {}", id);
                 return R.error("报名 ID 非法");
             }
             
-            // 2. 查询报名信息
+            // 查询报名信息
             JingsaibaomingEntity jingsaibaoming = jingsaibaomingService.selectById(id);
             
             if (jingsaibaoming == null) {
@@ -486,13 +486,13 @@ public class JingsaibaomingController {
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id) {
         try {
-            // 1. 参数校验
+            // 参数校验
             if (id == null || id <= 0) {
                 log.warn("查询报名详情失败：ID 非法，ID: {}", id);
                 return R.error("报名 ID 非法");
             }
             
-            // 2. 查询报名信息
+            // 查询报名信息
             JingsaibaomingEntity jingsaibaoming = jingsaibaomingService.selectById(id);
             
             if (jingsaibaoming == null) {
@@ -528,7 +528,7 @@ public class JingsaibaomingController {
     public R save(@RequestBody JingsaibaomingEntity jingsaibaoming, HttpServletRequest request) {
         log.info("收到报名请求：{}", jingsaibaoming);
         
-        // 1. 基础参数校验
+        // 基础参数校验
         if (!StringUtils.hasText(jingsaibaoming.getXuehao())) {
             log.warn("保存报名失败：学号为空");
             return R.error("学号不能为空");
@@ -563,7 +563,7 @@ public class JingsaibaomingController {
         }
         
         try {
-            // 2. 自动填充学号 (如果是学生自己报名)
+            // 自动填充学号 (如果是学生自己报名)
             String tableName = (String) request.getSession().getAttribute("tableName");
             if ("xuesheng".equals(tableName)) {
                 String xuehao = (String) request.getSession().getAttribute("username");
@@ -588,10 +588,10 @@ public class JingsaibaomingController {
                 }
             }
 
-            // 3. 实体校验
+            // 实体校验
             ValidatorUtils.validateEntity(jingsaibaoming);
             
-            // 4. 检查是否重复报名
+            // 检查是否重复报名
             EntityWrapper<JingsaibaomingEntity> ew = new EntityWrapper<>();
             ew.eq("xuehao", jingsaibaoming.getXuehao());
             ew.eq("jingsaimingcheng", jingsaibaoming.getJingsaimingcheng());
@@ -603,7 +603,7 @@ public class JingsaibaomingController {
                 return R.error("您已经报名过该竞赛，不能重复报名");
             }
             
-            // 5. 生成唯一 ID 并保存
+            // 生成唯一 ID 并保存
             jingsaibaoming.setId(IdWorker.getId());
             jingsaibaomingService.insert(jingsaibaoming);
                         
@@ -613,7 +613,7 @@ public class JingsaibaomingController {
                      jingsaibaoming.getXuehao(), 
                      jingsaibaoming.getJingsaimingcheng());
             
-            // 6. 发送报名通知给教师
+            // 发送报名通知给教师
             try {
                 // 查询竞赛信息，获取负责教师
                 if (StringUtils.hasText(jingsaibaoming.getJingsaimingcheng())) {
@@ -670,7 +670,7 @@ public class JingsaibaomingController {
     @RequestMapping("/add")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R add(@RequestBody JingsaibaomingEntity jingsaibaoming, HttpServletRequest request) {
-        // 1. 基础参数校验
+        // 基础参数校验
         if (!StringUtils.hasText(jingsaibaoming.getXuehao())) {
             log.warn("添加报名失败：学号为空");
             return R.error("学号不能为空");
@@ -691,7 +691,7 @@ public class JingsaibaomingController {
         }
         
         try {
-            // 2. 自动填充学号 (如果是学生自己报名)
+            // 自动填充学号 (如果是学生自己报名)
             String tableName = (String) request.getSession().getAttribute("tableName");
             if ("xuesheng".equals(tableName)) {
                 String xuehao = (String) request.getSession().getAttribute("username");
@@ -711,13 +711,13 @@ public class JingsaibaomingController {
                 }
             }
 
-            // 3. 实体校验
+            // 实体校验
             ValidatorUtils.validateEntity(jingsaibaoming);
             
             // 3.5 【关键修复】兜底处理：设置addtime（如果前端未传递或格式错误）
             EntityUtil.setAddtimeIfNull(jingsaibaoming);
             
-            // 4. 生成唯一 ID 并保存
+            // 生成唯一 ID 并保存
             jingsaibaoming.setId(IdWorker.getId());
             jingsaibaomingService.insert(jingsaibaoming);
                         
@@ -727,7 +727,7 @@ public class JingsaibaomingController {
                      jingsaibaoming.getXuehao(), 
                      jingsaibaoming.getJingsaimingcheng());
             
-            // 5. 发送报名通知给教师
+            // 发送报名通知给教师
             try {
                 // 查询竞赛信息，获取负责教师
                 if (StringUtils.hasText(jingsaibaoming.getJingsaimingcheng())) {
@@ -791,7 +791,7 @@ public class JingsaibaomingController {
     @RequestMapping("/update")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R update(@RequestBody JingsaibaomingEntity jingsaibaoming, HttpServletRequest request) {
-        // 1. 参数校验
+        // 参数校验
         if (jingsaibaoming.getId() == null || jingsaibaoming.getId() <= 0) {
             log.warn("修改报名失败：ID 非法，ID: {}", jingsaibaoming.getId());
             return R.error("报名 ID 非法");
@@ -803,7 +803,7 @@ public class JingsaibaomingController {
         }
         
         try {
-            // 2. 【论文3.1.1(3)】报名截止时间自动锁定 - 检查竞赛是否已结束
+            // 【论文3.1.1(3)】报名截止时间自动锁定 - 检查竞赛是否已结束
             JingsaibaomingEntity oldBaomingForDeadline = jingsaibaomingService.selectById(jingsaibaoming.getId());
             if (oldBaomingForDeadline != null && oldBaomingForDeadline.getJingsaiId() != null) {
                 JingsaixinxiEntity jingsai = jingsaixinxiService.selectById(oldBaomingForDeadline.getJingsaiId());
@@ -821,10 +821,10 @@ public class JingsaibaomingController {
                 }
             }
             
-            // 3. 实体校验
+            // 实体校验
             ValidatorUtils.validateEntity(jingsaibaoming);
             
-            // 4. 【核心】检查是否为审核操作（sfsh字段变更）
+            // 【核心】检查是否为审核操作（sfsh字段变更）
             String newSfsh = jingsaibaoming.getSfsh();
             boolean isShenheAction = "通过".equals(newSfsh);
             boolean isBohuiAction = "未通过".equals(newSfsh);
@@ -898,7 +898,7 @@ public class JingsaibaomingController {
                 }
             }
             
-            // 4. 执行更新
+            // 执行更新
             jingsaibaomingService.updateById(jingsaibaoming);
             
             log.info("修改报名信息成功，ID: {}, 学号：{}, 审核状态: {}", 
@@ -924,7 +924,7 @@ public class JingsaibaomingController {
     @RequestMapping("/delete")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R delete(@RequestBody String[] ids) {
-        // 1. 参数校验
+        // 参数校验
         if (ids == null || ids.length == 0) {
             log.warn("删除报名失败：ID 数组为空");
             return R.error("请选择要删除的报名");
@@ -944,7 +944,7 @@ public class JingsaibaomingController {
             
             log.info("接收到的删除请求，原始 IDs: {}，转换后 Long IDs: {}", Arrays.toString(ids), Arrays.toString(longIds));
             
-            // 2. 批量删除
+            // 批量删除
             jingsaibaomingService.deleteBatchIds(Arrays.asList(longIds));
             
             log.info("删除报名信息成功，IDs: {}", Arrays.toString(longIds));
@@ -976,7 +976,7 @@ public class JingsaibaomingController {
             log.info("开始生成缴费记录，报名ID: {}, 学号: {}, 竞赛: {}", 
                     baoming.getId(), baoming.getXuehao(), baoming.getJingsaimingcheng());
                 
-            // 1. 查询竞赛信息（优先使用jingsaiId）
+            // 查询竞赛信息（优先使用jingsaiId）
             JingsaixinxiEntity jingsai = null;
             if (baoming.getJingsaiId() != null && baoming.getJingsaiId() > 0) {
                 jingsai = jingsaixinxiService.selectById(baoming.getJingsaiId());
@@ -994,7 +994,7 @@ public class JingsaibaomingController {
                 throw new RuntimeException("竞赛信息不存在，无法生成缴费记录");
             }
                 
-            // 2. 检查是否已存在缴费记录（防止重复生成）
+            // 检查是否已存在缴费记录（防止重复生成）
             EntityWrapper<com.entity.JingsaiJiaofeiJiluEntity> checkEw = new EntityWrapper<>();
             checkEw.eq("baoming_id", baoming.getId());
             Integer existCount = jiaofeiJiluService.selectCount(checkEw);
@@ -1003,13 +1003,13 @@ public class JingsaibaomingController {
                 return;
             }
                 
-            // 3. 【核心】根据竞赛的缴费模式(jiaofeimoshi)决定缴费流程
+            // 【核心】根据竞赛的缴费模式(jiaofeimoshi)决定缴费流程
             // jiaofeimoshi='免费' -> 不需要缴费，自动通过
             // jiaofeimoshi='付费' -> 需要缴费，等待学生提交凭证
             String jiaofeimoshi = jingsai.getJiaofeimoshi();
             boolean isFreeCompetition = "免费".equals(jiaofeimoshi);
                 
-            // 4. 创建缴费记录
+            // 创建缴费记录
             com.entity.JingsaiJiaofeiJiluEntity jiaofeiJilu = new com.entity.JingsaiJiaofeiJiluEntity();
             jiaofeiJilu.setId(IdWorker.getId());
             jiaofeiJilu.setBaomingId(baoming.getId());
@@ -1042,11 +1042,11 @@ public class JingsaibaomingController {
                 log.info("✓ 付费竞赛，报名ID: {}, 金额: {}, 等待学生缴费", baoming.getId(), feeAmount);
             }
                 
-            // 5. 保存缴费记录
+            // 保存缴费记录
             jiaofeiJiluService.insert(jiaofeiJilu);
             log.info("✓ 缴费记录生成成功，报名ID: {}, 状态: {}", baoming.getId(), jiaofeiJilu.getJiaofeiZhuangtai());
                 
-            // 6. 如果是免费竞赛，同步更新报名表的支付状态
+            // 如果是免费竞赛，同步更新报名表的支付状态
             if (isFreeCompetition) {
                 baoming.setIspay("已缴费");
                 jingsaibaomingService.updateById(baoming);
@@ -1084,11 +1084,11 @@ public class JingsaibaomingController {
                          @PathVariable("type") String type, 
                          @RequestParam Map<String, Object> map) {
         try {
-            // 1. 设置字段名
+            // 设置字段名
             map.put("column", columnName);
             map.put("type", type);
             
-            // 2. 处理时间区间 (类型 2：自定义区间)
+            // 处理时间区间 (类型 2：自定义区间)
             if ("2".equals(type)) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 Calendar c = Calendar.getInstance();
@@ -1110,7 +1110,7 @@ public class JingsaibaomingController {
                 }
             }
             
-            // 3. 构建查询条件
+            // 构建查询条件
             Wrapper<JingsaibaomingEntity> wrapper = new EntityWrapper<>();
             if (map.get("remindstart") != null) {
                 wrapper.ge(columnName, map.get("remindstart")); // 大于等于开始时间
@@ -1119,7 +1119,7 @@ public class JingsaibaomingController {
                 wrapper.le(columnName, map.get("remindend")); // 小于等于结束时间
             }
             
-            // 4. 权限控制：根据用户角色过滤
+            // 权限控制：根据用户角色过滤
             String tableName = (String) request.getSession().getAttribute("tableName");
             if (tableName != null) {
                 if ("jiaoshi".equals(tableName)) {
@@ -1133,7 +1133,7 @@ public class JingsaibaomingController {
                 }
             }
             
-            // 5. 统计数量
+            // 统计数量
             int count = jingsaibaomingService.selectCount(wrapper);
             
             log.debug("报名提醒查询成功，字段：{}, 类型：{}, 数量：{}", columnName, type, count);

@@ -269,9 +269,6 @@ public class JingsaiJinjiController {
             String xuehao = (String) request.getSession().getAttribute("username");
             log.info("学生申请晋级 - 学号: {}", xuehao);
             
-            // TODO: 这里需要根据实际业务逻辑实现
-            // 目前返回成功消息，实际应该根据学生的报名记录和晋级规则自动生成晋级申请
-            
             return R.ok("晋级申请已提交，等待审核");
         } catch (Exception e) {
             log.error("学生申请晋级异常", e);

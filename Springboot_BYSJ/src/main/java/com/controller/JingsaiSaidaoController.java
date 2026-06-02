@@ -1,4 +1,4 @@
-package com.controller;
+﻿package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
@@ -361,14 +361,14 @@ public class JingsaiSaidaoController {
                 }
             }
             
-            // 1. 统计赛道总数
+            // 统计赛道总数
             EntityWrapper<JingsaiSaidaoEntity> baseEw = new EntityWrapper<>();
             if (myJingsaiIds != null) baseEw.in("jingsai_id", myJingsaiIds);
             int totalCount = saidaoService.selectCount(baseEw);
             log.info("赛道总数：{}", totalCount);
             stats.put("totalSaidao", totalCount);
             
-            // 2. 统计活跃赛道数
+            // 统计活跃赛道数
             EntityWrapper<JingsaiSaidaoEntity> activeEw = new EntityWrapper<>();
             if (myJingsaiIds != null) activeEw.in("jingsai_id", myJingsaiIds);
             activeEw.eq("is_active", "是");
@@ -376,7 +376,7 @@ public class JingsaiSaidaoController {
             log.info("活跃赛道数：{}", activeCount);
             stats.put("activeSaidao", activeCount);
             
-            // 3. 统计关联竞赛数 - 需要查询实际数据做distinct
+            // 统计关联竞赛数 - 需要查询实际数据做distinct
             EntityWrapper<JingsaiSaidaoEntity> jingsaiCountEw = new EntityWrapper<>();
             if (myJingsaiIds != null) jingsaiCountEw.in("jingsai_id", myJingsaiIds);
             jingsaiCountEw.groupBy("jingsai_id");

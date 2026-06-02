@@ -1,4 +1,4 @@
-package com.controller;
+﻿package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
@@ -90,12 +90,12 @@ public class ZuopindafenController {
         log.info("请求参数：{}", params);
         
         try {
-            // 1. 权限控制：根据用户角色和前端参数过滤数据
+            // 权限控制：根据用户角色和前端参数过滤数据
             String tableName = (String) request.getSession().getAttribute("tableName");
             String role = (String) request.getSession().getAttribute("role");
             log.info("当前用户角色tableName：{}，role：{}", tableName, role);
             
-            // 2. 构建查询条件
+            // 构建查询条件
             EntityWrapper<ZuopindafenEntity> ew = new EntityWrapper<>();
             
             // 2.1 权限过滤：根据角色在SQL层面过滤数据（确保在分页前过滤，避免数据丢失）
@@ -148,7 +148,7 @@ public class ZuopindafenController {
                 }
             }
             
-            // 3. 执行分页查询（SQL层面已包含权限过滤条件，分页前过滤确保数据完整性）
+            // 执行分页查询（SQL层面已包含权限过滤条件，分页前过滤确保数据完整性）
             PageUtils page = zuopindafenService.queryPage(
                 params, 
                 MPUtil.sort(MPUtil.between(ew, params), params)
@@ -156,7 +156,7 @@ public class ZuopindafenController {
             
             log.info("分页查询结果: {} 条", page.getList() != null ? page.getList().size() : 0);
             
-            // 4. 如果是学生查询，关联复核状态和复核次数
+            // 如果是学生查询，关联复核状态和复核次数
             if ("xuesheng".equals(tableName)) {
                 log.info("[学生查询] 开始关联复核状态，数据条数：{}", page.getList() != null ? page.getList().size() : 0);
                 List<ZuopindafenEntity> dataList = (List<ZuopindafenEntity>) page.getList();
@@ -207,11 +207,11 @@ public class ZuopindafenController {
                   ZuopindafenEntity zuopindafen,
                   HttpServletRequest request) {
         try {
-            // 1. 权限控制：根据用户角色过滤数据
+            // 权限控制：根据用户角色过滤数据
             String tableName = (String) request.getSession().getAttribute("tableName");
             String role = (String) request.getSession().getAttribute("role");
             
-            // 2. 构建查询条件
+            // 构建查询条件
             EntityWrapper<ZuopindafenEntity> ew = new EntityWrapper<>();
             
             // 2.1 权限过滤：根据角色在SQL层面过滤数据（确保在分页前过滤，避免数据丢失）
@@ -259,7 +259,7 @@ public class ZuopindafenController {
                 }
             }
             
-            // 3. 执行分页查询（SQL层面已包含权限过滤条件）
+            // 执行分页查询（SQL层面已包含权限过滤条件）
             PageUtils page = zuopindafenService.queryPage(
                 params, 
                 MPUtil.sort(MPUtil.between(ew, params), params)
@@ -283,7 +283,7 @@ public class ZuopindafenController {
     @RequestMapping("/lists")
     public R list(ZuopindafenEntity zuopindafen, HttpServletRequest request) {
         try {
-            // 1. 权限控制：根据用户角色过滤数据
+            // 权限控制：根据用户角色过滤数据
             String tableName = (String) request.getSession().getAttribute("tableName");
             String role = (String) request.getSession().getAttribute("role");
             
@@ -323,11 +323,11 @@ public class ZuopindafenController {
     @RequestMapping("/query")
     public R query(ZuopindafenEntity zuopindafen) {
         try {
-            // 1. 构建查询条件
+            // 构建查询条件
             EntityWrapper<ZuopindafenEntity> ew = new EntityWrapper<>();
             ew.allEq(MPUtil.allEQMapPre(zuopindafen, "zuopindafen"));
             
-            // 2. 查询视图数据 (关联查询)
+            // 查询视图数据 (关联查询)
             ZuopindafenView zuopindafenView = zuopindafenService.selectView(ew);
             
             if (zuopindafenView == null) {
@@ -354,13 +354,13 @@ public class ZuopindafenController {
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id, HttpServletRequest request) {
         try {
-            // 1. 参数校验
+            // 参数校验
             if (id == null || id <= 0) {
                 log.warn("查询作品评分详情失败：ID 非法，ID: {}", id);
                 return R.error("评分 ID 非法");
             }
             
-            // 2. 查询评分信息
+            // 查询评分信息
             ZuopindafenEntity zuopindafen = zuopindafenService.selectById(id);
             
             if (zuopindafen == null) {
@@ -368,7 +368,7 @@ public class ZuopindafenController {
                 return R.error("作品评分信息不存在");
             }
             
-            // 3. 如果是学生查询，关联复核状态和复核次数
+            // 如果是学生查询，关联复核状态和复核次数
             String tableName = (String) request.getSession().getAttribute("tableName");
             if ("xuesheng".equals(tableName) && zuopindafen.getXuehao() != null) {
                 // 查询该成绩的所有复核记录
@@ -410,13 +410,13 @@ public class ZuopindafenController {
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id, HttpServletRequest request) {
         try {
-            // 1. 参数校验
+            // 参数校验
             if (id == null || id <= 0) {
                 log.warn("查询作品评分详情失败：ID 非法，ID: {}", id);
                 return R.error("评分 ID 非法");
             }
             
-            // 2. 查询评分信息
+            // 查询评分信息
             ZuopindafenEntity zuopindafen = zuopindafenService.selectById(id);
             
             if (zuopindafen == null) {
@@ -424,7 +424,7 @@ public class ZuopindafenController {
                 return R.error("作品评分信息不存在");
             }
             
-            // 3. 如果是学生查询，关联复核状态和复核次数
+            // 如果是学生查询，关联复核状态和复核次数
             String tableName = (String) request.getSession().getAttribute("tableName");
             if ("xuesheng".equals(tableName) && zuopindafen.getXuehao() != null) {
                 // 查询该成绩的所有复核记录
@@ -473,7 +473,7 @@ public class ZuopindafenController {
     @OperationLog("保存作品评分")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R save(@RequestBody ZuopindafenEntity zuopindafen, HttpServletRequest request) {
-        // 1. 权限控制：只有教师和管理员可以新增评分
+        // 权限控制：只有教师和管理员可以新增评分
         String tableName = (String) request.getSession().getAttribute("tableName");
         log.debug("新增评分 - 当前用户表名：{}", tableName);
         
@@ -487,7 +487,7 @@ public class ZuopindafenController {
             return R.error("学生无权新增评分记录，请联系教师");
         }
         
-        // 2. 基础参数校验
+        // 基础参数校验
         if (!StringUtils.hasText(zuopindafen.getXuehao())) {
             log.warn("保存评分失败：学号为空");
             return R.error("学号不能为空");
@@ -503,14 +503,14 @@ public class ZuopindafenController {
             return R.error("作品分数不能为空");
         }
         
-        // 5. 分数范围校验（0-100）
+        // 分数范围校验（0-100）
         if (zuopindafen.getZuopinpingfen() < 0 || zuopindafen.getZuopinpingfen() > 100) {
             log.warn("保存评分失败：分数超出范围，分数：{}", zuopindafen.getZuopinpingfen());
             return R.error("评分范围为 0-100 分");
         }
         
         try {
-            // 3. 自动填充工号 (如果是教师评分)
+            // 自动填充工号 (如果是教师评分)
             if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
                 zuopindafen.setGonghao(gonghao);
@@ -518,10 +518,10 @@ public class ZuopindafenController {
                          gonghao, zuopindafen.getJingsaimingcheng(), zuopindafen.getZuopinpingfen());
             }
             
-            // 4. 实体校验
+            // 实体校验
             ValidatorUtils.validateEntity(zuopindafen);
             
-            // 5. 生成唯一 ID 并保存
+            // 生成唯一 ID 并保存
             zuopindafen.setId(IdWorker.getId());
             zuopindafenService.insert(zuopindafen);
 
@@ -569,7 +569,7 @@ public class ZuopindafenController {
     @OperationLog("添加作品评分")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R add(@RequestBody ZuopindafenEntity zuopindafen, HttpServletRequest request) {
-        // 1. 权限控制：只有教师和管理员可以新增评分
+        // 权限控制：只有教师和管理员可以新增评分
         String tableName = (String) request.getSession().getAttribute("tableName");
         log.debug("添加评分 - 当前用户表名：{}", tableName);
         
@@ -583,7 +583,7 @@ public class ZuopindafenController {
             return R.error("学生无权添加评分记录，请联系教师");
         }
         
-        // 2. 基础参数校验
+        // 基础参数校验
         if (!StringUtils.hasText(zuopindafen.getXuehao())) {
             log.warn("添加评分失败：学号为空");
             return R.error("学号不能为空");
@@ -600,20 +600,20 @@ public class ZuopindafenController {
         }
         
         try {
-            // 3. 自动填充工号 (如果是教师评分)
+            // 自动填充工号 (如果是教师评分)
             if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
                 zuopindafen.setGonghao(gonghao);
                 log.info("教师 {} 添加作品评分：{}", gonghao, zuopindafen.getJingsaimingcheng());
             }
             
-            // 4. 实体校验
+            // 实体校验
             ValidatorUtils.validateEntity(zuopindafen);
             
             // 4.5 【关键修复】兜底处理：设置addtime（如果前端未传递或格式错误）
             EntityUtil.setAddtimeIfNull(zuopindafen);
             
-            // 5. 生成唯一 ID 并保存
+            // 生成唯一 ID 并保存
             zuopindafen.setId(IdWorker.getId());
             zuopindafenService.insert(zuopindafen);
 
@@ -666,7 +666,7 @@ public class ZuopindafenController {
     @OperationLog("修改作品评分")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R update(@RequestBody ZuopindafenEntity zuopindafen, HttpServletRequest request) {
-        // 1. 参数校验
+        // 参数校验
         if (zuopindafen.getId() == null || zuopindafen.getId() <= 0) {
             log.warn("修改评分失败：ID 非法，ID: {}", zuopindafen.getId());
             return R.error("评分 ID 非法");
@@ -682,7 +682,7 @@ public class ZuopindafenController {
             return R.error("作品分数不能为空");
         }
         
-        // 2. 权限控制：只有教师和管理员可以修改评分
+        // 权限控制：只有教师和管理员可以修改评分
         String tableName = (String) request.getSession().getAttribute("tableName");
         log.debug("修改评分 - 当前用户表名：{}", tableName);
         
@@ -696,7 +696,7 @@ public class ZuopindafenController {
             return R.error("学生无权修改评分记录，请联系教师");
         }
         
-        // 3. 如果是教师，只能修改自己的评分
+        // 如果是教师，只能修改自己的评分
         if ("jiaoshi".equals(tableName)) {
             String gonghao = (String) request.getSession().getAttribute("username");
             log.debug("当前教师工号：{}", gonghao);
@@ -714,17 +714,17 @@ public class ZuopindafenController {
             }
         }
         
-        // 4. 分数范围校验（0-100）
+        // 分数范围校验（0-100）
         if (zuopindafen.getZuopinpingfen() < 0 || zuopindafen.getZuopinpingfen() > 100) {
             log.warn("修改评分失败：分数超出范围，ID: {}, 分数：{}", zuopindafen.getId(), zuopindafen.getZuopinpingfen());
             return R.error("评分范围为 0-100 分");
         }
         
         try {
-            // 5. 实体校验
+            // 实体校验
             ValidatorUtils.validateEntity(zuopindafen);
             
-            // 6. 执行更新
+            // 执行更新
             zuopindafenService.updateById(zuopindafen);
             
             log.info("修改作品评分成功，用户：{}, ID: {}, 学号：{}, 分数：{}", 
@@ -753,7 +753,7 @@ public class ZuopindafenController {
     @OperationLog("删除作品评分")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R delete(@RequestBody String[] ids, HttpServletRequest request) {
-        // 1. 参数校验
+        // 参数校验
         if (ids == null || ids.length == 0) {
             log.warn("删除评分失败：ID 数组为空");
             return R.error("请选择要删除的评分");
@@ -773,7 +773,7 @@ public class ZuopindafenController {
             
             log.info("接收到的删除请求，原始 IDs: {}，转换后 Long IDs: {}", Arrays.toString(ids), Arrays.toString(longIds));
             
-            // 2. 权限控制：只有教师和管理员可以删除评分
+            // 权限控制：只有教师和管理员可以删除评分
             String tableName = (String) request.getSession().getAttribute("tableName");
             log.debug("当前用户表名：{}", tableName);
             
@@ -787,7 +787,7 @@ public class ZuopindafenController {
                 return R.error("学生无权删除评分记录");
             }
             
-            // 3. 如果是教师，只能删除自己的评分
+            // 如果是教师，只能删除自己的评分
             if ("jiaoshi".equals(tableName)) {
                 String gonghao = (String) request.getSession().getAttribute("username");
                 log.debug("当前教师工号：{}", gonghao);
@@ -806,7 +806,7 @@ public class ZuopindafenController {
                 }
             }
             
-            // 4. 批量删除
+            // 批量删除
             int count = longIds.length;
             zuopindafenService.deleteBatchIds(Arrays.asList(longIds));
             
@@ -839,11 +839,11 @@ public class ZuopindafenController {
                          @PathVariable("type") String type, 
                          @RequestParam Map<String, Object> map) {
         try {
-            // 1. 设置字段名
+            // 设置字段名
             map.put("column", columnName);
             map.put("type", type);
             
-            // 2. 处理时间区间 (类型 2：自定义区间)
+            // 处理时间区间 (类型 2：自定义区间)
             if ("2".equals(type)) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 Calendar c = Calendar.getInstance();
@@ -865,7 +865,7 @@ public class ZuopindafenController {
                 }
             }
             
-            // 3. 构建查询条件
+            // 构建查询条件
             Wrapper<ZuopindafenEntity> wrapper = new EntityWrapper<>();
             if (map.get("remindstart") != null) {
                 wrapper.ge(columnName, map.get("remindstart")); // 大于等于开始时间
@@ -874,7 +874,7 @@ public class ZuopindafenController {
                 wrapper.le(columnName, map.get("remindend")); // 小于等于结束时间
             }
             
-            // 4. 权限控制：根据用户角色过滤
+            // 权限控制：根据用户角色过滤
             String tableName = (String) request.getSession().getAttribute("tableName");
             String role = (String) request.getSession().getAttribute("role");
             if (tableName != null) {
@@ -907,7 +907,7 @@ public class ZuopindafenController {
                 }
             }
             
-            // 5. 统计数量
+            // 统计数量
             // 【关键修复】教师角色：先用selectList查出数据，再在Java层过滤，最后计数
             List<String> teacherJingsaiNames = (List<String>) map.get("teacherJingsaiNames");
             if (teacherJingsaiNames != null) {
@@ -989,12 +989,12 @@ public class ZuopindafenController {
                 allScores = new java.util.ArrayList<>();
             }
             
-            // 1. 统计评分总数
+            // 统计评分总数
             int totalCount = allScores != null ? allScores.size() : 0;
             log.info("评分总数：{}", totalCount);
             stats.put("totalPingfen", totalCount);
             
-            // 2. 计算平均分数
+            // 计算平均分数
             if (totalCount > 0) {
                 double sumScore = 0;
                 int validScoreCount = 0;
@@ -1017,7 +1017,7 @@ public class ZuopindafenController {
                 log.info("平均分：0（无评分记录）");
             }
             
-            // 3. 统计复核申请数 - 【关键修复】不再使用fuheEw.in()，改为Java层内存过滤
+            // 统计复核申请数 - 【关键修复】不再使用fuheEw.in()，改为Java层内存过滤
             EntityWrapper<ZuopindafenFuheEntity> fuheEw = new EntityWrapper<>();
             List<Long> teacherScoreIds = null; // 教师角色：用于Java层内存过滤复核记录
             if ("xuesheng".equals(tableName)) {
@@ -1094,7 +1094,7 @@ public class ZuopindafenController {
                 }
             }
             
-            // 1. 权限控制：根据角色确定查询范围
+            // 权限控制：根据角色确定查询范围
             String tableName = (String) request.getSession().getAttribute("tableName");
             if (tableName == null || tableName.isEmpty()) {
                 response.setContentType("application/json;charset=UTF-8");
@@ -1115,7 +1115,7 @@ public class ZuopindafenController {
             }
             // 管理员可以导出任何成绩
             
-            // 2. 查询成绩数据
+            // 查询成绩数据
             EntityWrapper<ZuopindafenEntity> ew = new EntityWrapper<>();
             List<String> teacherJingsaiNames = null; // 教师角色：用于Java层内存过滤
             if (queryXuehao != null && !queryXuehao.isEmpty()) {
@@ -1158,10 +1158,10 @@ public class ZuopindafenController {
                 return;
             }
             
-            // 3. 生成PDF
+            // 生成PDF
             ByteArrayOutputStream baos = generateScorePdf(scoreList, queryXuehao);
             
-            // 4. 设置响应头，返回PDF文件
+            // 设置响应头，返回PDF文件
             String fileName = "成绩单_" + (queryXuehao != null ? queryXuehao : "全部") + "_" + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".pdf";
             response.setContentType("application/pdf");
             response.setHeader("Content-Disposition", "attachment;filename=" + java.net.URLEncoder.encode(fileName, "UTF-8"));

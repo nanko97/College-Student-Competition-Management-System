@@ -1,4 +1,4 @@
-package com.utils;
+﻿package com.utils;
 
 import java.sql.*;
 
@@ -102,21 +102,21 @@ public class DatabaseDiagnoseUtil {
 
         } catch (ClassNotFoundException e) {
             System.err.println("✗ 找不到 MySQL 驱动");
-            e.printStackTrace();
+            throw new RuntimeException("鎿嶄綔澶辫触", e);
         } catch (SQLException e) {
             System.err.println("✗ 数据库错误：" + e.getMessage());
             System.err.println("\n可能原因：");
             System.err.println("1. MySQL 服务未启动");
             System.err.println("2. 数据库配置错误（检查 application.yml）");
             System.err.println("3. 数据库 BYSJ_SpringBoot 不存在");
-            e.printStackTrace();
+            throw new RuntimeException("鎿嶄綔澶辫触", e);
         } finally {
             try {
                 if (rs != null) rs.close();
                 if (stmt != null) stmt.close();
                 if (conn != null) conn.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RuntimeException("鎿嶄綔澶辫触", e);
             }
         }
     }

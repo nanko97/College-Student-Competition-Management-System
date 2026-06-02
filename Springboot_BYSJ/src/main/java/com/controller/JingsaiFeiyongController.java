@@ -1,4 +1,4 @@
-package com.controller;
+﻿package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
@@ -167,12 +167,12 @@ public class JingsaiFeiyongController {
             log.info("费用配置总数：{}", totalCount);
             stats.put("totalFeiyong", totalCount);
             
-            // 2. 统计收费竞赛数
+            // 统计收费竞赛数
             EntityWrapper<JingsaiFeiyongEntity> shoufeiEw = new EntityWrapper<>();
             shoufeiEw.eq("shifou_shoufei", "是");
             int shoufeiCount = jingsaiFeiyongService.selectCount(shoufeiEw);
             
-            // 3. 统计免费竞赛数
+            // 统计免费竞赛数
             EntityWrapper<JingsaiFeiyongEntity> mianfeiEw = new EntityWrapper<>();
             mianfeiEw.eq("shifou_shoufei", "否");
             int mianfeiCount = jingsaiFeiyongService.selectCount(mianfeiEw);

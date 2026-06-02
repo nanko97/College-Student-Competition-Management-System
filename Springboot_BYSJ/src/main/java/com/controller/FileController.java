@@ -79,20 +79,20 @@ public class FileController {
             @RequestParam("file") MultipartFile file,
             @RequestParam(required = false) String type) throws Exception {
 
-        // 1. 空文件校验
+        // 空文件校验
         if (file.isEmpty()) {
             log.warn("文件上传失败：上传文件为空");
             throw new EIException("上传文件不能为空");
         }
 
-        // 2. 文件大小校验
+        // 文件大小校验
         if (file.getSize() > maxFileSize) {
             log.warn("文件上传失败：文件大小超过限制，当前大小：{}，限制：{}",
                     file.getSize(), maxFileSize);
             throw new EIException("文件大小超过限制（最大" + (maxFileSize/1024/1024) + "MB）");
         }
 
-        // 3. 文件类型校验（基于后缀名）
+        // 文件类型校验（基于后缀名）
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || !originalFilename.contains(".")) {
             log.warn("文件上传失败：文件名非法，无后缀");
@@ -119,7 +119,7 @@ public class FileController {
             // Tika检测失败时不阻止上传，避免影响正常使用
         }
 
-        // 4. 构建上传目录（兼容 IDE 和 jar包运行）
+        // 构建上传目录（兼容 IDE 和 jar包运行）
         File uploadDir = getUploadDir();
         if (!uploadDir.exists()) {
             boolean mkdirs = uploadDir.mkdirs();
@@ -129,7 +129,7 @@ public class FileController {
             }
         }
 
-        // 5. 生成唯一文件名（时间戳 + 原始文件名，避免冲突并保留原名）
+        // 生成唯一文件名（时间戳 + 原始文件名，避免冲突并保留原名）
         String timestamp = String.valueOf(new Date().getTime());
         // 移除原始文件名中的特殊字符，保留中文和字母数字
         String safeOriginalName = originalFilename.replaceAll("[^\\u4e00-\\u9fa5a-zA-Z0-9._-]", "_");
@@ -138,7 +138,7 @@ public class FileController {
         File destFile = new File(uploadDir, fileName);
 
         try {
-            // 6. 保存文件
+            // 保存文件
             Files.copy(file.getInputStream(), destFile.toPath());
             log.info("文件上传成功：{} -> {}", originalFilename, destFile.getAbsolutePath());
         } catch (IOException e) {

@@ -1,4 +1,4 @@
-package com.controller;
+﻿package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
@@ -332,12 +332,12 @@ public class XiaoxiTongzhiController {
                 baseEw.eq("jieshouren_gonghao", username);
             }
             
-            // 1. 统计总消息数
+            // 统计总消息数
             int totalCount = xiaoxiTongzhiService.selectCount(baseEw);
             log.info("消息总数：{}", totalCount);
             stats.put("total", totalCount);
             
-            // 2. 统计未读消息数
+            // 统计未读消息数
             EntityWrapper<XiaoxiTongzhiEntity> unreadEw = new EntityWrapper<>();
             unreadEw.eq("is_read", "未读");
             if ("xuesheng".equals(tableName)) {
@@ -348,7 +348,7 @@ public class XiaoxiTongzhiController {
             int unreadCount = xiaoxiTongzhiService.selectCount(unreadEw);
             stats.put("unread", unreadCount);
             
-            // 3. 统计已读消息数
+            // 统计已读消息数
             EntityWrapper<XiaoxiTongzhiEntity> readEw = new EntityWrapper<>();
             readEw.eq("is_read", "已读");
             if ("xuesheng".equals(tableName)) {

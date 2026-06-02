@@ -1,4 +1,4 @@
-package com.controller;
+﻿package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.annotation.OperationLog;
@@ -94,7 +94,7 @@ public class XueshengController {
     @RequestMapping(value = "/login")
     public R login(String username, String password, String captcha, HttpServletRequest request) {
         try {
-            // 1. 基础参数校验
+            // 基础参数校验
             if (!StringUtils.hasText(username)) {
                 log.warn("学生登录失败：学号为空");
                 return R.error("学号不能为空");
@@ -105,7 +105,7 @@ public class XueshengController {
                 return R.error("密码不能为空");
             }
             
-            // 2. 【防暴力破解】检查账号是否处于锁定状态
+            // 【防暴力破解】检查账号是否处于锁定状态
             Long lockTime = lockTimeMap.get(username);
             if (lockTime != null) {
                 long remainingMs = lockTime - System.currentTimeMillis();
@@ -120,7 +120,7 @@ public class XueshengController {
                 }
             }
             
-            // 3. 【防暴力破解】检查登录失败次数
+            // 【防暴力破解】检查登录失败次数
             Integer failCount = loginFailCountMap.getOrDefault(username, 0);
             if (failCount >= maxFailCount) {
                 // 超过限制，锁定账号
@@ -130,23 +130,23 @@ public class XueshengController {
                 return R.error("登录失败次数过多，请10分钟后再试");
             }
             
-            // 4. 根据学号查询学生
+            // 根据学号查询学生
             EntityWrapper<XueshengEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("xuehao", username);
             XueshengEntity user = xueshengService.selectOne(queryWrapper);
             
-            // 5. 用户不存在或密码错误
+            // 用户不存在或密码错误
             if (user == null || !passwordEncoder.matches(password, user.getMima())) {
                 loginFailCountMap.put(username, failCount + 1);
                 log.warn("学生登录失败：学号{}账号或密码不正确，失败次数：{}", username, failCount + 1);
                 return R.error("账号或密码不正确");
             }
             
-            // 6. 【防暴力破解】登录成功，清除失败计数
+            // 【防暴力破解】登录成功，清除失败计数
             loginFailCountMap.remove(username);
             lockTimeMap.remove(username);
             
-            // 7. 登录成功，生成 Token
+            // 登录成功，生成 Token
             String token = tokenService.generateToken(user.getId(), username, "xuesheng", "学生");
             log.info("学生 {} 登录成功", username);
             // 返回token和学生姓名
@@ -178,7 +178,7 @@ public class XueshengController {
     @RequestMapping("/register")
     public R register(@RequestBody XueshengEntity xuesheng) {
         try {
-            // 1. 基础参数校验
+            // 基础参数校验
             if (!StringUtils.hasText(xuesheng.getXuehao()) || !StringUtils.hasText(xuesheng.getMima())) {
                 log.warn("学生注册失败：学号和密码不能为空");
                 return R.error("学号和密码不能为空");
@@ -190,13 +190,13 @@ public class XueshengController {
                 return R.error("账号格式不正确，只能包含字母、数字和下划线，长度7-20位");
             }
             
-            // 2. 密码强度校验（毕业设计模式，仅检查长度）
+            // 密码强度校验（毕业设计模式，仅检查长度）
             if (!PasswordValidator.isValidSimple(xuesheng.getMima())) {
                 log.warn("学生注册失败：密码长度不能少于 6 位");
                 return R.error("密码长度不能少于 6 位");
             }
             
-            // 3. 检查账号是否存在
+            // 检查账号是否存在
             EntityWrapper<XueshengEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("xuehao", xuesheng.getXuehao());
             XueshengEntity user = xueshengService.selectOne(queryWrapper);
@@ -205,15 +205,15 @@ public class XueshengController {
                 return R.error("注册用户已存在");
             }
             
-            // 4. 密码加密 (使用 BCrypt 加密)
+            // 密码加密 (使用 BCrypt 加密)
             xuesheng.setMima(passwordEncoder.encode(xuesheng.getMima()));
             
-            // 5. 生成 ID 并补充默认值
+            // 生成 ID 并补充默认值
             Long uId = IdWorker.getId();
             xuesheng.setId(uId);
             xuesheng.setAddtime(new Date());
             
-            // 6. 保存用户
+            // 保存用户
             xueshengService.insert(xuesheng);
             log.info("学生 {} 注册成功", xuesheng.getXuehao());
             return R.ok("注册成功");
@@ -260,7 +260,7 @@ public class XueshengController {
         try {
             Long id = null;
             
-            // 1. 优先从 Token 获取用户 ID
+            // 优先从 Token 获取用户 ID
             String token = request.getHeader("token");
             if (!StringUtils.hasText(token)) {
                 token = request.getParameter("token");
@@ -275,18 +275,18 @@ public class XueshengController {
                 }
             }
             
-            // 2. 如果 Token 无效，尝试从 Session 获取
+            // 如果 Token 无效，尝试从 Session 获取
             if (id == null || id <= 0) {
                 id = (Long) request.getSession().getAttribute("userId");
             }
             
-            // 3. 验证用户 ID
+            // 验证用户 ID
             if (id == null || id <= 0) {
                 log.warn("获取当前学生信息失败：无法获取用户 ID");
                 return R.error("请先登录");
             }
             
-            // 4. 查询学生信息
+            // 查询学生信息
             XueshengEntity user = xueshengService.selectById(id);
             if (user == null) {
                 log.warn("获取当前学生信息失败：ID{}不存在", id);
@@ -343,13 +343,13 @@ public class XueshengController {
     @RequestMapping(value = "/resetPass")
     public R resetPass(String username, HttpServletRequest request) {
         try {
-            // 1. 参数校验
+            // 参数校验
             if (!StringUtils.hasText(username)) {
                 log.warn("重置密码失败：学号为空");
                 return R.error("学号不能为空");
             }
             
-            // 2. 查询学生
+            // 查询学生
             EntityWrapper<XueshengEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("xuehao", username);
             XueshengEntity user = xueshengService.selectOne(queryWrapper);
@@ -359,7 +359,7 @@ public class XueshengController {
                 return R.error("账号不存在");
             }
             
-            // 3. 重置密码为默认密码 (使用 BCrypt 加密)
+            // 重置密码为默认密码 (使用 BCrypt 加密)
             user.setMima(passwordEncoder.encode("123456"));
             xueshengService.updateById(user);
             
@@ -386,10 +386,10 @@ public class XueshengController {
                   XueshengEntity xuesheng,
                   HttpServletRequest request) {
         try {
-            // 1. 构建查询条件
+            // 构建查询条件
             EntityWrapper<XueshengEntity> ew = new EntityWrapper<>();
             
-            // 2. 执行分页查询
+            // 执行分页查询
             PageUtils page = xueshengService.queryPage(
                 params, 
                 MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, xuesheng), params), params)
@@ -417,10 +417,10 @@ public class XueshengController {
                   XueshengEntity xuesheng,
                   HttpServletRequest request) {
         try {
-            // 1. 构建查询条件
+            // 构建查询条件
             EntityWrapper<XueshengEntity> ew = new EntityWrapper<>();
             
-            // 2. 执行分页查询
+            // 执行分页查询
             PageUtils page = xueshengService.queryPage(
                 params, 
                 MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, xuesheng), params), params)
@@ -444,11 +444,11 @@ public class XueshengController {
     @RequestMapping("/lists")
     public R list(XueshengEntity xuesheng) {
         try {
-            // 1. 构建查询条件 (精确匹配)
+            // 构建查询条件 (精确匹配)
             EntityWrapper<XueshengEntity> ew = new EntityWrapper<>();
             ew.allEq(MPUtil.allEQMapPre(xuesheng, "xuesheng"));
             
-            // 2. 查询列表
+            // 查询列表
             return R.ok().put("data", xueshengService.selectListView(ew));
             
         } catch (Exception e) {
@@ -467,11 +467,11 @@ public class XueshengController {
     @RequestMapping("/query")
     public R query(XueshengEntity xuesheng) {
         try {
-            // 1. 构建查询条件
+            // 构建查询条件
             EntityWrapper<XueshengEntity> ew = new EntityWrapper<>();
             ew.allEq(MPUtil.allEQMapPre(xuesheng, "xuesheng"));
             
-            // 2. 查询视图数据 (关联查询)
+            // 查询视图数据 (关联查询)
             XueshengView xueshengView = xueshengService.selectView(ew);
             
             if (xueshengView == null) {
@@ -497,13 +497,13 @@ public class XueshengController {
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id) {
         try {
-            // 1. 参数校验
+            // 参数校验
             if (id == null || id <= 0) {
                 log.warn("查询学生详情失败：ID 非法，ID: {}", id);
                 return R.error("学生 ID 非法");
             }
             
-            // 2. 查询学生信息
+            // 查询学生信息
             XueshengEntity xuesheng = xueshengService.selectById(id);
             
             if (xuesheng == null) {
@@ -529,13 +529,13 @@ public class XueshengController {
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id) {
         try {
-            // 1. 参数校验
+            // 参数校验
             if (id == null || id <= 0) {
                 log.warn("查询学生详情失败：ID 非法，ID: {}", id);
                 return R.error("学生 ID 非法");
             }
             
-            // 2. 查询学生信息
+            // 查询学生信息
             XueshengEntity xuesheng = xueshengService.selectById(id);
             
             if (xuesheng == null) {
@@ -564,13 +564,13 @@ public class XueshengController {
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R save(@RequestBody XueshengEntity xuesheng, HttpServletRequest request) {
         try {
-            // 1. 基础参数校验
+            // 基础参数校验
             if (!StringUtils.hasText(xuesheng.getXuehao())) {
                 log.warn("保存学生失败：学号为空");
                 return R.error("学号不能为空");
             }
             
-            // 2. 检查学号是否已存在
+            // 检查学号是否已存在
             EntityWrapper<XueshengEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("xuehao", xuesheng.getXuehao());
             if (xueshengService.selectOne(queryWrapper) != null) {
@@ -578,12 +578,12 @@ public class XueshengController {
                 return R.error("用户已存在");
             }
             
-            // 3. 密码加密 (如果有密码)
+            // 密码加密 (如果有密码)
             if (StringUtils.hasText(xuesheng.getMima())) {
                 xuesheng.setMima(passwordEncoder.encode(xuesheng.getMima()));
             }
             
-            // 4. 生成 ID 并保存
+            // 生成 ID 并保存
             xuesheng.setId(IdWorker.getId());
             ValidatorUtils.validateEntity(xuesheng);
             xueshengService.insert(xuesheng);
@@ -611,13 +611,13 @@ public class XueshengController {
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R add(@RequestBody XueshengEntity xuesheng, HttpServletRequest request) {
         try {
-            // 1. 基础参数校验
+            // 基础参数校验
             if (!StringUtils.hasText(xuesheng.getXuehao())) {
                 log.warn("添加学生失败：学号为空");
                 return R.error("学号不能为空");
             }
             
-            // 2. 检查学号是否已存在
+            // 检查学号是否已存在
             EntityWrapper<XueshengEntity> queryWrapper = new EntityWrapper<>();
             queryWrapper.eq("xuehao", xuesheng.getXuehao());
             if (xueshengService.selectOne(queryWrapper) != null) {
@@ -625,7 +625,7 @@ public class XueshengController {
                 return R.error("用户已存在");
             }
             
-            // 3. 密码加密 (如果有密码)
+            // 密码加密 (如果有密码)
             if (StringUtils.hasText(xuesheng.getMima())) {
                 xuesheng.setMima(passwordEncoder.encode(xuesheng.getMima()));
             }
@@ -633,7 +633,7 @@ public class XueshengController {
             // 【关键修复】兜底处理：设置addtime（如果前端未传递或格式错误）
             EntityUtil.setAddtimeIfNull(xuesheng);
             
-            // 4. 生成 ID 并保存
+            // 生成 ID 并保存
             xuesheng.setId(IdWorker.getId());
             ValidatorUtils.validateEntity(xuesheng);
             xueshengService.insert(xuesheng);
@@ -659,7 +659,7 @@ public class XueshengController {
     @RequestMapping("/verifyPassword")
     public R verifyPassword(HttpServletRequest request, @RequestBody Map<String, Object> params) {
         try {
-            // 1. 获取当前登录用户
+            // 获取当前登录用户
             String token = request.getHeader("token");
             if (!StringUtils.hasText(token)) {
                 token = request.getParameter("token");
@@ -670,13 +670,13 @@ public class XueshengController {
                 return R.error("未登录或登录已过期");
             }
             
-            // 2. 查询学生信息
+            // 查询学生信息
             XueshengEntity xuesheng = xueshengService.selectById(tokenEntity.getUserid());
             if (xuesheng == null) {
                 return R.error("用户不存在");
             }
             
-            // 3. 验证密码
+            // 验证密码
             String oldPassword = params.get("oldPassword") != null ? params.get("oldPassword").toString() : "";
             if (!StringUtils.hasText(oldPassword)) {
                 return R.error("原密码不能为空");
@@ -708,13 +708,13 @@ public class XueshengController {
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R update(@RequestBody XueshengEntity xuesheng, HttpServletRequest request) {
         try {
-            // 1. 参数校验
+            // 参数校验
             if (xuesheng.getId() == null || xuesheng.getId() <= 0) {
                 log.warn("修改学生失败：ID 非法，ID: {}", xuesheng.getId());
                 return R.error("学生 ID 非法");
             }
             
-            // 2. 如果密码不为空，进行加密处理
+            // 如果密码不为空，进行加密处理
             if (StringUtils.hasText(xuesheng.getMima())) {
                 // 判断是否是BCrypt加密过的密码（以$2a$开头）
                 if (!xuesheng.getMima().startsWith("$2a$")) {
@@ -724,10 +724,10 @@ public class XueshengController {
                 }
             }
             
-            // 3. 执行更新
+            // 执行更新
             xueshengService.updateById(xuesheng);
             
-            // 4. 【数据联动】同步更新所有关联表中的冗余数据
+            // 【数据联动】同步更新所有关联表中的冗余数据
             try {
                 dataSyncService.syncXueshengInfo(xuesheng);
                 log.info("学生信息联动同步完成 - 学号: {}", xuesheng.getXuehao());
@@ -758,14 +758,14 @@ public class XueshengController {
     @RequestMapping("/delete")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public R delete(@RequestBody Long[] ids) {
-        // 1. 参数校验
+        // 参数校验
         if (ids == null || ids.length == 0) {
             log.warn("删除学生失败：ID 数组为空");
             return R.error("请选择要删除的学生");
         }
         
         try {
-            // 2. 批量删除
+            // 批量删除
             xueshengService.deleteBatchIds(Arrays.asList(ids));
             
             log.info("删除学生信息成功，IDs: {}", Arrays.toString(ids));
@@ -793,11 +793,11 @@ public class XueshengController {
                          @PathVariable("type") String type, 
                          @RequestParam Map<String, Object> map) {
         try {
-            // 1. 设置字段名
+            // 设置字段名
             map.put("column", columnName);
             map.put("type", type);
             
-            // 2. 处理时间区间 (类型 2：自定义区间)
+            // 处理时间区间 (类型 2：自定义区间)
             if ("2".equals(type)) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 Calendar c = Calendar.getInstance();
@@ -819,7 +819,7 @@ public class XueshengController {
                 }
             }
             
-            // 3. 构建查询条件
+            // 构建查询条件
             Wrapper<XueshengEntity> wrapper = new EntityWrapper<>();
             if (map.get("remindstart") != null) {
                 wrapper.ge(columnName, map.get("remindstart"));
@@ -828,7 +828,7 @@ public class XueshengController {
                 wrapper.le(columnName, map.get("remindend"));
             }
             
-            // 4. 统计数量
+            // 统计数量
             int count = xueshengService.selectCount(wrapper);
             
             log.debug("学生提醒查询成功，字段：{}, 类型：{}, 数量：{}", columnName, type, count);
