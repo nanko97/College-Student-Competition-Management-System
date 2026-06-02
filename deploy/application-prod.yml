@@ -1,0 +1,18 @@
+# ============================================
+# 大学生竞赛管理系统 - 生产环境配置
+# 
+# 说明：此文件包含生产环境特有的覆盖配置。
+# 部署时会与原始 application.yml 合并使用。
+# ============================================
+
+# 关闭 Swagger（生产环境不应暴露 API 文档）
+swagger:
+  enabled: false
+
+# 生产环境日志级别
+logging:
+  level:
+    root: WARN
+    com.jlwl: INFO
+    com.controller: INFO
+    com.service: INFO

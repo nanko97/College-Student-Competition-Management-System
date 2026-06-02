@@ -1,0 +1,48 @@
+# ============================================
+# 大学生竞赛管理系统 - systemd 服务
+# 部署路径：/etc/systemd/system/bysj.service
+# ============================================
+
+[Unit]
+Description=大学生竞赛管理系统 Backend
+Documentation=https://github.com/your-repo
+After=network.target mysql.service redis.service
+Wants=mysql.service redis.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/bysj/backend
+
+# JVM 参数说明：
+# -Xms256m  初始堆内存
+# -Xmx512m  最大堆内存
+# -Dfile.encoding=UTF-8  文件编码
+ExecStart=/usr/bin/java \
+    -Xms256m \
+    -Xmx512m \
+    -Dfile.encoding=UTF-8 \
+    -jar /opt/bysj/backend/BYSJ_Springboot.jar \
+    --spring.config.location=/opt/bysj/backend/application.yml
+
+# 优雅关闭：先 SIGTERM，超时后 SIGKILL
+ExecStop=/bin/kill -15 $MAINPID
+
+# 自动重启策略
+Restart=on-failure
+RestartSec=10
+StartLimitBurst=5
+StartLimitInterval=200
+
+# 日志输出
+StandardOutput=append:/opt/bysj/backend/bysj-stdout.log
+StandardError=append:/opt/bysj/backend/bysj-stderr.log
+
+# 安全加固（可选取消注释）
+# NoNewPrivileges=yes
+# ProtectSystem=full
+# ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target
