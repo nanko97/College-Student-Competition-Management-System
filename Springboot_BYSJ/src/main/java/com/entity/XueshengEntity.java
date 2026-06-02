@@ -34,8 +34,7 @@ public class XueshengEntity<T> implements Serializable {
         try {
             BeanUtils.copyProperties(this, t);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException("属性复制失败", e);
         }
     }
 

@@ -28,8 +28,7 @@ public class JingsaibaomingView extends JingsaibaomingEntity implements Serializ
         try {
             BeanUtils.copyProperties(this, jingsaibaomingEntity);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException("属性复制失败", e);
         }
 
     }

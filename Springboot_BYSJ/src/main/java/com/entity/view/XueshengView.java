@@ -28,8 +28,7 @@ public class XueshengView extends XueshengEntity implements Serializable {
         try {
             BeanUtils.copyProperties(this, xueshengEntity);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException("属性复制失败", e);
         }
 
     }
