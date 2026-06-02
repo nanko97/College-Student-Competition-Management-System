@@ -8,20 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 增强缓存服务 - 产品化版本（带监控）
- * 
- * 【功能说明】
- * 在原有 CacheService 基础上增加：
- * 1. 自动记录缓存命中/未命中统计
- * 2. 统一的异常处理和日志记录
- * 3. 缓存操作的性能监控
- * 
- * 【使用建议】
- * - 新代码优先使用此服务
- * - 逐步迁移旧代码到此服务
- * 
- * @author 产品化优化版本
- * @date 2026-04-06
+ * 增强缓存服务
  */
 @Service
 @Slf4j

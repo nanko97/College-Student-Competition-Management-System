@@ -12,21 +12,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * 缓存监控服务 - 产品化版本
- * 
- * 【功能说明】
- * 1. 实时监控缓存命中率、 miss 率
- * 2. 统计缓存操作次数（get/set/delete）
- * 3. 提供缓存健康检查
- * 4. 支持缓存统计重置
- * 
- * 【使用场景】
- * - 管理员查看系统性能
- * - 开发人员调试缓存问题
- * - 运维人员监控系统健康度
- * 
- * @author 产品化优化版本
- * @date 2026-04-06
+ * 缓存监控服务
  */
 @Service
 @Slf4j

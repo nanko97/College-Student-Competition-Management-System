@@ -18,43 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 增强 Swagger API 文档配置类 - 产品化版本
- * 
- * 【功能说明】
- * 1. 自动生成 API 接口文档
- * 2. 提供在线 API 测试界面
- * 3. 支持 JWT Token 认证
- * 4. 分组管理 API 接口
- * 5. 自定义文档信息
- * 
- * 【访问地址】
- * - Swagger UI: http://localhost:9090/BYSJ_Springboot/swagger-ui.html
- * - API JSON: http://localhost:9090/BYSJ_Springboot/v2/api-docs
- * 
- * 【常用注解】
- * <pre>
- * {@code
- * // Controller 类上
- * @Api(tags = "竞赛管理")
- * 
- * // 方法上
- * @ApiOperation("查询竞赛列表")
- * @ApiImplicitParams({
- *     @ApiImplicitParam(name = "pageNum", value = "页码", defaultValue = "1"),
- *     @ApiImplicitParam(name = "pageSize", value = "每页大小", defaultValue = "10")
- * })
- * 
- * // 实体类上
- * @ApiModel("竞赛信息")
- * public class Jingsai {
- *     @ApiModelProperty(value = "竞赛ID", example = "1")
- *     private Long id;
- * }
- * }
- * </pre>
- * 
- * @author 产品化优化版本
- * @date 2026-04-06
+ * Swagger API 文档配置类
  */
 @Configuration
 @EnableSwagger2

@@ -1,4 +1,4 @@
-package com.dao;
+﻿package com.dao;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
@@ -14,9 +14,6 @@ import java.util.List;
 /**
  * 竞赛报名
  *
- * @author
- * @email
- * @date 2021-05-03 11:24:10
  */
 public interface JingsaibaomingDao extends BaseMapper<JingsaibaomingEntity> {
 

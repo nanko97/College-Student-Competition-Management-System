@@ -8,23 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 缓存监控控制器 - 产品化版本
- * 
- * 【功能说明】
- * 提供缓存系统的监控和管理接口，用于：
- * 1. 查看缓存统计信息（命中率、操作次数等）
- * 2. 检查 Redis 连接状态
- * 3. 获取 Redis 服务器信息
- * 4. 重置统计数据
- * 
- * 【访问方式】
- * GET  /api/cache/stats      - 获取缓存统计
- * GET  /api/cache/health      - 健康检查
- * GET  /api/cache/info        - Redis 服务器信息
- * POST /api/cache/reset       - 重置统计数据
- * 
- * @author 产品化优化版本
- * @date 2026-04-06
+ * 缓存监控控制器
  */
 @RestController
 @RequestMapping("/api/cache")

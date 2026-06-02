@@ -9,28 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 缓存服务类
- * 
- * 【功能说明】
- * 1. 提供统一的 Redis 缓存操作接口
- * 2. 支持热点数据缓存（竞赛信息、用户信息等）
- * 3. 自动过期管理，避免缓存污染
- * 
- * 【使用示例】
- * <pre>
- * {@code
- * // 缓存竞赛信息
- * cacheService.cacheJingsai(id, entity);
- * 
- * // 获取缓存
- * JingsaixinxiEntity cached = cacheService.getCachedJingsai(id);
- * 
- * // 删除缓存
- * cacheService.deleteJingsaiCache(id);
- * }
- * </pre>
- * 
- * @author 毕业设计优化版
- * @date 2026-03-05
  */
 @Service
 @Slf4j

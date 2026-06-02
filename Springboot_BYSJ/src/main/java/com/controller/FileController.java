@@ -28,13 +28,6 @@ import java.util.List;
 
 /**
  * 文件上传/下载 Controller
- * 
- * 【毕业设计优化版】
- * 功能：处理文件上传和下载请求
- * 特点：
- * - 支持常见图片、文档格式
- * - 文件大小限制（默认 10MB）
- * - 兼容 IDE 和 jar包运行
  */
 @RestController
 @RequestMapping("file")
@@ -60,17 +53,6 @@ public class FileController {
 
     /**
      * 上传文件
-     * 
-     * 【毕业设计简化版】
-     * 流程：
-     * 1. 检查文件是否为空
-     * 2. 检查文件大小
-     * 3. 检查文件类型（通过后缀名）
-     * 4. 保存文件到服务器
-     * 
-     * @param file 上传的文件
-     * @param type 文件类型标识（可选）
-     * @return 返回文件名
      */
     @OperationLog("上传文件")
     @PostMapping("/upload")

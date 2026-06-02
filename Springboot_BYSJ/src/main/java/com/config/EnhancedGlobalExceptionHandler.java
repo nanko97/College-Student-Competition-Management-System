@@ -31,22 +31,7 @@ import java.sql.SQLException;
 import java.util.stream.Collectors;
 
 /**
- * 全局异常处理器 - 优化版本
- * 
- * 【功能说明】
- * 1. 统一处理所有异常，返回标准化的响应格式
- * 2. 详细的日志记录，便于问题排查
- * 3. 区分业务异常和系统异常
- * 4. 参数验证异常的友好提示
- * 5. 防止敏感信息泄露
- * 
- * 【异常分类】
- * - 业务异常 (BusinessException): 由业务规则触发，记录 WARN 日志
- * - 参数异常: 由参数验证失败触发，记录 WARN 日志
- * - 系统异常: 由系统错误触发，记录 ERROR 日志
- * 
- * @author 优化版本
- * @date 2026-05-05
+ * 全局异常处理器
  */
 @RestControllerAdvice
 @Slf4j

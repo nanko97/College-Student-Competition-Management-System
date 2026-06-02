@@ -8,45 +8,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * 统一 API 响应类 - 产品化版本
- * 
- * 【功能说明】
- * 1. 统一的响应格式，便于前端处理
- * 2. 支持链式调用
- * 3. 包含时间戳，便于调试和追踪
- * 4. 支持分页数据封装
- * 5. 与 ErrorCode 枚举集成
- * 
- * 【响应格式】
- * <pre>
- * {
- *     "success": true,           // 是否成功
- *     "code": 200,               // 状态码
- *     "message": "操作成功",      // 响应消息
- *     "data": {...},             // 响应数据 (可选)
- *     "timestamp": "2026-04-06T18:30:45"  // 时间戳
- * }
- * </pre>
- * 
- * 【使用示例】
- * <pre>
- * {@code
- * // 成功响应
- * return ApiResponse.ok();
- * return ApiResponse.ok("操作成功");
- * return ApiResponse.ok(data);
- * 
- * // 失败响应
- * return ApiResponse.error("操作失败");
- * return ApiResponse.error(ErrorCode.USER_NOT_FOUND);
- * 
- * // 分页响应
- * return ApiResponse.page(list, total, pageNum, pageSize);
- * }
- * </pre>
- * 
- * @author 产品化优化版本
- * @date 2026-04-06
+ * 统一 API 响应类
  */
 @Data
 public class ApiResponse<T> implements Serializable {

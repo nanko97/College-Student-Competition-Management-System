@@ -1,4 +1,4 @@
-package com.utils;
+﻿package com.utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +35,6 @@ import java.util.Map;
  * </pre>
  * 
  * @author毕业设计优化版
- * @date 2026-03-05
  */
 public class R extends HashMap<String, Object> {
     

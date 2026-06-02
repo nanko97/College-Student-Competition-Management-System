@@ -1,4 +1,4 @@
-package com.interceptor;
+﻿package com.interceptor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,9 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 【论文4.4.5节】设置请求限流，单IP每分钟最多请求60次
  * 采用滑动窗口计数器算法，基于内存存储（线程安全）
  * 生产环境建议替换为 Redis + Lua脚本 实现分布式限流
- * 
- * @author 毕业设计优化版
- * @date 2026-05-20
+ *
  */
 @Slf4j
 @Component

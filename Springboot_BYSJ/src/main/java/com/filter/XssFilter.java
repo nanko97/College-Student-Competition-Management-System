@@ -8,23 +8,6 @@ import java.io.IOException;
 
 /**
  * XSS 防护过滤器
- * 
- * 【功能说明】
- * 1. 拦截所有 HTTP 请求，使用 XssHttpServletRequestWrapper 包装
- * 2. 自动过滤用户输入中的 XSS 攻击代码
- * 3. 保护系统免受跨站脚本攻击
- * 
- * 【使用场景】
- * - 用户表单提交
- * - URL 参数传递
- * - 请求头数据
- * 
- * 【毕业设计说明】
- * - 简化版实现，适合毕业设计要求
- * - 生产环境建议配置更严格的过滤规则
- * 
- * @author 毕业设计优化版
- * @date 2026-03-05
  */
 @Component
 public class XssFilter implements Filter {

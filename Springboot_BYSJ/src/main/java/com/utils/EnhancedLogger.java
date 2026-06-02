@@ -5,33 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 增强日志工具类 - 产品化版本
- * 
- * 【功能说明】
- * 1. 提供统一的日志记录接口
- * 2. 支持 API 访问日志
- * 3. 支持慢查询日志
- * 4. 支持性能监控日志
- * 5. 自动记录方法执行时间
- * 
- * 【使用示例】
- * <pre>
- * {@code
- * // API 访问日志
- * EnhancedLogger.logApiAccess(request, response, duration);
- * 
- * // 慢查询日志
- * EnhancedLogger.logSlowQuery(sql, params, duration);
- * 
- * // 性能监控
- * EnhancedLogger.PerformanceTimer timer = EnhancedLogger.startTimer("getUserInfo");
- * // ... 业务逻辑 ...
- * timer.stop();
- * }
- * </pre>
- * 
- * @author 产品化优化版本
- * @date 2026-04-06
+ * 增强日志工具类
  */
 @Slf4j
 public class EnhancedLogger {

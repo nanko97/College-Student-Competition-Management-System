@@ -1,4 +1,4 @@
-package com.entity.view;
+﻿package com.entity.view;
 
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.entity.JiaoshiEntity;
@@ -13,9 +13,6 @@ import java.lang.reflect.InvocationTargetException;
  * 后端返回视图实体辅助类
  * （通常后端关联的表或者自定义的字段需要返回使用）
  *
- * @author
- * @email
- * @date 2021-05-03 11:24:10
  */
 @TableName("jiaoshi")
 public class JiaoshiView extends JiaoshiEntity implements Serializable {

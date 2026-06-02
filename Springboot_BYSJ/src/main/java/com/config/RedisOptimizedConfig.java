@@ -1,4 +1,4 @@
-package com.config;
+﻿package com.config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -35,9 +35,7 @@ import java.util.Map;
  * 3. 缓存键前缀管理（便于区分和清理）
  * 4. 缓存监控支持（记录命中率等指标）
  * 5. 空值保护（防止缓存穿透）
- * 
- * @author 产品化优化版本
- * @date 2026-04-06
+ *
  */
 @Slf4j
 @Configuration

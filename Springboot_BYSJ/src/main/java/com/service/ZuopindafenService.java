@@ -1,4 +1,4 @@
-package com.service;
+﻿package com.service;
 
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.service.IService;
@@ -15,9 +15,6 @@ import java.util.Map;
 /**
  * 作品打分
  *
- * @author
- * @email
- * @date 2021-05-03 11:24:10
  */
 public interface ZuopindafenService extends IService<ZuopindafenEntity> {
 

@@ -1,4 +1,4 @@
-package com.dao;
+﻿package com.dao;
 
 import com.entity.ZuopindafenFuheEntity;
 import com.baomidou.mybatisplus.mapper.BaseMapper;
@@ -14,9 +14,7 @@ import com.entity.view.ZuopindafenFuheView;
 
 /**
  * 作品打分复核申请
- * 
- * @author 
- * @email 
+ *
  * @date 
  */
 public interface ZuopindafenFuheDao extends BaseMapper<ZuopindafenFuheEntity> {

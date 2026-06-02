@@ -11,19 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * API 访问日志拦截器 - 产品化版本
- * 
- * 【功能说明】
- * 1. 自动记录所有 API 请求的访问日志
- * 2. 记录请求处理时间，标识慢请求
- * 3. 记录客户端 IP、请求方法、URI、响应状态码
- * 4. 支持排除特定路径（如健康检查、静态资源）
- * 
- * 【配置方式】
- * 在 WebMvcConfig 中注册此拦截器
- * 
- * @author 产品化优化版本
- * @date 2026-04-06
+ * API 访问日志拦截器
  */
 @Component
 public class ApiAccessLogInterceptor implements HandlerInterceptor {

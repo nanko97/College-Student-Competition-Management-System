@@ -1,4 +1,4 @@
-package com.service;
+﻿package com.service;
 
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.service.IService;
@@ -14,8 +14,6 @@ import com.entity.view.ZuopindafenFuheView;
 /**
  * 作品打分复核申请
  *
- * @author 
- * @email 
  * @date 
  */
 public interface ZuopindafenFuheService extends IService<ZuopindafenFuheEntity> {

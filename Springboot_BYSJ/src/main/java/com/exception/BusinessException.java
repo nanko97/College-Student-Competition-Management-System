@@ -3,31 +3,7 @@ package com.exception;
 import lombok.Getter;
 
 /**
- * 业务异常 - 产品化版本
- * 
- * 【功能说明】
- * 用于表示业务逻辑层面的异常，例如：
- * - 参数验证失败
- * - 业务规则违反
- * - 资源不存在
- * - 权限不足
- * 
- * 【使用示例】
- * <pre>
- * {@code
- * // 抛出业务异常
- * throw new BusinessException("竞赛报名已截止");
- * 
- * // 带错误码的业务异常
- * throw new BusinessException(ErrorCode.BAOMING_DEADLINE_PASSED);
- * 
- * // 带详细信息的业务异常
- * throw new BusinessException("报名失败", "该竞赛报名人数已满");
- * }
- * </pre>
- * 
- * @author 产品化优化版本
- * @date 2026-04-06
+ * 业务异常
  */
 @Getter
 public class BusinessException extends RuntimeException {

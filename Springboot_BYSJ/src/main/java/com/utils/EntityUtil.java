@@ -1,4 +1,4 @@
-package com.utils;
+﻿package com.utils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -8,9 +8,7 @@ import java.util.Date;
 /**
  * 实体工具类
  * 功能：提供实体对象的通用操作方法
- * 
- * @author 毕业设计优化版
- * @date 2026-05-21
+ *
  */
 @Slf4j
 public class EntityUtil {

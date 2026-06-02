@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
  * 功能：学生报名竞赛、教师审核报名、报名信息管理
  * 
  * @author毕业设计优化版
- * @date 2026-03-05
  * 
  * 优化说明：
  * 1. 添加详细的中文注释，便于理解和答辩

@@ -1,4 +1,4 @@
-package com.service.impl;
+﻿package com.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
@@ -22,9 +22,7 @@ import java.util.Map;
 /**
  * 竞赛信息服务实现类
  * 【性能优化版】集成 Redis 缓存，提升查询性能
- * 
- * @author 毕业设计优化版
- * @date 2026-03-05
+ *
  */
 @Service("jingsaixinxiService")
 @Slf4j

@@ -1,4 +1,4 @@
-package com.entity;
+﻿package com.entity;
 
 import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableName;
@@ -17,9 +17,6 @@ import java.util.Date;
  * 作品打分
  * 数据库通用操作实体类（普通增删改查）
  *
- * @author
- * @email
- * @date 2021-05-03 11:24:10
  */
 @TableName("zuopindafen")
 public class ZuopindafenEntity<T> implements Serializable {
